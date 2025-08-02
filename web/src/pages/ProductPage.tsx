@@ -1,9 +1,10 @@
-import { useEffect, useState } from 'react';
-import api from '../api/axios';
-import { Table, Title, Container, Button, Modal, TextInput, Textarea, NumberInput, Group, Tooltip } from '@mantine/core';
+import { useEffect, useState, useCallback } from 'react';
+import { Table, Title, Container, Button, Modal, TextInput, Textarea, NumberInput, Group, Tooltip, Pagination, Grid } from '@mantine/core';
+import { notifications } from '@mantine/notifications';
 import { useDisclosure } from '@mantine/hooks';
+import { IconPencil, IconTrash, IconPlus, IconSearch } from '@tabler/icons-react';
 import { useAuth } from '../context/AuthContext';
-import { IconPencil, IconTrash, IconPlus } from '@tabler/icons-react';
+import api from '../api/axios';
 
 const formatCurrency = (value: number) => {
   return new Intl.NumberFormat('pt-BR', {
@@ -32,13 +33,36 @@ function ProductPage() {
     const [formData, setFormData] = useState<ProductFormData>({
         name: '', sku: '', description: '', cost_price: 0, sale_price: 0, quantity_in_stock: 0,
     });
+    const [activePage, setActivePage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [searchQuery, setSearchQuery] = useState('');
 
-    const fetchProducts = () => {
-        api.get('/products').then(response => { setProducts(response.data); })
-            .catch(error => { console.error('Houve um erro ao buscar os produtos!', error); });
-    };
+    const fetchProducts = useCallback((page: number, search: string) => {
+        api.get('/products', {
+            params: {
+                page: page,
+                search: search,
+            }
+        }).then(response => {
+            setProducts(response.data.data);
+            setTotalPages(response.data.last_page);
+        }).catch(error => {
+            console.error('Houve um erro ao buscar os produtos!', error);
+        });
+    }, []);
 
-    useEffect(() => { fetchProducts(); }, []);
+    useEffect(() => {
+        fetchProducts(activePage, searchQuery);
+    }, [activePage, searchQuery, fetchProducts]);
+
+    useEffect(() => {
+        const debounceTimer = setTimeout(() => {
+            setActivePage(1);
+            setSearchQuery(searchTerm);
+        }, 500);
+        return () => clearTimeout(debounceTimer);
+    }, [searchTerm]);
 
     const handlePriceChange = (event: React.ChangeEvent<HTMLInputElement>, fieldName: 'cost_price' | 'sale_price') => {
         const digits = event.target.value.replace(/\D/g, '');
@@ -78,9 +102,17 @@ function ProductPage() {
         }).catch(error => {
             console.error('Erro ao salvar produto!', error);
             if (error.response?.data?.errors) {
-                alert('Por favor, verifique os dados do formulário! O SKU já pode existir.');
+                notifications.show({
+                    title: 'Erro de Validação',
+                    message: 'O Código informado já existe em outro produto. Por favor, verifique os dados.',
+                    color: 'red',
+                });
             } else {
-                alert('Não foi possível salvar o produto.');
+                notifications.show({
+                    title: 'Erro de Validação',
+                    message: 'Não foi possível salvar o produto.',
+                    color: 'red',
+                });
             }
         });
     };
@@ -88,11 +120,21 @@ function ProductPage() {
     const handleDelete = (id: number) => {
         if (window.confirm('Tem certeza que deseja excluir este produto?')) {
             api.delete(`/products/${id}`)
-                .then(() => { setProducts(current => current.filter(product => product.id !== id)); })
-                .catch(error => {
-                    console.error(`Houve um erro ao excluir o produto ${id}!`, error);
-                    alert('Não foi possível excluir o produto.');
+            .then(() => {
+                setProducts(currentProducts => currentProducts.filter(product => product.id !== id));
+                notifications.show({
+                    title: 'Sucesso',
+                    message: `Produto #${id} foi excluído.`,
+                    color: 'green',
                 });
+            })
+            .catch(error => {
+                notifications.show({
+                    title: 'Erro',
+                    message: `Houve um erro ao excluir o produto ${id}!`,
+                    color: 'red',
+                });
+            });
         }
     };
 
@@ -125,32 +167,10 @@ function ProductPage() {
                 <form onSubmit={handleFormSubmit}>
                     <TextInput label="Nome do Produto" value={formData.name} onChange={(e) => setFormData(p => ({...p, name: e.target.value}))} required />
                     <TextInput label="Código do Produto" value={formData.sku} onChange={(e) => setFormData(p => ({...p, sku: e.target.value}))} required mt="md" />
-                    <TextInput
-                        label="Preço de Compra"
-                        placeholder="R$ 0,00"
-                        value={formatCurrency(formData.cost_price)}
-                        onChange={(event) => handlePriceChange(event, 'cost_price')}
-                        required mt="md"
-                    />
-                    <TextInput
-                        label="Preço de Venda"
-                        placeholder="R$ 0,00"
-                        value={formatCurrency(formData.sale_price)}
-                        onChange={(event) => handlePriceChange(event, 'sale_price')}
-                        required mt="md"
-                    />
-                    <NumberInput
-                        label="Quantidade em Estoque"
-                        value={formData.quantity_in_stock}
-                        required
-                        mt="md"
-                        onChange={(value) => setFormData(p => ({ ...p, quantity_in_stock: Number(String(value).replace(/\./g, '')) }))}
-                        allowDecimal={false}
-                        thousandSeparator="."
-                        decimalSeparator=","
-                    />
+                    <TextInput label="Preço de Compra" placeholder="R$ 0,00" value={formatCurrency(formData.cost_price)} onChange={(event) => handlePriceChange(event, 'cost_price')} required mt="md" />
+                    <TextInput label="Preço de Venda" placeholder="R$ 0,00" value={formatCurrency(formData.sale_price)} onChange={(event) => handlePriceChange(event, 'sale_price')} required mt="md" />
+                    <NumberInput label="Quantidade em Estoque" value={formData.quantity_in_stock} required mt="md" onChange={(value) => setFormData(p => ({ ...p, quantity_in_stock: Number(String(value).replace(/\./g, '')) }))} allowDecimal={false} thousandSeparator="." decimalSeparator="," />
                     <Textarea label="Descrição (Opcional)" value={formData.description || ''} onChange={(e) => setFormData(p => ({ ...p, description: e.target.value }))} mt="md" autosize minRows={2} maxRows={4} />
-                    
                     <Group justify="flex-end" mt="lg">
                         <Button type="submit">Salvar</Button>
                     </Group>
@@ -164,6 +184,8 @@ function ProductPage() {
                 )}
             </Group>
 
+            <TextInput label="Buscar Produto" placeholder="Digite o nome ou SKU para buscar automaticamente..." value={searchTerm} onChange={(event) => setSearchTerm(event.currentTarget.value)} leftSection={<IconSearch size={16} />} mb="md" />
+            
             <Table>
                 <Table.Thead>
                     <Table.Tr>
@@ -176,8 +198,16 @@ function ProductPage() {
                         <Table.Th>Ações</Table.Th>
                     </Table.Tr>
                 </Table.Thead>
-                <Table.Tbody>{rows}</Table.Tbody>
+                <Table.Tbody>{rows.length > 0 ? ( rows ) : ( 
+                    <Table.Tr>
+                        <Table.Td colSpan={7} align="center">Nenhum produto encontrado.</Table.Td>
+                    </Table.Tr>
+                )}</Table.Tbody>
             </Table>
+
+            <Group justify="center" mt="xl">
+                <Pagination total={totalPages} value={activePage} onChange={setActivePage} />
+            </Group>
         </Container>
     );
 }

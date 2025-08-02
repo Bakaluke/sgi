@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import api from '../api/axios';
-import { Container, Title, TextInput, Button, Group, Paper, PasswordInput, Alert } from '@mantine/core';
+import { Container, Title, TextInput, Button, Paper, PasswordInput, Alert } from '@mantine/core';
 import { IconAlertCircle } from '@tabler/icons-react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { notifications } from '@mantine/notifications';
 
 function LoginPage() {
   const [email, setEmail] = useState('');
@@ -19,6 +20,11 @@ function LoginPage() {
     .then(response => {
       const { user, token } = response.data;
       login(user, token);
+      notifications.show({
+        title: `Bem-vindo de volta, ${user.name}!`,
+        message: 'Login realizado com sucesso.',
+        color: 'green',
+      });
       navigate('/products');
     })
     .catch(err => {
@@ -30,7 +36,7 @@ function LoginPage() {
   return (
     <Container size={420} my={40}>
       <Title ta="center">Bem-vindo!</Title>
-      <Title ta="center" order={4}>Faça login para continuar</Title>
+      <Title ta="center" order={4}>Faça seu acesso para continuar</Title>
       <Paper withBorder shadow="md" p={30} mt={30} radius="md">
         <form onSubmit={handleSubmit}>
           {error && (
@@ -39,7 +45,7 @@ function LoginPage() {
             </Alert>
           )}
           <TextInput
-            label="Email"
+            label="E-mail"
             placeholder="seu@email.com"
             value={email}
             onChange={(event) => setEmail(event.currentTarget.value)}

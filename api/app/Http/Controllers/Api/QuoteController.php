@@ -16,16 +16,31 @@ class QuoteController extends Controller
     public function index(Request $request)
     {
         $user = $request->user();
-
+        
         if ($user->role === 'admin') {
-            return Quote::with(['customer', 'user'])->orderBy('id', 'desc')->get();
+            $query = Quote::query();
+        } elseif ($user->role === 'vendedor') {
+            $query = Quote::where('user_id', $user->id);
+        } else {
+            return response()->json(['data' => []]);
         }
 
-        if ($user->role === 'vendedor') {
-            return Quote::where('user_id', $user->id)->with(['customer', 'user'])->orderBy('id', 'desc')->get();
-        }
+        $query->with(['customer', 'user', 'items.product']);
 
-        return response()->json([]);
+        if ($request->has('search') && $request->input('search') != '') {
+            $searchTerm = $request->input('search');
+            $query->where(function ($q) use ($searchTerm) {
+                $q->where('id', 'like', "%{$searchTerm}%")
+                ->orWhere('status', 'like', "%{$searchTerm}%")
+                ->orWhereHas('customer', function ($subQ) use ($searchTerm) {
+                    $subQ->where('name', 'like', "%{$searchTerm}%");
+                });
+            });
+        }
+        
+        $query->orderBy('id', 'desc');
+
+        return $query->paginate(30);
     }
 
     public function store(Request $request)

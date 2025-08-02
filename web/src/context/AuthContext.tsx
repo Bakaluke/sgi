@@ -1,3 +1,5 @@
+// src/context/AuthContext.tsx
+
 import React, { createContext, useState, useContext, ReactNode, useEffect } from 'react';
 import api from '../api/axios';
 

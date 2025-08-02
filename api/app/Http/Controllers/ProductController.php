@@ -8,9 +8,23 @@ use Illuminate\Validation\Rule;
 
 class ProductController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        return Product::orderBy('id', 'desc')->get();
+        $query = Product::query();
+
+        if ($request->has('search')) {
+            $searchTerm = $request->input('search');
+            $query->where(function ($q) use ($searchTerm) {
+                $q->where('name', 'like', "%{$searchTerm}%")
+                ->orWhere('sku', 'like', "%{$searchTerm}%");
+            });
+        }
+        
+        $query->orderBy('id', 'desc');
+        
+        $products = $query->paginate(30);
+
+        return $products;
     }
 
     public function create()

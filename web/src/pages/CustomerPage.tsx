@@ -1,10 +1,11 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import axios from 'axios';
-import { Table, Title, Container, Button, Modal, TextInput, Group, Tooltip, Select, Loader, Grid } from '@mantine/core';
+import { Table, Title, Container, Button, Modal, TextInput, Group, Tooltip, Select, Loader, Grid, Pagination } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
-import { IconPencil, IconTrash, IconPlus } from '@tabler/icons-react';
+import { IconPencil, IconTrash, IconPlus, IconSearch } from '@tabler/icons-react';
 import { useAuth } from '../context/AuthContext';
 import api from '../api/axios';
+import { notifications } from '@mantine/notifications';
 
 interface Address {
   id?: number;
@@ -57,6 +58,10 @@ function CustomerPage() {
   const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
   const [isCepLoading, setIsCepLoading] = useState(false);
   const [isCnpjLoading, setIsCnpjLoading] = useState(false);
+  const [activePage, setActivePage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
   
   const initialFormData: CustomerFormData = {
     type: 'fisica', document: '', name: '', legal_name: null, email: '', phone: '',
@@ -65,12 +70,27 @@ function CustomerPage() {
 
   const [formData, setFormData] = useState<CustomerFormData>(initialFormData);
 
-  const fetchCustomers = () => {
-    api.get('/customers').then(response => { setCustomers(response.data); })
-      .catch(error => { console.error('Houve um erro ao buscar os clientes!', error); });
-  };
-  useEffect(() => { fetchCustomers(); }, []);
+  const fetchCustomers = useCallback((page: number, search: string) => {
+    api.get('/customers', {
+      params: { page, search }
+    }).then(response => {
+      setCustomers(response.data.data);
+      setTotalPages(response.data.last_page);
+    }).catch(error => console.error('Houve um erro ao buscar os clientes!', error));
+  }, []);
 
+  useEffect(() => {
+    fetchCustomers(activePage, searchQuery);
+  }, [activePage, searchQuery, fetchCustomers]);
+  
+  useEffect(() => {
+    const debounceTimer = setTimeout(() => {
+      setActivePage(1);
+      setSearchQuery(searchTerm);
+    }, 500);
+    return () => clearTimeout(debounceTimer);
+  }, [searchTerm]);
+  
   const handleCepBlur = (event: React.FocusEvent<HTMLInputElement>) => {
     const cep = event.target.value.replace(/\D/g, '');
     if (cep.length !== 8) return;
@@ -150,22 +170,33 @@ function CustomerPage() {
 
   const handleFormSubmit = (event: React.FormEvent) => {
     event.preventDefault();
-    
     const promise = editingCustomer
-      ? api.put(`/customers/${editingCustomer.id}`, formData)
-      : api.post('/customers', formData);
-
+    ? api.put(`/customers/${editingCustomer.id}`, formData)
+    : api.post('/customers', formData);
     promise.then(() => {
-      fetchCustomers();
+      fetchCustomers(activePage, searchQuery);
       close();
+      notifications.show({
+        title: 'Sucesso!',
+        message: `Cliente ${editingCustomer ? 'atualizado' : 'cadastrado'} com sucesso.`,
+        color: 'green',
+      });
     }).catch(error => {
       if (error.response?.status === 422) {
         const validationErrors = error.response.data.errors;
         const errorMessages = Object.values(validationErrors).flat().join('\n');
-        alert(`Por favor, corrija os seguintes erros:\n\n${errorMessages}`);
+        notifications.show({
+          title: 'Erro de Validação',
+          message: errorMessages,
+          color: 'red',
+        });
       } else {
         console.error('Erro ao salvar cliente!', error);
-        alert('Não foi possível salvar o cliente. Ocorreu um erro inesperado.');
+        notifications.show({
+          title: 'Erro!',
+          message: 'Não foi possível salvar o cliente. Ocorreu um erro inesperado.',
+          color: 'red',
+        });
       }
     });
   };
@@ -173,11 +204,26 @@ function CustomerPage() {
   const handleDelete = (id: number) => {
     if (window.confirm('Tem certeza que deseja excluir este cliente?')) {
       api.delete(`/customers/${id}`)
-        .then(() => { setCustomers(current => current.filter(c => c.id !== id)); })
-        .catch(error => console.error(`Houve um erro ao excluir o cliente ${id}!`, error));
+      .then(() => {
+        setCustomers(current => current.filter(c => c.id !== id)); 
+        notifications.show({
+          title: 'Sucesso!',
+          message: `Cliente #${id} foi excluído.`,
+          color: 'green',
+        });
+        fetchCustomers(activePage, searchQuery);
+      })
+      .catch(error => {
+        console.error(`Houve um erro ao excluir o cliente ${id}!`, error);
+        notifications.show({
+          title: 'Erro!',
+          message: 'Não foi possível excluir o cliente.',
+          color: 'red',
+        });
+      });
     }
   };
-
+  
   const rows = customers.map((customer) => (
     <Table.Tr key={customer.id}>
       <Table.Td>{customer.id}</Table.Td>
@@ -248,6 +294,8 @@ function CustomerPage() {
         )}
       </Group>
 
+      <TextInput label="Buscar Cliente" placeholder="Digite o nome, documento ou e-mail..." value={searchTerm} onChange={(event) => setSearchTerm(event.currentTarget.value)} leftSection={<IconSearch size={16} />} mb="md" />
+      
       <Table>
         <Table.Thead>
             <Table.Tr>
@@ -258,8 +306,16 @@ function CustomerPage() {
                 <Table.Th>Ações</Table.Th>
             </Table.Tr>
         </Table.Thead>
-        <Table.Tbody>{rows}</Table.Tbody>
+        <Table.Tbody>{rows.length > 0 ? ( rows ) : ( 
+          <Table.Tr>
+            <Table.Td colSpan={5} align="center">Nenhum cliente encontrado.</Table.Td>
+          </Table.Tr>
+        )}</Table.Tbody>
       </Table>
+
+      <Group justify="center" mt="xl">
+        <Pagination total={totalPages} value={activePage} onChange={setActivePage} />
+      </Group>
     </Container>
   );
 }

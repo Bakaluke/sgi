@@ -17,7 +17,7 @@ root.render(
   <React.StrictMode>
     <AuthProvider>
       <MantineProvider>
-        <Notifications />
+        <Notifications position="top-right" />
         <App />
       </MantineProvider>
     </AuthProvider>

@@ -1,49 +1,51 @@
-import { useEffect, useState } from 'react';
-import { Table, Title, Container, Button, Group, Badge, Modal, Select, Grid, TextInput, Textarea, NumberInput, ActionIcon, Tooltip } from '@mantine/core';
-import { DateInput, TimeInput } from '@mantine/dates';
+import { Fragment, useCallback, useEffect, useState } from 'react';
+import { Table, Title, Container, Button, Group, Badge, Modal, Select, Grid, TextInput, Textarea, ActionIcon, Fieldset, Menu, Collapse, Paper, Pagination } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
-import { IconPlus, IconEye, IconPrinter, IconTrash } from '@tabler/icons-react';
+import { DateTimePicker } from '@mantine/dates';
+import { IconPlus, IconEye, IconPrinter, IconTrash, IconDotsVertical, IconMail, IconBrandWhatsapp, IconChevronDown, IconSearch } from '@tabler/icons-react';
 import { useDisclosure } from '@mantine/hooks';
 import { useNavigate } from 'react-router-dom';
-import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
+import api from '../api/axios';
 
-interface User {
-  id: number;
-  name: string;
-  role: string;
-}
 interface Address {
-    id: number;
-    cep: string;
-    street: string;
-    number: string;
-    neighborhood: string;
-    complement: string | null;
-    city: string;
-    state: string;
+  id: number;
+  cep: string;
+  street: string;
+  number: string;
+  neighborhood: string;
+  complement: string | null;
+  city: string;
+  state: string;
 }
 interface Customer {
-    id: number;
-    name: string;
-    document: string;
-    type: string;
-    email: string | null;
-    phone: string | null;
-    addresses: Address[];
+  id: number;
+  name: string;
+  document: string;
+  type: string;
+  email: string | null;
+  phone: string | null;
+  addresses: Address[];
+}
+interface Product {
+  id: number;
+  name: string;
+}
+interface QuoteItem {
+  id: number;
+  product: Product;
+  quantity: number;
+  unit_sale_price: number;
+  total_price: number;
 }
 interface Quote {
   id: number;
   customer: Customer;
-  user: User;
+  user: { name: string };
   status: string;
   total_amount: number;
   created_at: string;
-  payment_method: string | null;
-  delivery_method: string | null;
-  delivery_datetime: string | null;
-  discount_percentage: number;
-  notes: string | null;
+  items: QuoteItem[];
 }
 interface SelectOption {
   value: string;
@@ -51,12 +53,25 @@ interface SelectOption {
 }
 
 const initialFormData = {
-    customer_id: '',
-    payment_method: '',
-    delivery_method: '',
-    delivery_date: null as Date | null,
-    delivery_time: '',
-    notes: '',
+  customer_id: '',
+  customer_name: '',
+  customer_phone: '',
+  customer_email: '',
+  customer_address: '',
+  payment_method: '',
+  delivery_method: '',
+  delivery_datetime: '',
+  notes: '',
+};
+
+const formatPhone = (phone: string = '') => {
+  const cleaned = phone.replace(/\D/g, '').substring(0, 11);
+  if (!cleaned) return '';
+  const length = cleaned.length;
+  if (length <= 2) return `(${cleaned}`;
+  if (length <= 6) return `(${cleaned.substring(0, 2)}) ${cleaned.substring(2)}`;
+  if (length <= 10) return `(${cleaned.substring(0, 2)}) ${cleaned.substring(2, 6)}-${cleaned.substring(6)}`;
+  return `(${cleaned.substring(0, 2)}) ${cleaned.substring(2, 7)}-${cleaned.substring(7)}`;
 };
 
 function QuoteListPage() {
@@ -66,35 +81,61 @@ function QuoteListPage() {
   const [customers, setCustomers] = useState<SelectOption[]>([]);
   const [opened, { open, close }] = useDisclosure(false);
   const [formData, setFormData] = useState(initialFormData);
-  const [customerDetails, setCustomerDetails] = useState<Customer | null>(null);
-  
-  useEffect(() => {
-    fetchQuotes();
-    api.get('/customers').then(res => {
-      setCustomers(res.data.map((c: Customer) => ({ value: String(c.id), label: `${c.name} (${c.document})` })));
+  const [expandedQuoteIds, setExpandedQuoteIds] = useState<number[]>([]);
+  const [activePage, setActivePage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const fetchQuotes = useCallback((page: number, search: string) => {
+    api.get('/quotes', {
+      params: { page, search }
+    }).then(response => {
+      setQuotes(response.data.data);
+      setTotalPages(response.data.last_page);
+    }).catch(error => {
+      if (error.response?.status !== 403) {
+        console.error('Houve um erro ao buscar os orçamentos!', error)
+      }
     });
   }, []);
   
-  const fetchQuotes = () => {
-    api.get('/quotes').then(response => { setQuotes(response.data); });
-  };
+  useEffect(() => {
+    fetchQuotes(activePage, searchQuery);
+  }, [activePage, searchQuery, fetchQuotes]);
+  
+  useEffect(() => {
+    const debounceTimer = setTimeout(() => {
+      setActivePage(1);
+      setSearchQuery(searchTerm);
+    }, 500);
+    return () => clearTimeout(debounceTimer);
+  }, [searchTerm]);
   
   const handleCustomerSelect = (customerId: string | null) => {
-    setFormData(prev => ({ ...prev, customer_id: customerId || '' }));
-    if (customerId) {
-      api.get(`/customers/${customerId}`).then(res => setCustomerDetails(res.data));
-    } else {
-      setCustomerDetails(null);
+    if (!customerId) {
+      setFormData(initialFormData);
+      return;
     }
+    api.get(`/customers/${customerId}`).then(res => {
+      const customer: Customer = res.data;
+      const address = customer.addresses?.[0];
+      const addressString = address ? `${address.street}, nº ${address.number}, ${address.complement}, ${address.neighborhood}, ${address.city} - ${address.state}, ${address.cep}` : '';
+      setFormData(prev => ({
+        ...prev,
+        customer_id: customerId,
+        customer_name: customer.name,
+        customer_phone: customer.phone || '',
+        customer_email: customer.email || '',
+        customer_address: addressString,
+      }));
+    });
   };
 
   const handleSaveQuote = (andNavigate: boolean) => {
-    let finalDeliveryDateTime = null;
-    if (formData.delivery_date && formData.delivery_time) {
-        const date = new Date(formData.delivery_date);
-        const [hours, minutes] = formData.delivery_time.split(':');
-        date.setHours(Number(hours), Number(minutes));
-        finalDeliveryDateTime = date.toISOString();
+    if (!formData.customer_id) {
+      notifications.show({ title: 'Atenção', message: 'Selecione um cliente para continuar.', color: 'yellow' });
+      return;
     }
 
     const payload = {
@@ -102,41 +143,42 @@ function QuoteListPage() {
       payment_method: formData.payment_method,
       delivery_method: formData.delivery_method,
       notes: formData.notes,
-      delivery_datetime: finalDeliveryDateTime,
+      delivery_datetime: formData.delivery_datetime,
     };
 
     api.post('/quotes', payload)
     .then(response => {
-        close();
-        setFormData(initialFormData);
-        fetchQuotes();
-        notifications.show({ title: 'Sucesso!', message: 'Orçamento criado.', color: 'green' });
-        if (andNavigate) {
-            navigate(`/quotes/${response.data.id}`);
-        }
+      close();
+      setFormData(initialFormData);
+      fetchQuotes(activePage, searchQuery);
+      notifications.show({ title: 'Sucesso!', message: 'Orçamento criado.', color: 'green' });
+      if (andNavigate) {
+        navigate(`/quotes/${response.data.id}`);
+      }
     })
     .catch(() => notifications.show({ title: 'Erro!', message: 'Não foi possível criar o orçamento.', color: 'red' }));
   };
-  
+
   const handleDelete = (quoteId: number) => {
     if (window.confirm('Tem certeza que deseja excluir este orçamento permanentemente? Esta ação não pode ser desfeita.')) {
       api.delete(`/quotes/${quoteId}`)
-        .then(() => {
-          setQuotes(currentQuotes => currentQuotes.filter(q => q.id !== quoteId));
-          notifications.show({
-            title: 'Sucesso!',
-            message: `Orçamento Nº ${quoteId} foi excluído.`,
-            color: 'green',
-          });
-        })
-        .catch(error => {
-          console.error(`Erro ao excluir o orçamento ${quoteId}`, error);
-          notifications.show({
-            title: 'Erro!',
-            message: 'Não foi possível excluir o orçamento.',
-            color: 'red',
-          });
+      .then(() => {
+        setQuotes(currentQuotes => currentQuotes.filter(q => q.id !== quoteId));
+        notifications.show({
+          title: 'Sucesso!',
+          message: `Orçamento Nº ${quoteId} foi excluído.`,
+          color: 'green',
         });
+        fetchQuotes(activePage, searchQuery);
+      })
+      .catch(error => {
+        console.error(`Erro ao excluir o orçamento ${quoteId}`, error);
+        notifications.show({
+          title: 'Erro!',
+          message: 'Não foi possível excluir o orçamento.',
+          color: 'red',
+        });
+      });
     }
   };
 
@@ -144,63 +186,116 @@ function QuoteListPage() {
     switch (status) {
       case 'Aprovado': return 'green';
       case 'Cancelado': return 'red';
-      case 'Negociação': return 'yellow';
-      default: return 'blue';
+      case 'Negociação': return 'blue';
+      default: return 'yellow';
     }
   };
+  
+  const rows = quotes.map((quote) => {
+    const isExpanded = expandedQuoteIds.includes(quote.id);
 
-  const rows = quotes.map((quote) => (
-    <Table.Tr key={quote.id}>
-      <Table.Td>{quote.id}</Table.Td>
-      <Table.Td>{quote.customer.name}</Table.Td>
-      <Table.Td>{quote.user.name}</Table.Td>
-      <Table.Td>
-        <Badge color={getStatusColor(quote.status)}>{quote.status}</Badge>
-      </Table.Td>
-      <Table.Td>
-        {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(quote.total_amount)}
-      </Table.Td>
-      <Table.Td>
-        {new Date(quote.created_at).toLocaleDateString('pt-BR')}
-      </Table.Td>
-      <Table.Td>
-        <Group gap="l">
-          <Tooltip label="Ver Orçamento"><ActionIcon variant="light" color="blue" onClick={() => navigate(`/quotes/${quote.id}`)}><IconEye size={16} /></ActionIcon></Tooltip>
-          <Tooltip label="Imprimir Orçamento"><ActionIcon variant="light" color="gray" component="a" href={`${process.env.REACT_APP_API_BASE_URL?.replace('/api', '')}/quotes/${quote.id}/pdf`} target="_blank"><IconPrinter size={16} /></ActionIcon></Tooltip>
-          {user?.role === 'admin' && ( <Tooltip label="Excluir Orçamento"><ActionIcon variant="light" color="red" onClick={() => handleDelete(quote.id)}><IconTrash size={16} /></ActionIcon></Tooltip>)}
-        </Group>
-      </Table.Td>
-    </Table.Tr>
-  ));
-
+    return (
+      <Fragment key={quote.id}>
+        <Table.Tr key={quote.id} onClick={() => navigate(`/quotes/${quote.id}`)} style={{ cursor: 'pointer' }}>
+          <Table.Td>
+            <ActionIcon onClick={(event) => { event.stopPropagation(); setExpandedQuoteIds((current) => isExpanded ? current.filter((id) => id !== quote.id) : [...current, quote.id]); }} disabled={quote.items.length === 0}>
+              <IconChevronDown style={{ transition: 'transform 200ms ease', transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)', }} />
+            </ActionIcon>
+          </Table.Td>
+          <Table.Td>{quote.id}</Table.Td>
+          <Table.Td>{quote.customer.name}</Table.Td>
+          <Table.Td>{quote.user.name}</Table.Td>
+          <Table.Td><Badge color={getStatusColor(quote.status)}>{quote.status}</Badge></Table.Td>
+          <Table.Td>{new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(quote.total_amount)}</Table.Td>
+          <Table.Td>{new Date(quote.created_at).toLocaleDateString('pt-BR')}</Table.Td>
+          <Table.Td onClick={(e) => e.stopPropagation()}>
+            <Menu shadow="md" width={220}>
+              <Menu.Target>
+                <ActionIcon variant="subtle" color="gray"><IconDotsVertical size={16} /></ActionIcon>
+              </Menu.Target>
+              <Menu.Dropdown>
+                <Menu.Label>Ações do Orçamento</Menu.Label>
+                <Menu.Item leftSection={<IconEye size={14} />} onClick={() => navigate(`/quotes/${quote.id}`)} >Ver / Editar</Menu.Item>
+                <Menu.Item leftSection={<IconPrinter size={14} />} component="a" href={`${process.env.REACT_APP_API_BASE_URL?.replace('/api', '')}/quotes/${quote.id}/pdf`} target="_blank" >Imprimir Orçamento</Menu.Item>
+                <Menu.Divider />
+                <Menu.Item leftSection={<IconMail size={14} />} disabled>Enviar por E-mail</Menu.Item>
+                <Menu.Item leftSection={<IconBrandWhatsapp size={14} />} disabled>Enviar por WhatsApp</Menu.Item>
+                {user?.role === 'admin' && (<><Menu.Divider />
+                <Menu.Item color="red" leftSection={<IconTrash size={14} />} onClick={() => handleDelete(quote.id)} >Apagar Orçamento</Menu.Item>
+                </>)}
+              </Menu.Dropdown>
+              </Menu>
+            </Table.Td>
+          </Table.Tr>
+          
+          <Table.Tr>
+            <Table.Td colSpan={8} style={{ padding: '0.05rem 0.10rem', border: 0 }}>
+              <Collapse in={isExpanded}>
+                <Paper p="md" withBorder bg="gray.0" radius={0}>
+                  <Table verticalSpacing="xs" mt="xs">
+                    <Table.Thead>
+                      <Table.Tr>
+                        <Table.Th>Produto</Table.Th>
+                        <Table.Th>Qtd.</Table.Th>
+                        <Table.Th>Preço Unit.</Table.Th>
+                        <Table.Th>Total</Table.Th>
+                      </Table.Tr>
+                    </Table.Thead>
+                    <Table.Tbody>{quote.items.map(item => (
+                      <Table.Tr key={item.id}>
+                        <Table.Td>{item.product.name}</Table.Td>
+                        <Table.Td>{item.quantity}</Table.Td>
+                        <Table.Td>{new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(item.unit_sale_price)}</Table.Td>
+                        <Table.Td>{new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(item.total_price)}</Table.Td>
+                      </Table.Tr>
+                    ))}</Table.Tbody>
+                  </Table>
+                </Paper>
+              </Collapse>
+            </Table.Td>
+        </Table.Tr>
+      </Fragment>
+    );
+  });
+  
   return (
     <Container>
       <Modal opened={opened} onClose={close} title="Criar Novo Orçamento" size="xl">
-        <Grid>
-          <Grid.Col span={12}><Select label="Selecione o Cliente" placeholder="Digite para buscar..." data={customers} onChange={handleCustomerSelect} searchable required clearable /></Grid.Col>
-            {customerDetails && (<>
-                <Grid.Col span={{ base: 12, md: 6 }}><TextInput label="Telefone" value={customerDetails.phone || ''} readOnly /></Grid.Col>
-                <Grid.Col span={{ base: 12, md: 6 }}><TextInput label="Email" value={customerDetails.email || ''} readOnly /></Grid.Col>
-            </>)}
-            <Grid.Col span={{ base: 12, md: 6 }}><Select label="Forma de Pagamento" data={['PIX', 'Cartão de Crédito', 'Boleto']} onChange={(value) => setFormData(p => ({ ...p, payment_method: value || '' }))} /></Grid.Col>
-            <Grid.Col span={{ base: 12, md: 6 }}><Select label="Forma de Entrega" data={['Retirada na Loja', 'Correios', 'Transportadora']} onChange={(value) => setFormData(p => ({ ...p, delivery_method: value || '' }))} /></Grid.Col>
-            <Grid.Col span={{ base: 12, md: 6 }}><DateInput label="Data da Entrega" value={formData.delivery_date} onChange={(date) => setFormData(p => ({ ...p, delivery_date: date }))} clearable /></Grid.Col>
-          <Grid.Col span={12}><Textarea label="Observações" onChange={(e) => setFormData(p => ({ ...p, notes: e.target.value }))} /></Grid.Col>
-        </Grid>
+        <Fieldset legend="Dados do Cliente" mt="md">
+          <Grid>
+            <Grid.Col span={12}><Select label="Selecione o Cliente" placeholder="Digite para buscar..." data={customers} onChange={handleCustomerSelect} searchable required clearable /></Grid.Col>
+            <Grid.Col span={{ base: 12, md: 6 }}><TextInput label="Email" value={formData.customer_email || ''} readOnly /></Grid.Col>
+            <Grid.Col span={{ base: 12, md: 6 }}><TextInput label="Telefone" value={formData.customer_phone ? formatPhone(formData.customer_phone) : ''} readOnly /></Grid.Col>
+            <Grid.Col span={12}><TextInput label="Endereço" value={formData.customer_address || ''} readOnly /></Grid.Col>
+          </Grid>
+        </Fieldset>
+        
+        <Fieldset legend="Dados do Orçamento" mt="md">
+          <Grid>
+            <Grid.Col span={{ base: 12, md: 4 }}><Select label="Forma de Pagamento" data={['PIX', 'Cartão de Crédito', 'Boleto Bancário', 'Dinheiro']} onChange={(value) => setFormData(p => ({ ...p, payment_method: value || '' }))} /></Grid.Col>
+            <Grid.Col span={{ base: 12, md: 4 }}><Select label="Opção de Entrega" data={['Retirada na Loja', 'Correios', 'Transportadora', 'Delivery']} onChange={(value) => setFormData(p => ({ ...p, delivery_method: value || '' }))} /></Grid.Col>
+            <Grid.Col span={{ base: 12, md: 4 }}><DateTimePicker label="Data/Hora da Entrega" value={formData.delivery_datetime ? new Date(formData.delivery_datetime) : null} onChange={(value) => setFormData(p => ({ ...p, delivery_datetime: value || '' }))} placeholder="Selecione a data e hora" clearable /></Grid.Col>
+            <Grid.Col span={12}><Textarea label="Observações" onChange={(e) => setFormData(p => ({ ...p, notes: e.target.value }))} /></Grid.Col>
+          </Grid>
+        </Fieldset>
+        
         <Group justify="flex-end" mt="xl">
-            <Button variant="default" onClick={() => handleSaveQuote(false)}>Apenas Salvar</Button>
-            <Button onClick={() => handleSaveQuote(true)}>Salvar e Adicionar Itens</Button>
+          <Button variant="default" onClick={() => handleSaveQuote(false)}>Salvar Orçamento</Button>
+          <Button onClick={() => handleSaveQuote(true)}>Salvar e Adicionar Itens</Button>
         </Group>
-    </Modal>
-
+      </Modal>
+      
       <Group justify="space-between" my="lg">
         <Title order={1}>Orçamentos</Title>
         <Button onClick={open} leftSection={<IconPlus size={16} />}>Novo Orçamento</Button>
       </Group>
 
+      <TextInput label="Buscar Orçamento" placeholder="Digite o Nº, nome do cliente ou status..." value={searchTerm} onChange={(event) => setSearchTerm(event.currentTarget.value)} leftSection={<IconSearch size={16} />} mb="md" />
+      
       <Table>
         <Table.Thead>
           <Table.Tr>
+            <Table.Th w={40} />
             <Table.Th>Nº</Table.Th>
             <Table.Th>Cliente</Table.Th>
             <Table.Th>Vendedor</Table.Th>
@@ -210,8 +305,16 @@ function QuoteListPage() {
             <Table.Th>Ações</Table.Th>
           </Table.Tr>
         </Table.Thead>
-        <Table.Tbody>{rows}</Table.Tbody>
+        <Table.Tbody>{rows.length > 0 ? ( rows ) : ( 
+          <Table.Tr>
+            <Table.Td colSpan={8} align="center">Nenhum produto encontrado.</Table.Td>
+          </Table.Tr>
+        )}</Table.Tbody>
       </Table>
+
+      <Group justify="center" mt="xl">
+        <Pagination total={totalPages} value={activePage} onChange={setActivePage} />
+      </Group>
     </Container>
   );
 }

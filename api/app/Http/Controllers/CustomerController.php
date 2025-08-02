@@ -10,11 +10,26 @@ use Illuminate\Support\Arr;
 
 class CustomerController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $this->authorize('viewAny', Customer::class);
+        
+        $query = Customer::with('addresses');
 
-        return Customer::with('addresses')->orderBy('id', 'desc')->get();
+        if ($request->has('search') && $request->input('search') != '') {
+            $searchTerm = $request->input('search');
+            $query->where(function ($q) use ($searchTerm) {
+                $q->where('name', 'like', "%{$searchTerm}%")
+                ->orWhere('document', 'like', "%{$searchTerm}%")
+                ->orWhere('email', 'like', "%{$searchTerm}%");
+            });
+        }
+        
+        $query->orderBy('id', 'desc');
+
+        $customers = $query->paginate(30);
+
+        return $customers;
     }
 
     public function store(Request $request)
