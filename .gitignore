@@ -1,0 +1,14 @@
+# Laravel / Backend
+/api/vendor/
+/api/node_modules/
+/api/.env
+/api/public/build/
+/api/storage/*.key
+/api/storage/framework/
+/api/storage/logs/
+
+# React / Frontend
+/web/node_modules
+/web/.env
+/web/build
+.cache

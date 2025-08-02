@@ -1,0 +1,28 @@
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import ProductPage from './pages/ProductPage';
+import LoginPage from './pages/LoginPage';
+import QuoteListPage from './pages/QuoteListPage';
+import QuoteFormPage from './pages/QuoteFormPage';
+import ProtectedRoute from './components/ProtectedRoute';
+import { Layout } from './components/Layout';
+import CustomerPage from './pages/CustomerPage';
+
+function App() {
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
+          <Route index element={<Navigate to="/products" />} />
+          <Route path="products" element={<ProductPage />} />
+          <Route path="customers" element={<CustomerPage />} />
+          <Route path="quotes" element={<ProtectedRoute allowedRoles={['admin', 'vendedor']}><QuoteListPage /></ProtectedRoute>} />
+          <Route path="quotes/:quoteId" element={<ProtectedRoute allowedRoles={['admin', 'vendedor']}><QuoteFormPage /></ProtectedRoute>} />
+        </Route>
+        <Route path="*" element={<Navigate to="/login" />} />
+      </Routes>
+    </BrowserRouter>
+  );
+}
+
+export default App;
