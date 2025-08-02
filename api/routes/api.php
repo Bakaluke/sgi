@@ -25,4 +25,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('quotes/{quote}/items/{quote_item}', [QuoteItemController::class, 'update']);
     Route::delete('quotes/{quote}/items/{quote_item}', [QuoteItemController::class, 'destroy']);
 
+    Route::get('/test-auth', function () {
+        return response()->json(['message' => 'A rota de teste autenticada funcionou!']);
+    });
+
 });

@@ -20,7 +20,7 @@ class QuoteController extends Controller
         if ($user->role === 'admin') {
             $query = Quote::query();
         } elseif ($user->role === 'vendedor') {
-            $query = Quote::where('user_id', $user->id);
+            $query = Quote::where('user_id', '>=', $user->id);
         } else {
             return response()->json(['data' => []]);
         }
@@ -39,7 +39,7 @@ class QuoteController extends Controller
         }
         
         $query->orderBy('id', 'desc');
-
+        
         return $query->paginate(30);
     }
 

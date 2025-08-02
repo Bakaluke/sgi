@@ -1,5 +1,5 @@
 import { Fragment, useCallback, useEffect, useState } from 'react';
-import { Table, Title, Container, Button, Group, Badge, Modal, Select, Grid, TextInput, Textarea, ActionIcon, Fieldset, Menu, Collapse, Paper, Pagination } from '@mantine/core';
+import { Table, Title, Container, Button, Group, Badge, Modal, Select, Grid, TextInput, Textarea, ActionIcon, Fieldset, Menu, Collapse, Paper, Pagination, Loader } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
 import { DateTimePicker } from '@mantine/dates';
 import { IconPlus, IconEye, IconPrinter, IconTrash, IconDotsVertical, IconMail, IconBrandWhatsapp, IconChevronDown, IconSearch } from '@tabler/icons-react';
@@ -78,7 +78,6 @@ function QuoteListPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [quotes, setQuotes] = useState<Quote[]>([]);
-  const [customers, setCustomers] = useState<SelectOption[]>([]);
   const [opened, { open, close }] = useDisclosure(false);
   const [formData, setFormData] = useState(initialFormData);
   const [expandedQuoteIds, setExpandedQuoteIds] = useState<number[]>([]);
@@ -86,7 +85,11 @@ function QuoteListPage() {
   const [totalPages, setTotalPages] = useState(1);
   const [searchTerm, setSearchTerm] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
-
+  const [customerOptions, setCustomerOptions] = useState<SelectOption[]>([]);
+  const [customerSearch, setCustomerSearch] = useState('');
+  const [isSearchingCustomers, setIsSearchingCustomers] = useState(false);
+  const [customerDetails, setCustomerDetails] = useState<Customer | null>(null);
+  
   const fetchQuotes = useCallback((page: number, search: string) => {
     api.get('/quotes', {
       params: { page, search }
@@ -105,12 +108,21 @@ function QuoteListPage() {
   }, [activePage, searchQuery, fetchQuotes]);
   
   useEffect(() => {
-    const debounceTimer = setTimeout(() => {
-      setActivePage(1);
-      setSearchQuery(searchTerm);
-    }, 500);
-    return () => clearTimeout(debounceTimer);
-  }, [searchTerm]);
+    setIsSearchingCustomers(true);
+    const searchTimer = setTimeout(() => {
+      api.get('/customers', { params: { search: customerSearch, per_page: 15 } })
+      .then(res => {
+        const customersData = res.data.data;
+        setCustomerOptions(customersData.map((c: Customer) => ({ 
+          value: String(c.id), 
+          label: `${c.name} (${c.document})` 
+        })));
+      })
+      .catch(err => console.error("Falha ao buscar clientes", err))
+      .finally(() => setIsSearchingCustomers(false));
+    }, 300);
+    return () => clearTimeout(searchTimer);
+  }, [customerSearch]);
   
   const handleCustomerSelect = (customerId: string | null) => {
     if (!customerId) {
@@ -207,7 +219,7 @@ function QuoteListPage() {
           <Table.Td>{quote.user.name}</Table.Td>
           <Table.Td><Badge color={getStatusColor(quote.status)}>{quote.status}</Badge></Table.Td>
           <Table.Td>{new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(quote.total_amount)}</Table.Td>
-          <Table.Td>{new Date(quote.created_at).toLocaleDateString('pt-BR')}</Table.Td>
+          <Table.Td>{quote.created_at ? new Date(quote.created_at).toLocaleDateString('pt-BR') : ''}</Table.Td>
           <Table.Td onClick={(e) => e.stopPropagation()}>
             <Menu shadow="md" width={220}>
               <Menu.Target>
@@ -216,7 +228,7 @@ function QuoteListPage() {
               <Menu.Dropdown>
                 <Menu.Label>Ações do Orçamento</Menu.Label>
                 <Menu.Item leftSection={<IconEye size={14} />} onClick={() => navigate(`/quotes/${quote.id}`)} >Ver / Editar</Menu.Item>
-                <Menu.Item leftSection={<IconPrinter size={14} />} component="a" href={`${process.env.REACT_APP_API_BASE_URL?.replace('/api', '')}/quotes/${quote.id}/pdf`} target="_blank" >Imprimir Orçamento</Menu.Item>
+                <Menu.Item leftSection={<IconPrinter size={14} />} component="a" href={`${import.meta.env.VITE_API_BASE_URL.replace('/api', '')}/quotes/${quote.id}/pdf`} target="_blank" >Imprimir Orçamento</Menu.Item>
                 <Menu.Divider />
                 <Menu.Item leftSection={<IconMail size={14} />} disabled>Enviar por E-mail</Menu.Item>
                 <Menu.Item leftSection={<IconBrandWhatsapp size={14} />} disabled>Enviar por WhatsApp</Menu.Item>
@@ -263,7 +275,7 @@ function QuoteListPage() {
       <Modal opened={opened} onClose={close} title="Criar Novo Orçamento" size="xl">
         <Fieldset legend="Dados do Cliente" mt="md">
           <Grid>
-            <Grid.Col span={12}><Select label="Selecione o Cliente" placeholder="Digite para buscar..." data={customers} onChange={handleCustomerSelect} searchable required clearable /></Grid.Col>
+            <Grid.Col span={12}><Select label="Selecione o Cliente" placeholder="Digite para buscar..." data={customerOptions} searchable required clearable value={formData.customer_id} onChange={handleCustomerSelect} onSearchChange={setCustomerSearch} searchValue={customerSearch} rightSection={isSearchingCustomers ? <Loader size="xs" /> : null} /></Grid.Col>
             <Grid.Col span={{ base: 12, md: 6 }}><TextInput label="Email" value={formData.customer_email || ''} readOnly /></Grid.Col>
             <Grid.Col span={{ base: 12, md: 6 }}><TextInput label="Telefone" value={formData.customer_phone ? formatPhone(formData.customer_phone) : ''} readOnly /></Grid.Col>
             <Grid.Col span={12}><TextInput label="Endereço" value={formData.customer_address || ''} readOnly /></Grid.Col>

@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from 'react';
-import { Container, Title, Select, Button, Group, Table, NumberInput, Paper, Grid, Textarea, Divider, ActionIcon, Tooltip, Fieldset, TextInput } from '@mantine/core';
+import { Container, Title, Select, Button, Group, Table, NumberInput, Paper, Grid, Textarea, Divider, ActionIcon, Tooltip, Fieldset, TextInput, Loader } from '@mantine/core';
 import { DateTimePicker } from '@mantine/dates';
 import { notifications } from '@mantine/notifications';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -111,18 +111,25 @@ const enrichQuoteWithProfitMargin = (quoteData: Quote): Quote => {
 
 function QuoteFormPage() {
   const { quoteId } = useParams();
-  const navigate = useNavigate();
   const [quote, setQuote] = useState<Quote | null>(null);
   const [initialStatus, setInitialStatus] = useState<string | null>(null);
+  const [isSavingHeader, setIsSavingHeader] = useState(false);
   const [products, setProducts] = useState<SelectOption[]>([]);
   const [selectedProduct, setSelectedProduct] = useState<string | null>(null);
   const [quantity, setQuantity] = useState<number | string>(1);
-  const [isSavingHeader, setIsSavingHeader] = useState(false);
-  const debounceTimers = useRef<{ [itemId: number]: NodeJS.Timeout }>({});
+  const debounceTimers = useRef<{ [itemId: number]: number }>({});
   const isLocked = initialStatus === 'Aprovado' || initialStatus === 'Cancelado';
 
   useEffect(() => {
-    api.get('/products').then(res => { setProducts(res.data.map((p: Product) => ({ value: String(p.id), label: `${p.name} (SKU: ${p.sku})` }))); });
+    api.get('/products').then(res => {
+      setProducts(res.data.data.map((p: Product) => ({ 
+        value: String(p.id), 
+        label: `${p.name} (SKU: ${p.sku})` 
+      })));
+    }).catch(err => console.error("Falha ao buscar produtos", err));
+  }, []);
+
+  useEffect(() => {
     if (quoteId && quoteId !== 'new') {
       api.get(`/quotes/${quoteId}`).then(res => {
         const enrichedQuote = enrichQuoteWithProfitMargin(res.data);
@@ -265,7 +272,7 @@ function QuoteFormPage() {
           </Grid>
         </Fieldset>
         <Group justify="flex-end" mt="md">
-          <Button component="a" href={`${process.env.REACT_APP_API_BASE_URL?.replace('/api', '')}/quotes/${quote.id}/pdf`} target="_blank" variant="default" leftSection={<IconPrinter size={16} />}>Imprimir</Button>
+          <Button component="a" href={`${import.meta.env.VITE_API_BASE_URL.replace('/api', '')}/quotes/${quote.id}/pdf`} target="_blank" variant="default" leftSection={<IconPrinter size={16} />}>Imprimir</Button>
           <Button onClick={handleUpdateHeader} loading={isSavingHeader} disabled={isLocked}>Salvar Alterações</Button>
         </Group>
       </Paper>

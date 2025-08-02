@@ -127,8 +127,7 @@ function ProductPage() {
                     message: `Produto #${id} foi excluído.`,
                     color: 'green',
                 });
-            })
-            .catch(error => {
+            }).catch(error => {
                 notifications.show({
                     title: 'Erro',
                     message: `Houve um erro ao excluir o produto ${id}!`,

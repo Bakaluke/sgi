@@ -10,6 +10,8 @@ class ProductController extends Controller
 {
     public function index(Request $request)
     {
+        $this->authorize('viewAny', Product::class);
+        
         $query = Product::query();
 
         if ($request->has('search')) {
