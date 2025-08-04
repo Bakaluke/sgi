@@ -7,6 +7,7 @@ use App\Http\Controllers\ProductController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\Api\QuoteController;
 use App\Http\Controllers\Api\QuoteItemController;
+use App\Http\Controllers\Api\ProductionOrderController;
 
 Route::post('/login', [LoginController::class, 'login']);
 
@@ -25,8 +26,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('quotes/{quote}/items/{quote_item}', [QuoteItemController::class, 'update']);
     Route::delete('quotes/{quote}/items/{quote_item}', [QuoteItemController::class, 'destroy']);
 
-    Route::get('/test-auth', function () {
-        return response()->json(['message' => 'A rota de teste autenticada funcionou!']);
-    });
+    Route::apiResource('production-orders', ProductionOrderController::class);
 
 });

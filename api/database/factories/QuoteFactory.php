@@ -35,11 +35,11 @@ class QuoteFactory extends Factory
         return [
             'customer_id' => $customer->id,
             'user_id' => $user->id,
-            'status' => fake()->randomElement(['Aberto', 'Negociação', 'Aprovado', 'Cancelado']),
+            'status' => fake()->randomElement(['Aberto', 'Negociação', 'Cancelado']),
             'customer_data' => $customerSnapshot,
             'salesperson_name' => $user->name,
-            'delivery_method' => fake()->randomElement(['Retirada na Loja', 'Correios', 'Transportadora']),
-            'payment_method' => fake()->randomElement(['PIX', 'Cartão de Crédito', 'Boleto']),
+            'delivery_method' => fake()->randomElement(['Retirada na Loja', 'Correios', 'Transportadora', 'Delivery']),
+            'payment_method' => fake()->randomElement(['PIX', 'Cartão de Crédito', 'Boleto Bancário', 'Dinheiro']),
             'notes' => fake()->sentence(),
         ];
     }

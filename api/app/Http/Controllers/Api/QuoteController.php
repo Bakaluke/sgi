@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Events\QuoteApproved;
 use App\Http\Controllers\Controller;
 use App\Models\Customer;
 use App\Models\Quote;
@@ -20,7 +21,7 @@ class QuoteController extends Controller
         if ($user->role === 'admin') {
             $query = Quote::query();
         } elseif ($user->role === 'vendedor') {
-            $query = Quote::where('user_id', '>=', $user->id);
+            $query = Quote::where('user_id', $user->id);
         } else {
             return response()->json(['data' => []]);
         }
@@ -112,7 +113,13 @@ class QuoteController extends Controller
         $validated['subtotal'] = $subtotal;
         $validated['total_amount'] = $totalAmount;
 
+        $oldStatus = $quote->status;
+
         $quote->update($validated);
+
+        if ($oldStatus !== 'Aprovado' && $quote->status === 'Aprovado') {
+            QuoteApproved::dispatch($quote);
+        }
 
         return $quote->load(['customer.addresses', 'user', 'items.product']);
     }
