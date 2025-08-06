@@ -1,7 +1,7 @@
 import { AppShell, Burger, Group, NavLink, Button, Title, Text } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { Outlet, NavLink as RouterNavLink } from 'react-router-dom';
-import { IconDashboard, IconUsers, IconPackage, IconLogout, IconFileInvoice, IconTools, IconSettings } from '@tabler/icons-react';
+import { IconHome, IconUsers, IconPackage, IconLogout, IconFileInvoice, IconTools, IconSettings } from '@tabler/icons-react';
 import { useAuth } from '../context/AuthContext';
 
 export function Layout() {
@@ -22,7 +22,7 @@ export function Layout() {
       </AppShell.Header>
 
       <AppShell.Navbar p="md">
-        <NavLink label="Dashboard" component={RouterNavLink} to="/dashboard" leftSection={<IconDashboard size="1rem" />} />
+        <NavLink label="Dashboard" component={RouterNavLink} to="/dashboard" leftSection={<IconHome size="1rem" />} />
         {user && ['admin', 'vendedor'].includes(user.role) && (<NavLink label="Orçamentos" component={RouterNavLink} to="/quotes" leftSection={<IconFileInvoice size="1rem" />} />)}
         <NavLink label="Produção" component={RouterNavLink} to="/production" leftSection={<IconTools size="1rem" />} />
         <NavLink label="Produtos" component={RouterNavLink} to="/products" leftSection={<IconPackage size="1rem" />} />

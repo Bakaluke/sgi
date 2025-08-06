@@ -8,6 +8,7 @@ use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\Api\QuoteController;
 use App\Http\Controllers\Api\QuoteItemController;
 use App\Http\Controllers\Api\ProductionOrderController;
+use App\Http\Controllers\Api\DashboardController;
 
 Route::post('/login', [LoginController::class, 'login']);
 
@@ -27,5 +28,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('quotes/{quote}/items/{quote_item}', [QuoteItemController::class, 'destroy']);
 
     Route::apiResource('production-orders', ProductionOrderController::class);
+
+    Route::get('/dashboard/stats', [DashboardController::class, 'getStats']);
 
 });
