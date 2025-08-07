@@ -9,7 +9,24 @@
 </head>
 <body>
     <div class="container">
-        <div class="header">
+        <div class="header" style="margin-bottom: 20px;">
+            <table style="width: 100%; border: none;">
+                <tr>
+                    <td style="width: 25%; border: none;">
+                        @if($settings && $settings->logo_path)
+                            <img src="{{ public_path('storage/' . $settings->logo_path) }}" alt="Logo" style="max-width: 150px; max-height: 70px;">
+                        @endif
+                    </td>
+                    <td style="width: 75%; text-align: right; border: none;">
+                        <h2 style="margin: 0;">{{ $settings->company_fantasy_name ?? 'Nome da Empresa' }}</h2>
+                        <p style="margin: 0; font-size: 10px;">{{ $settings->legal_name ?? '' }}</p>
+                        <p style="margin: 0; font-size: 10px;">CNPJ: {{ $settings->cnpj ?? '' }}</p>
+                        <p style="margin: 0; font-size: 10px;">{{ $settings->address ?? '' }}</p>
+                        <p style="margin: 0; font-size: 10px;">Tel: {{ $settings->phone ?? '' }} | Email: {{ $settings->email ?? '' }}</p>
+                    </td>
+                </tr>
+            </table>
+            <hr>
             <h1>Orçamento Nº {{ $quote->id }}</h1>
             <p>Data de Emissão: {{ $quote->created_at->format('d/m/Y') }}</p>
         </div>

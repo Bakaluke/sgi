@@ -6,6 +6,7 @@ use App\Events\QuoteApproved;
 use App\Http\Controllers\Controller;
 use App\Models\Customer;
 use App\Models\Quote;
+use App\Models\Setting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
@@ -137,9 +138,12 @@ class QuoteController extends Controller
     {
         $quote->load(['customer.addresses', 'user', 'items.product']);
 
+        $settings = Setting::first();
+
         $pdf = Pdf::loadView('pdf.quote', [
             'quote' => $quote,
-            'customer_data' => $quote->customer_data
+            'customer_data' => $quote->customer_data,
+            'settings' => $settings
         ]);
 
         return $pdf->stream('orcamento-'.$quote->id.'.pdf');
