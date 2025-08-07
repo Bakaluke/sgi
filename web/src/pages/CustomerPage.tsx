@@ -251,16 +251,7 @@ function CustomerPage() {
         <form onSubmit={handleFormSubmit}>
           <Grid>
             <Grid.Col span={{ base: 12, md: 6 }}><Select label="Tipo de Cliente" value={formData.type} onChange={(value) => setFormData(p => ({ ...p, type: value as 'fisica' | 'juridica', document: '' }))} data={[{ value: 'fisica', label: 'Pessoa Física' }, { value: 'juridica', label: 'Pessoa Jurídica' }]} required /></Grid.Col>
-            <Grid.Col span={{ base: 12, md: 6 }}>
-              <TextInput
-                label={formData.type === 'fisica' ? 'CPF' : 'CNPJ'}
-                value={formatDocument(formData.document)}
-                onChange={(e) => setFormData(p => ({ ...p, document: e.target.value.replace(/\D/g, '') }))}
-                required
-                onBlur={handleDocumentBlur}
-                rightSection={isCnpjLoading ? <Loader size="xs" /> : null}
-              />
-            </Grid.Col>
+            <Grid.Col span={{ base: 12, md: 6 }}><TextInput label={formData.type === 'fisica' ? 'CPF' : 'CNPJ'} value={formatDocument(formData.document)} onChange={(e) => setFormData(p => ({ ...p, document: e.target.value.replace(/\D/g, '') }))} required onBlur={handleDocumentBlur} rightSection={isCnpjLoading ? <Loader size="xs" /> : null} /></Grid.Col>
             <Grid.Col span={12}><TextInput label={formData.type === 'fisica' ? 'Nome Completo' : 'Nome Fantasia'} value={formData.name} onChange={(e) => setFormData(p => ({ ...p, name: e.target.value }))} required /></Grid.Col>
             {formData.type === 'juridica' && (<Grid.Col span={12}><TextInput label="Razão Social" value={formData.legal_name || ''} onChange={(e) => setFormData(p => ({ ...p, legal_name: e.target.value }))} required /></Grid.Col>)}
             <Grid.Col span={{ base: 12, md: 6 }}><TextInput label="E-mail" type="email" value={formData.email || ''} onChange={(e) => setFormData(p => ({ ...p, email: e.target.value }))} required /></Grid.Col>
@@ -268,14 +259,7 @@ function CustomerPage() {
             
             <Grid.Col span={12}><Title order={5} mt="md">Endereço Principal</Title></Grid.Col>
             
-            <Grid.Col span={{ base: 12, md: 4 }}>
-                <TextInput label="CEP" value={formData.address.cep}
-                  onChange={(e) => setFormData(p => ({...p, address: {...p.address, cep: e.target.value.replace(/\D/g, '')}}))}
-                  onBlur={handleCepBlur}
-                  rightSection={isCepLoading ? <Loader size="xs" /> : null}
-                  required
-                />
-            </Grid.Col>
+            <Grid.Col span={{ base: 12, md: 4 }}><TextInput label="CEP" value={formData.address.cep} onChange={(e) => setFormData(p => ({...p, address: {...p.address, cep: e.target.value.replace(/\D/g, '')}}))} onBlur={handleCepBlur} rightSection={isCepLoading ? <Loader size="xs" /> : null} required /></Grid.Col>
             <Grid.Col span={{ base: 12, md: 8 }}><TextInput label="Rua / Logradouro" value={formData.address.street} onChange={(e) => setFormData(p => ({...p, address: {...p.address, street: e.target.value}}))} required /></Grid.Col>
             <Grid.Col span={{ base: 12, md: 4 }}><TextInput label="Número" value={formData.address.number} onChange={(e) => setFormData(p => ({...p, address: {...p.address, number: e.target.value}}))} required /></Grid.Col>
             <Grid.Col span={{ base: 12, md: 8 }}><TextInput label="Complemento" value={formData.address.complement || ''} onChange={(e) => setFormData(p => ({...p, address: {...p.address, complement: e.target.value}}))} /></Grid.Col>

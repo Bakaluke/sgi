@@ -43,6 +43,7 @@ class DatabaseSeeder extends Seeder
             ProductSeeder::class,
             CustomerSeeder::class,
             QuoteSeeder::class,
+            SettingsSeeder::class,
         ]);
     }
 }

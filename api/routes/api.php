@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\QuoteController;
 use App\Http\Controllers\Api\QuoteItemController;
 use App\Http\Controllers\Api\ProductionOrderController;
 use App\Http\Controllers\Api\DashboardController;
+use App\Http\Controllers\Api\SettingsController;
 
 Route::post('/login', [LoginController::class, 'login']);
 
@@ -19,6 +20,7 @@ Route::middleware('auth:sanctum')->group(function () {
     });
 
     Route::apiResource('products', ProductController::class);
+    
     Route::apiResource('customers', CustomerController::class);
 
     Route::apiResource('quotes', QuoteController::class);
@@ -30,5 +32,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('production-orders', ProductionOrderController::class);
 
     Route::get('/dashboard/stats', [DashboardController::class, 'getStats']);
+
+    Route::get('/settings', [SettingsController::class, 'show']);
+    
+    Route::post('/settings', [SettingsController::class, 'update']);
 
 });

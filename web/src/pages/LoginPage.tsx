@@ -25,7 +25,7 @@ function LoginPage() {
         message: 'Login realizado com sucesso.',
         color: 'green',
       });
-      navigate('/products');
+      navigate('/dashboard');
     })
     .catch(err => {
       console.error('Erro no login:', err);

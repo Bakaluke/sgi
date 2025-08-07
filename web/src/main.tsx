@@ -6,16 +6,19 @@ import '@mantine/core/styles.css';
 import { MantineProvider } from '@mantine/core';
 import { Notifications } from '@mantine/notifications';
 import { AuthProvider } from './context/AuthContext.tsx';
+import { SettingsProvider } from './context/SettingsContext.tsx';
 import '@mantine/dates/styles.css';
 import '@mantine/notifications/styles.css';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <AuthProvider>
-      <MantineProvider>
-        <Notifications position="top-right" />
-        <App />
-      </MantineProvider>
+      <SettingsProvider>
+        <MantineProvider>
+          <Notifications position="top-right" />
+          <App />
+        </MantineProvider>
+      </SettingsProvider>
     </AuthProvider>
   </React.StrictMode>,
 )

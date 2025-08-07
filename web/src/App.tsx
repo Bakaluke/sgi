@@ -8,6 +8,7 @@ import CustomerPage from './pages/CustomerPage';
 import QuoteListPage from './pages/QuoteListPage';
 import QuoteFormPage from './pages/QuoteFormPage';
 import ProductionPage from './pages/ProductionPage';
+import SettingsPage from './pages/SettingsPage';
 
 function App() {
   return (
@@ -22,6 +23,7 @@ function App() {
           <Route path="quotes" element={<ProtectedRoute allowedRoles={['admin', 'vendedor']}><QuoteListPage /></ProtectedRoute>} />
           <Route path="quotes/:quoteId" element={<ProtectedRoute allowedRoles={['admin', 'vendedor']}><QuoteFormPage /></ProtectedRoute>} />
           <Route path="production" element={<ProductionPage />} />
+          <Route path="settings" element={<ProtectedRoute allowedRoles={['admin']}><SettingsPage /></ProtectedRoute>} />
         </Route>
         <Route path="*" element={<Navigate to="/login" />} />
       </Routes>
