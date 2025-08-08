@@ -20,6 +20,7 @@ class Product extends Model
         'cost_price',
         'sale_price',
         'quantity_in_stock',
+        'image_path',
     ];
 
     public function quoteItems(): HasMany

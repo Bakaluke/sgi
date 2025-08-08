@@ -21,8 +21,19 @@
                         <h2 style="margin: 0;">{{ $settings->company_fantasy_name ?? 'Nome da Empresa' }}</h2>
                         <p style="margin: 0; font-size: 10px;">{{ $settings->legal_name ?? '' }}</p>
                         <p style="margin: 0; font-size: 10px;">CNPJ: {{ $settings->cnpj ?? '' }}</p>
-                        <p style="margin: 0; font-size: 10px;">{{ $settings->address ?? '' }}</p>
                         <p style="margin: 0; font-size: 10px;">Tel: {{ $settings->phone ?? '' }} | Email: {{ $settings->email ?? '' }}</p>
+                        <p style="margin: 0; font-size: 10px;">
+                            {{
+                                implode(', ', array_filter([
+                                    $settings->street,
+                                    $settings->number ? 'nº ' . $settings->number : null,
+                                    $settings->complement,
+                                    $settings->neighborhood,
+                                    $settings->city ? $settings->city . ' - ' . $settings->state : null,
+                                    $settings->cep
+                                ]))
+                            }}
+                        </p>
                     </td>
                 </tr>
             </table>
@@ -49,6 +60,7 @@
         <table>
             <thead>
                 <tr>
+                    <th style="width: 50px;">Imagem</th>
                     <th>Produto</th>
                     <th>Qtd.</th>
                     <th>Preço Unit.</th>
@@ -58,6 +70,11 @@
             <tbody>
                 @foreach($quote->items as $item)
                 <tr>
+                    <td>
+                        @if($item->product && $item->product->image_path)
+                        <img src="{{ public_path('storage/' . $item->product->image_path) }}" style="width: 50px; height: 50px; object-fit: cover;">
+                        @endif
+                    </td>
                     <td>{{ $item->product_name }}</td>
                     <td>{{ $item->quantity }}</td>
                     <td>R$ {{ number_format($item->unit_sale_price, 2, ',', '.') }}</td>
@@ -97,12 +114,10 @@
                     <tr>
                         <td style="width: 50%; border: none; padding: 10px; text-align: center;">
                             <hr style="width: 80%; margin: 0 auto; border-top: 1px solid #333;">
-                            <p style="margin-top: 5px;">{{ $quote->salesperson_name }}</p>
                             <p style="font-size: 10px; color: #555;">Representante da Empresa</p>
                         </td>
                         <td style="width: 50%; border: none; padding: 10px; text-align: center;">
                             <hr style="width: 80%; margin: 0 auto; border-top: 1px solid #333;">
-                            <p style="margin-top: 5px;">{{ $customer_data['name'] ?? 'Cliente' }}</p>
                             <p style="font-size: 10px; color: #555;">Cliente</p>
                         </td>
                     </tr>

@@ -228,6 +228,7 @@ function CustomerPage() {
     <Table.Tr key={customer.id}>
       <Table.Td>{customer.id}</Table.Td>
       <Table.Td>{customer.name}</Table.Td>
+      <Table.Td>{customer.document ? formatDocument(customer.document) : 'N/A'}</Table.Td>
       <Table.Td>{customer.email}</Table.Td>
       <Table.Td>{customer.phone ? formatPhone(customer.phone) : 'N/A'}</Table.Td>
       <Table.Td>
@@ -285,6 +286,7 @@ function CustomerPage() {
             <Table.Tr>
                 <Table.Th>ID</Table.Th>
                 <Table.Th>Cliente</Table.Th>
+                <Table.Th>Documento</Table.Th>
                 <Table.Th>E-mail</Table.Th>
                 <Table.Th>Telefone</Table.Th>
                 <Table.Th>Ações</Table.Th>

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\Storage;
 
 class ProductController extends Controller
 {
@@ -45,7 +46,13 @@ class ProductController extends Controller
             'cost_price' => 'required|numeric|min:0',
             'sale_price' => 'required|numeric|min:0',
             'quantity_in_stock' => 'required|integer|min:0',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
         ]);
+
+        if ($request->hasFile('image')) {
+            $path = $request->file('image')->store('products', 'public');
+            $validatedData['image_path'] = $path;
+        }
 
         $product = Product::create($validatedData);
 
@@ -54,7 +61,8 @@ class ProductController extends Controller
 
     public function show(Product $product)
     {
-        
+        $this->authorize('view', $product);
+        return $product;
     }
 
     public function edit(Product $product)
@@ -68,12 +76,21 @@ class ProductController extends Controller
 
         $validatedData = $request->validate([
             'name' => 'required|string|max:255',
-            'sku' => ['required', 'string', Rule::unique('products')->ignore($product->id)],
+            'sku' => 'required|string|max:255|unique:products,sku,'.$product->id,
             'description' => 'nullable|string',
             'cost_price' => 'required|numeric|min:0',
             'sale_price' => 'required|numeric|min:0',
             'quantity_in_stock' => 'required|integer|min:0',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg|max:10240',
         ]);
+
+        if ($request->hasFile('image')) {
+            if ($product->image_path) {
+                Storage::disk('public')->delete($product->image_path);
+            }
+            $path = $request->file('image')->store('products', 'public');
+            $validatedData['image_path'] = $path;
+        }
 
         $product->update($validatedData);
 
@@ -84,6 +101,10 @@ class ProductController extends Controller
     {
         $this->authorize('delete', $product);
         
+        if ($product->image_path) {
+            Storage::disk('public')->delete($product->image_path);
+        }
+
         $product->delete();
 
         return response()->noContent();

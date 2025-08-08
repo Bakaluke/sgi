@@ -1,16 +1,16 @@
 import { useEffect, useState, useCallback } from 'react';
-import { Table, Title, Container, Button, Modal, TextInput, Textarea, NumberInput, Group, Tooltip, Pagination, Grid } from '@mantine/core';
+import { Table, Title, Container, Button, Modal, TextInput, Textarea, NumberInput, Group, Tooltip, Pagination, Grid, Image, FileInput } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
 import { useDisclosure } from '@mantine/hooks';
-import { IconPencil, IconTrash, IconPlus, IconSearch } from '@tabler/icons-react';
+import { IconPencil, IconTrash, IconPlus, IconSearch, IconUpload } from '@tabler/icons-react';
 import { useAuth } from '../context/AuthContext';
 import api from '../api/axios';
 
 const formatCurrency = (value: number) => {
-  return new Intl.NumberFormat('pt-BR', {
-    style: 'currency',
-    currency: 'BRL',
-  }).format(value);
+    return new Intl.NumberFormat('pt-BR', {
+        style: 'currency',
+        currency: 'BRL',
+    }).format(value);
 };
 
 interface Product {
@@ -21,6 +21,7 @@ interface Product {
     cost_price: number;
     quantity_in_stock: number;
     description?: string;
+    image_path?: string | null;
 }
 
 type ProductFormData = Omit<Product, 'id'>;
@@ -33,6 +34,7 @@ function ProductPage() {
     const [formData, setFormData] = useState<ProductFormData>({
         name: '', sku: '', description: '', cost_price: 0, sale_price: 0, quantity_in_stock: 0,
     });
+    const [imageFile, setImageFile] = useState<File | null>(null);
     const [activePage, setActivePage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
     const [searchTerm, setSearchTerm] = useState('');
@@ -64,59 +66,49 @@ function ProductPage() {
         return () => clearTimeout(debounceTimer);
     }, [searchTerm]);
 
-    const handlePriceChange = (event: React.ChangeEvent<HTMLInputElement>, fieldName: 'cost_price' | 'sale_price') => {
-        const digits = event.target.value.replace(/\D/g, '');
-        if (digits === '') {
-            setFormData(p => ({ ...p, [fieldName]: 0 }));
-            return;
-        }
-        const numericValue = parseInt(digits, 10) / 100;
-        setFormData(p => ({ ...p, [fieldName]: numericValue }));
+    const handleOpenCreateModal = () => {
+        setEditingProduct(null);
+        setFormData({ name: '', sku: '', description: '', cost_price: 0, sale_price: 0, quantity_in_stock: 0 });
+        setImageFile(null);
+        open();
     };
 
     const handleOpenEditModal = (product: Product) => {
         setEditingProduct(product);
         setFormData(product);
-        open();
-    };
-
-    const handleOpenCreateModal = () => {
-        setEditingProduct(null);
-        setFormData({ name: '', sku: '', description: '', cost_price: 0, sale_price: 0, quantity_in_stock: 0 });
+        setImageFile(null);
         open();
     };
 
     const handleFormSubmit = (event: React.FormEvent) => {
         event.preventDefault();
-        const promise = editingProduct
-            ? api.put(`/products/${editingProduct.id}`, formData)
-            : api.post('/products', formData);
-
-        promise.then(response => {
-            if (editingProduct) {
-                setProducts(current => current.map(p => (p.id === editingProduct.id ? response.data : p)));
-            } else {
-                setProducts(current => [...current, response.data]);
-            }
+        const data = new FormData();
+        if (formData.name) data.append('name', formData.name);
+        if (formData.sku) data.append('sku', formData.sku);
+        if (formData.description) data.append('description', formData.description);
+        if (formData.cost_price) data.append('cost_price', String(formData.cost_price));
+        if (formData.sale_price) data.append('sale_price', String(formData.sale_price));
+        if (formData.quantity_in_stock) data.append('quantity_in_stock', String(formData.quantity_in_stock));
+        if (imageFile) {
+            data.append('image', imageFile);
+        }
+        let promise;
+        if (editingProduct) {
+            data.append('_method', 'PUT');
+            promise = api.post(`/products/${editingProduct.id}`, data);
+        } else {
+            promise = api.post('/products', data);
+        }
+        promise.then(() => {
             close();
+            fetchProducts(activePage, searchQuery);
+            notifications.show({ title: 'Sucesso!', message: `Produto ${editingProduct ? 'atualizado' : 'criado'}.`, color: 'green' });
         }).catch(error => {
-            console.error('Erro ao salvar produto!', error);
-            if (error.response?.data?.errors) {
-                notifications.show({
-                    title: 'Erro de Validação',
-                    message: 'O Código informado já existe em outro produto. Por favor, verifique os dados.',
-                    color: 'red',
-                });
-            } else {
-                notifications.show({
-                    title: 'Erro de Validação',
-                    message: 'Não foi possível salvar o produto.',
-                    color: 'red',
-                });
-            }
+            const message = error.response?.data?.message || 'Não foi possível salvar o produto.';
+            notifications.show({ title: 'Erro!', message: message, color: 'red' });
         });
     };
-
+    
     const handleDelete = (id: number) => {
         if (window.confirm('Tem certeza que deseja excluir este produto?')) {
             api.delete(`/products/${id}`)
@@ -127,7 +119,7 @@ function ProductPage() {
                     message: `Produto #${id} foi excluído.`,
                     color: 'green',
                 });
-            }).catch(error => {
+            }).catch(() => {
                 notifications.show({
                     title: 'Erro',
                     message: `Houve um erro ao excluir o produto ${id}!`,
@@ -135,6 +127,16 @@ function ProductPage() {
                 });
             });
         }
+    };
+
+    const handlePriceChange = (event: React.ChangeEvent<HTMLInputElement>, fieldName: 'cost_price' | 'sale_price') => {
+        const digits = event.target.value.replace(/\D/g, '');
+        if (digits === '') {
+            setFormData(p => ({ ...p, [fieldName]: 0 }));
+            return;
+        }
+        const numericValue = parseInt(digits, 10) / 100;
+        setFormData(p => ({ ...p, [fieldName]: numericValue }));
     };
 
     const rows = products.map((product) => (
@@ -162,14 +164,26 @@ function ProductPage() {
 
     return (
         <Container>
-            <Modal opened={opened} onClose={close} title={editingProduct ? 'Editar Produto' : 'Adicionar Novo Produto'}>
+            <Modal opened={opened} onClose={close} title={editingProduct ? 'Editar Produto' : 'Adicionar Novo Produto'} size="lg">
                 <form onSubmit={handleFormSubmit}>
-                    <TextInput label="Nome do Produto" value={formData.name} onChange={(e) => setFormData(p => ({...p, name: e.target.value}))} required />
-                    <TextInput label="Código do Produto" value={formData.sku} onChange={(e) => setFormData(p => ({...p, sku: e.target.value}))} required mt="md" />
-                    <TextInput label="Preço de Compra" placeholder="R$ 0,00" value={formatCurrency(formData.cost_price)} onChange={(event) => handlePriceChange(event, 'cost_price')} required mt="md" />
-                    <TextInput label="Preço de Venda" placeholder="R$ 0,00" value={formatCurrency(formData.sale_price)} onChange={(event) => handlePriceChange(event, 'sale_price')} required mt="md" />
-                    <NumberInput label="Quantidade em Estoque" value={formData.quantity_in_stock} required mt="md" onChange={(value) => setFormData(p => ({ ...p, quantity_in_stock: Number(String(value).replace(/\./g, '')) }))} allowDecimal={false} thousandSeparator="." decimalSeparator="," />
-                    <Textarea label="Descrição (Opcional)" value={formData.description || ''} onChange={(e) => setFormData(p => ({ ...p, description: e.target.value }))} mt="md" autosize minRows={2} maxRows={4} />
+                    <Grid>
+                        <Grid.Col span={{ base: 12, md: 7 }}>
+                            <TextInput label="Nome do Produto" value={formData.name} onChange={(e) => setFormData(p => ({...p, name: e.target.value}))} required />
+                            <TextInput label="Código do Produto" value={formData.sku} onChange={(e) => setFormData(p => ({...p, sku: e.target.value}))} required mt="md" />
+                            <Grid mt="md">
+                                <Grid.Col span={6}><TextInput label="Preço de Compra" placeholder="R$ 0,00" value={formatCurrency(formData.cost_price)} onChange={(event) => handlePriceChange(event, 'cost_price')} required mt="md" /></Grid.Col>
+                                <Grid.Col span={6}><TextInput label="Preço de Venda" placeholder="R$ 0,00" value={formatCurrency(formData.sale_price)} onChange={(event) => handlePriceChange(event, 'sale_price')} required mt="md" /></Grid.Col>
+                            </Grid>
+                            <NumberInput label="Quantidade em Estoque" value={formData.quantity_in_stock} required mt="md" onChange={(value) => setFormData(p => ({ ...p, quantity_in_stock: Number(String(value).replace(/\./g, '')) }))} allowDecimal={false} thousandSeparator="." decimalSeparator="," />
+                            <Textarea label="Descrição (Opcional)" value={formData.description || ''} onChange={(e) => setFormData(p => ({ ...p, description: e.target.value }))} mt="md" autosize minRows={2} maxRows={4} />
+                        </Grid.Col>
+                        <Grid.Col span={{ base: 12, md: 5 }}>
+                            <Title order={5} mb="xs">Imagem do Produto</Title>
+                            {editingProduct?.image_path && !imageFile && ( <Image radius="md" h={150} w="auto" fit="contain" src={`${import.meta.env.VITE_API_BASE_URL.replace('/api', '')}/storage/${editingProduct.image_path}`} /> )}
+                            {imageFile && ( <Image radius="md" h={150} w="auto" fit="contain" src={URL.createObjectURL(imageFile)} /> )}
+                            <FileInput mt="md" label="Escolher nova imagem" placeholder="Selecione um arquivo" leftSection={<IconUpload size={14} />} value={imageFile} onChange={setImageFile} accept="image/png,image/jpeg" clearable />
+                        </Grid.Col>
+                    </Grid>
                     <Group justify="flex-end" mt="lg">
                         <Button type="submit">Salvar</Button>
                     </Group>

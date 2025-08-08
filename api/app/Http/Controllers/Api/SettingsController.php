@@ -33,7 +33,7 @@ class SettingsController extends Controller
             'neighborhood' => 'nullable|string|max:255',
             'city' => 'nullable|string|max:255',
             'state' => 'nullable|string|max:2',
-            'logo' => 'nullable|image|max:2048',
+            'logo' => 'nullable|image|max:10240',
         ]);
 
         if ($request->hasFile('logo')) {
