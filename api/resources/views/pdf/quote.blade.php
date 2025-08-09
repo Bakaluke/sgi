@@ -9,7 +9,7 @@
 </head>
 <body>
     <div class="container">
-        <div class="header" style="margin-bottom: 20px;">
+        <div class="header">
             <table style="width: 100%; border: none;">
                 <tr>
                     <td style="width: 25%; border: none;">
@@ -60,7 +60,7 @@
         <table>
             <thead>
                 <tr>
-                    <th style="width: 50px;">Imagem</th>
+                    <th style="width: 50px;"></th>
                     <th>Produto</th>
                     <th>Qtd.</th>
                     <th>Preço Unit.</th>

@@ -51,8 +51,8 @@ class QuoteController extends Controller
 
         $validated = $request->validate([
             'customer_id' => 'required|exists:customers,id',
-            'payment_method' => 'nullable|string|max:255',
-            'delivery_method' => 'nullable|string|max:255',
+            'payment_method' => 'required|string|max:255',
+            'delivery_method' => 'required|string|max:255',
             'delivery_datetime' => 'nullable|date',
             'notes' => 'nullable|string',
         ]);
@@ -99,12 +99,12 @@ class QuoteController extends Controller
         $this->authorize('update', $quote);
 
         $validated = $request->validate([
-            'delivery_method' => 'nullable|string|max:255',
-            'payment_method' => 'nullable|string|max:255',
-            'notes' => 'nullable|string',
+            'payment_method' => 'required|string|max:255',
+            'delivery_method' => 'required|string|max:255',
+            'delivery_datetime' => 'required|date',
             'discount_percentage' => 'nullable|numeric|min:0|max:100',
             'status' => 'nullable|string',
-            'delivery_datetime' => 'nullable|date',
+            'notes' => 'nullable|string',
         ]);
 
         $subtotal = $quote->items()->sum('total_price');
