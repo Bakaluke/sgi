@@ -27,6 +27,7 @@ class StockMovementController extends Controller
                 'Ajuste Manual - Saída',
             ])],
             'notes' => 'nullable|string',
+            'cost_price' => 'nullable|numeric|min:0',
         ]);
 
         $quantity = $validated['quantity'];
@@ -42,6 +43,7 @@ class StockMovementController extends Controller
             'quantity' => $quantity,
             'type' => $type,
             'notes' => $validated['notes'] ?? null,
+            'cost_price' => $validated['cost_price'] ?? null,
         ]);
 
         return response()->json($movement, 201);

@@ -16,11 +16,19 @@ class UpdateProductStockQuantity
 
     public function handle(StockMovementCreated $event): void
     {
-        $product = $event->stockMovement->product;
+        $movement = $event->stockMovement;
+        $product = $movement->product;
 
         $newStockQuantity = StockMovement::where('product_id', $product->id)->sum('quantity');
 
-        $product->quantity_in_stock = $newStockQuantity;
-        $product->save();
+        $updateData = [
+            'quantity_in_stock' => $newStockQuantity,
+        ];
+
+        if ($movement->quantity > 0 && is_numeric($movement->cost_price)) {
+            $updateData['cost_price'] = $movement->cost_price;
+        }
+
+        $product->update($updateData);
     }
 }

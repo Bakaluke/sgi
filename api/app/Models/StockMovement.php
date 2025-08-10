@@ -16,11 +16,10 @@ class StockMovement extends Model
         'quantity',
         'type',
         'notes',
+        'cost_price',
     ];
 
     /**
-     * The event map for the model.
-     *
      * @var array
      */
     protected $dispatchesEvents = [

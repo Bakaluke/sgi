@@ -1,10 +1,9 @@
 import { useEffect, useState, useRef } from 'react';
-import { Container, Title, Select, Button, Group, Table, NumberInput, Paper, Grid, Textarea, Divider, ActionIcon, Tooltip, Fieldset, TextInput, Loader } from '@mantine/core';
+import { Container, Title, Select, Button, Group, Table, NumberInput, Paper, Grid, Textarea, Divider, ActionIcon, Tooltip, Fieldset, TextInput } from '@mantine/core';
 import { DateTimePicker } from '@mantine/dates';
 import { notifications } from '@mantine/notifications';
-import { useNavigate, useParams } from 'react-router-dom';
-import { IconTrash, IconPrinter, IconPlus, IconEye } from '@tabler/icons-react';
-import { useAuth } from '../context/AuthContext';
+import { useParams } from 'react-router-dom';
+import { IconTrash, IconPrinter } from '@tabler/icons-react';
 import api from '../api/axios';
 
 interface SelectOption { 
@@ -87,11 +86,6 @@ const formatCurrency = (value: number) => {
   return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
 };
 
-const formatPercentage = (value: number): string => {
-  if (isNaN(value) || value === null || value === undefined) return '0,00';
-  return value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-};
-
 const calculateProfitMargin = (cost: number, sale: number): number => {
   const nCost = parseFloat(String(cost));
   const nSale = parseFloat(String(sale));
@@ -154,18 +148,42 @@ function QuoteFormPage() {
     if (!quote) return;
     setIsSavingHeader(true);
     api.put(`/quotes/${quoteId}`, {
-      payment_method: quote.payment_method, delivery_method: quote.delivery_method,
-      delivery_datetime: quote.delivery_datetime, discount_percentage: quote.discount_percentage,
-      status: quote.status, notes: quote.notes,
-    }).then(res => {
+      payment_method: quote.payment_method,
+      delivery_method: quote.delivery_method,
+      delivery_datetime: quote.delivery_datetime,
+      discount_percentage: quote.discount_percentage,
+      status: quote.status,
+      notes: quote.notes,
+    })
+    .then(res => {
       const enrichedQuote = enrichQuoteWithProfitMargin(res.data);
       setQuote(enrichedQuote);
       setInitialStatus(enrichedQuote.status);
       notifications.show({ title: 'Sucesso!', message: 'Alterações salvas.', color: 'green' });
-    }).catch(() => notifications.show({ title: 'Erro!', message: 'Não foi possível salvar.', color: 'red' }))
-    .finally(() => setIsSavingHeader(false));
+    })
+    .catch((error) => {
+      if (error.response && error.response.status === 422) {
+        const validationErrors = error.response.data.errors;
+        const errorMessages = Object.values(validationErrors).flat().join('\n');
+        notifications.show({
+          title: 'Por favor, corrija os seguintes erros:',
+          message: errorMessages,
+          color: 'red',
+        });
+      } else {
+        console.error("Erro ao salvar alterações:", error);
+        notifications.show({ 
+          title: 'Erro!', 
+          message: 'Não foi possível salvar as alterações.', 
+          color: 'red' 
+        });
+      }
+    })
+    .finally(() => {
+      setIsSavingHeader(false);
+    });
   };
-  
+
   const handleItemChange = (itemId: number, field: any, value: any) => {
     if (!quote) return;
     const updatedItems = quote.items.map(item => {
@@ -264,10 +282,10 @@ function QuoteFormPage() {
         <Fieldset legend="Dados Gerais do Orçamento" mt="md">
           <Grid>
             <Grid.Col span={{ base: 12, md: 6 }}><Select label="Status" value={quote.status} onChange={(value) => setQuote(q => q ? {...q, status: value || 'Aberto'} : null)} data={['Aberto', 'Negociação', 'Aprovado', 'Cancelado']} disabled={isLocked} required /></Grid.Col>
-            <Grid.Col span={{ base: 12, md: 6 }}><Select label="Forma de Pagamento" value={quote.payment_method} onChange={(value) => setQuote(q => q ? {...q, payment_method: value} : null)} data={['PIX', 'Cartão de Crédito', 'Boleto Bancário', 'Dinheiro']} disabled={isLocked} allowDeselect /></Grid.Col>
+            <Grid.Col span={{ base: 12, md: 6 }}><Select label="Forma de Pagamento" value={quote.payment_method} onChange={(value) => setQuote(q => q ? {...q, payment_method: value} : null)} data={['PIX', 'Cartão de Crédito', 'Boleto Bancário', 'Dinheiro']} disabled={isLocked} allowDeselect required /></Grid.Col>
             <Grid.Col span={{ base: 12, md: 4 }}><NumberInput label="Desconto Geral (%)" value={quote?.discount_percentage || 0} onChange={(value) => { if (!quote) return; setQuote({ ...quote, discount_percentage: Number(value) || 0 }); }} min={0} max={99} allowDecimal={false} rightSection="%" disabled={isLocked} /></Grid.Col>
-            <Grid.Col span={{ base: 12, md: 4 }}><Select label="Opção de Entrega" value={quote.delivery_method} onChange={(value) => setQuote(q => q ? {...q, delivery_method: value} : null)} data={['Retirada na Loja', 'Correios', 'Transportadora', 'Delivery']} disabled={isLocked} allowDeselect /></Grid.Col>
-            <Grid.Col span={{ base: 12, md: 4 }}><DateTimePicker label="Data/Hora da Entrega" placeholder="Selecione a data e hora" value={quote.delivery_datetime ? new Date(quote.delivery_datetime) : null} onChange={(date) => setQuote(q => q ? {...q, delivery_datetime: date?.toString() || null} : null)} disabled={isLocked} clearable /></Grid.Col>
+            <Grid.Col span={{ base: 12, md: 4 }}><Select label="Opção de Entrega" value={quote.delivery_method} onChange={(value) => setQuote(q => q ? {...q, delivery_method: value} : null)} data={['Retirada na Loja', 'Correios', 'Transportadora', 'Delivery']} disabled={isLocked} allowDeselect required /></Grid.Col>
+            <Grid.Col span={{ base: 12, md: 4 }}><DateTimePicker label="Data/Hora da Entrega" placeholder="Selecione a data e hora" value={quote.delivery_datetime ? new Date(quote.delivery_datetime) : null} onChange={(date) => setQuote(q => q ? {...q, delivery_datetime: date?.toString() || null} : null)} disabled={isLocked} clearable required minDate={new Date()} /></Grid.Col>
             <Grid.Col span={12}><Textarea label="Observações" placeholder="Adicione observações sobre o pedido..." value={quote.notes || ''} onChange={(event) => setQuote(q => q ? {...q, notes: event.currentTarget.value} : null)} disabled={isLocked} autosize minRows={2} /></Grid.Col>
           </Grid>
         </Fieldset>

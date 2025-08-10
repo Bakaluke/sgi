@@ -1,5 +1,5 @@
 import { Fragment, useCallback, useEffect, useState } from 'react';
-import { Table, Title, Container, Group, Badge, Pagination, TextInput, Select, Tooltip, ActionIcon, Collapse, Paper, Menu } from '@mantine/core';
+import { Table, Title, Container, Group, Pagination, TextInput, Select, ActionIcon, Collapse, Paper, Menu } from '@mantine/core';
 import { IconChevronDown, IconDotsVertical, IconFileText, IconPrinter, IconSearch, IconTrash } from '@tabler/icons-react';
 import { notifications } from '@mantine/notifications';
 import api from '../api/axios';

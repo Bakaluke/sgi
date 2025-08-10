@@ -168,7 +168,25 @@ function QuoteListPage() {
         navigate(`/quotes/${response.data.id}`);
       }
     })
-    .catch(() => notifications.show({ title: 'Erro!', message: 'Não foi possível criar o orçamento.', color: 'red' }));
+    .catch((error) => {
+      if (error.response && error.response.status === 422) {
+        const validationErrors = error.response.data.errors;
+        const errorMessages = Object.values(validationErrors).flat().join('\n');
+        notifications.show({
+          title: 'Por favor, corrija os seguintes erros:',
+          message: errorMessages,
+          color: 'red',
+          autoClose: 10000,
+        });
+      } else {
+        console.error("Erro ao criar orçamento:", error);
+        notifications.show({ 
+          title: 'Erro!', 
+          message: 'Não foi possível criar o orçamento. Tente novamente.', 
+          color: 'red' 
+        });
+      }
+    });
   };
 
   const handleDelete = (quoteId: number) => {
@@ -284,9 +302,9 @@ function QuoteListPage() {
         
         <Fieldset legend="Dados do Orçamento" mt="md">
           <Grid>
-            <Grid.Col span={{ base: 12, md: 4 }}><Select label="Forma de Pagamento" data={['PIX', 'Cartão de Crédito', 'Boleto Bancário', 'Dinheiro']} onChange={(value) => setFormData(p => ({ ...p, payment_method: value || '' }))} /></Grid.Col>
-            <Grid.Col span={{ base: 12, md: 4 }}><Select label="Opção de Entrega" data={['Retirada na Loja', 'Correios', 'Transportadora', 'Delivery']} onChange={(value) => setFormData(p => ({ ...p, delivery_method: value || '' }))} /></Grid.Col>
-            <Grid.Col span={{ base: 12, md: 4 }}><DateTimePicker label="Data/Hora da Entrega" value={formData.delivery_datetime ? new Date(formData.delivery_datetime) : null} onChange={(value) => setFormData(p => ({ ...p, delivery_datetime: value || '' }))} placeholder="Selecione a data e hora" clearable /></Grid.Col>
+            <Grid.Col span={{ base: 12, md: 4 }}><Select label="Forma de Pagamento" data={['PIX', 'Cartão de Crédito', 'Boleto Bancário', 'Dinheiro']} onChange={(value) => setFormData(p => ({ ...p, payment_method: value || '' }))} required /></Grid.Col>
+            <Grid.Col span={{ base: 12, md: 4 }}><Select label="Opção de Entrega" data={['Retirada na Loja', 'Correios', 'Transportadora', 'Delivery']} onChange={(value) => setFormData(p => ({ ...p, delivery_method: value || '' }))} required /></Grid.Col>
+            <Grid.Col span={{ base: 12, md: 4 }}><DateTimePicker label="Data/Hora da Entrega" value={formData.delivery_datetime ? new Date(formData.delivery_datetime) : null} onChange={(value) => setFormData(p => ({ ...p, delivery_datetime: value || '' }))} placeholder="Selecione a data e hora" clearable minDate={new Date()} /></Grid.Col>
             <Grid.Col span={12}><Textarea label="Observações" onChange={(e) => setFormData(p => ({ ...p, notes: e.target.value }))} /></Grid.Col>
           </Grid>
         </Fieldset>

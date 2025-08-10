@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from 'react';
-import { Table, Title, Container, Button, Modal, TextInput, Textarea, NumberInput, Group, Tooltip, Pagination, Grid, Image, FileInput } from '@mantine/core';
+import { Table, Title, Container, Button, Modal, TextInput, Textarea, Group, Tooltip, Pagination, Grid, Image, FileInput } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
 import { useDisclosure } from '@mantine/hooks';
 import { IconPencil, IconTrash, IconPlus, IconSearch, IconUpload } from '@tabler/icons-react';
@@ -24,16 +24,14 @@ interface Product {
     image_path?: string | null;
 }
 
-type ProductFormData = Omit<Product, 'id'>;
+type ProductFormData = Omit<Product, 'id' | 'cost_price' | 'quantity_in_stock' | 'image_path'>;
 
 function ProductPage() {
     const { user } = useAuth();
     const [products, setProducts] = useState<Product[]>([]);
     const [opened, { open, close }] = useDisclosure(false);
     const [editingProduct, setEditingProduct] = useState<Product | null>(null);
-    const [formData, setFormData] = useState<ProductFormData>({
-        name: '', sku: '', description: '', cost_price: 0, sale_price: 0, quantity_in_stock: 0,
-    });
+    const [formData, setFormData] = useState<ProductFormData>({ name: '', sku: '', description: '', sale_price: 0, });
     const [imageFile, setImageFile] = useState<File | null>(null);
     const [activePage, setActivePage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
@@ -68,14 +66,14 @@ function ProductPage() {
 
     const handleOpenCreateModal = () => {
         setEditingProduct(null);
-        setFormData({ name: '', sku: '', description: '', cost_price: 0, sale_price: 0, quantity_in_stock: 0 });
+        setFormData({ name: '', sku: '', description: '', sale_price: 0 });
         setImageFile(null);
         open();
     };
 
     const handleOpenEditModal = (product: Product) => {
         setEditingProduct(product);
-        setFormData(product);
+        setFormData({ name: product.name, sku: product.sku, description: product.description || '', sale_price: product.sale_price, });
         setImageFile(null);
         open();
     };
@@ -86,9 +84,7 @@ function ProductPage() {
         if (formData.name) data.append('name', formData.name);
         if (formData.sku) data.append('sku', formData.sku);
         if (formData.description) data.append('description', formData.description);
-        if (formData.cost_price) data.append('cost_price', String(formData.cost_price));
         if (formData.sale_price) data.append('sale_price', String(formData.sale_price));
-        if (formData.quantity_in_stock) data.append('quantity_in_stock', String(formData.quantity_in_stock));
         if (imageFile) {
             data.append('image', imageFile);
         }
@@ -144,9 +140,7 @@ function ProductPage() {
             <Table.Td>{product.id}</Table.Td>
             <Table.Td>{product.name}</Table.Td>
             <Table.Td>{product.sku}</Table.Td>
-            <Table.Td>{formatCurrency(product.cost_price)}</Table.Td>
             <Table.Td>{formatCurrency(product.sale_price)}</Table.Td>
-            <Table.Td>{product.quantity_in_stock.toLocaleString('pt-BR')}</Table.Td>
             <Table.Td>
                 {user && (
                     <Group>
@@ -170,11 +164,7 @@ function ProductPage() {
                         <Grid.Col span={{ base: 12, md: 7 }}>
                             <TextInput label="Nome do Produto" value={formData.name} onChange={(e) => setFormData(p => ({...p, name: e.target.value}))} required />
                             <TextInput label="Código do Produto" value={formData.sku} onChange={(e) => setFormData(p => ({...p, sku: e.target.value}))} required mt="md" />
-                            <Grid mt="md">
-                                <Grid.Col span={6}><TextInput label="Preço de Compra" placeholder="R$ 0,00" value={formatCurrency(formData.cost_price)} onChange={(event) => handlePriceChange(event, 'cost_price')} required mt="md" /></Grid.Col>
-                                <Grid.Col span={6}><TextInput label="Preço de Venda" placeholder="R$ 0,00" value={formatCurrency(formData.sale_price)} onChange={(event) => handlePriceChange(event, 'sale_price')} required mt="md" /></Grid.Col>
-                            </Grid>
-                            <NumberInput label="Quantidade em Estoque" value={formData.quantity_in_stock} required mt="md" onChange={(value) => setFormData(p => ({ ...p, quantity_in_stock: Number(String(value).replace(/\./g, '')) }))} allowDecimal={false} thousandSeparator="." decimalSeparator="," />
+                            <TextInput label="Preço de Venda Sugerido" placeholder="R$ 0,00" value={formatCurrency(formData.sale_price)} onChange={(event) => handlePriceChange(event, 'sale_price')} required mt="md" />
                             <Textarea label="Descrição (Opcional)" value={formData.description || ''} onChange={(e) => setFormData(p => ({ ...p, description: e.target.value }))} mt="md" autosize minRows={2} maxRows={4} />
                         </Grid.Col>
                         <Grid.Col span={{ base: 12, md: 5 }}>
@@ -205,9 +195,7 @@ function ProductPage() {
                         <Table.Th>ID</Table.Th>
                         <Table.Th>Produto</Table.Th>
                         <Table.Th>Código</Table.Th>
-                        <Table.Th>Preço de Compra</Table.Th>
-                        <Table.Th>Preço de Venda</Table.Th>
-                        <Table.Th>Qtd Estoque</Table.Th>
+                        <Table.Th>Preço de Venda Sugerido</Table.Th>
                         <Table.Th>Ações</Table.Th>
                     </Table.Tr>
                 </Table.Thead>

@@ -17,7 +17,8 @@ class ProductSeeder extends Seeder
             StockMovement::create([
                 'product_id' => $product->id,
                 'quantity' => $product->quantity_in_stock,
-                'type' => 'entrada_inicial',
+                'cost_price' => $product->cost_price,
+                'type' => 'Entrada Inicial',
                 'notes' => 'Carga inicial do sistema via Seeder',
             ]);
         }

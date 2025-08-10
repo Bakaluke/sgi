@@ -24,7 +24,7 @@ class DeductStockFromQuote
                 StockMovement::create([
                     'product_id' => $item->product_id,
                     'quantity' => -$item->quantity,
-                    'type' => 'venda',
+                    'type' => 'Vendas',
                     'notes' => 'Saída referente ao Orçamento Nº ' . $quote->id,
                 ]);
 
