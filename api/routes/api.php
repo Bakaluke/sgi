@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\QuoteItemController;
 use App\Http\Controllers\Api\ProductionOrderController;
 use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\SettingsController;
+use App\Http\Controllers\Api\StockMovementController;
 
 Route::post('/login', [LoginController::class, 'login']);
 
@@ -36,5 +37,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/settings', [SettingsController::class, 'show']);
     
     Route::post('/settings', [SettingsController::class, 'update']);
+
+    Route::post('/stock-movements', [StockMovementController::class, 'store']);
 
 });

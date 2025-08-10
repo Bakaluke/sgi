@@ -9,6 +9,7 @@ import QuoteListPage from './pages/QuoteListPage';
 import QuoteFormPage from './pages/QuoteFormPage';
 import ProductionPage from './pages/ProductionPage';
 import SettingsPage from './pages/SettingsPage';
+import StockPage from './pages/StockPage';
 
 function App() {
   return (
@@ -19,6 +20,7 @@ function App() {
           <Route index element={<Navigate to="/dashboard" />} />
           <Route path="dashboard" element={<DashboardPage />} />
           <Route path="products" element={<ProductPage />} />
+          <Route path="stock" element={<StockPage />} />
           <Route path="customers" element={<CustomerPage />} />
           <Route path="quotes" element={<ProtectedRoute allowedRoles={['admin', 'vendedor']}><QuoteListPage /></ProtectedRoute>} />
           <Route path="quotes/:quoteId" element={<ProtectedRoute allowedRoles={['admin', 'vendedor']}><QuoteFormPage /></ProtectedRoute>} />

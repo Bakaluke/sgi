@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { AppShell, Burger, Group, NavLink, Button, Title, Text } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { Outlet, NavLink as RouterNavLink } from 'react-router-dom';
-import { IconHome, IconUsers, IconPackage, IconLogout, IconFileInvoice, IconTools, IconSettings } from '@tabler/icons-react';
+import { IconHome, IconUsers, IconPackage, IconLogout, IconFileInvoice, IconTools, IconSettings, IconClipboardList } from '@tabler/icons-react';
 import { useAuth } from '../context/AuthContext';
 import { useSettings } from '../context/SettingsContext';
 
@@ -35,6 +35,7 @@ export function Layout() {
         {user && ['admin', 'vendedor'].includes(user.role) && (<NavLink label="Orçamentos" component={RouterNavLink} to="/quotes" leftSection={<IconFileInvoice size="1rem" />} />)}
         <NavLink label="Produção" component={RouterNavLink} to="/production" leftSection={<IconTools size="1rem" />} />
         <NavLink label="Produtos" component={RouterNavLink} to="/products" leftSection={<IconPackage size="1rem" />} />
+        <NavLink label="Estoque" component={RouterNavLink} to="/stock" leftSection={<IconClipboardList size="1rem" />} />
         <NavLink label="Clientes" component={RouterNavLink} to="/customers" leftSection={<IconUsers size="1rem" />} />
         {user && ['admin'].includes(user.role) && (<NavLink label="Configurações" component={RouterNavLink} to="/settings" leftSection={<IconSettings size="1rem" />} />)}
       </AppShell.Navbar>

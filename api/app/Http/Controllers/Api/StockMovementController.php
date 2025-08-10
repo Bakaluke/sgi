@@ -1,0 +1,49 @@
+<?php
+
+namespace App\Http\Controllers\Api;
+
+use App\Http\Controllers\Controller;
+use App\Models\StockMovement;
+use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
+
+class StockMovementController extends Controller
+{
+    public function store(Request $request)
+    {
+        if (!in_array($request->user()->role, ['admin', 'producao'])) {
+            abort(403, 'Ação não autorizada.');
+        }
+
+        $validated = $request->validate([
+            'product_id' => 'required|exists:products,id',
+            'quantity' => 'required|integer|min:1',
+            'type' => ['required', Rule::in([
+                'Entrada Inicial',
+                'Compra/Reposição',
+                'Perda de Produção',
+                'Defeito de Fabricação',
+                'Ajuste Manual - Entrada',
+                'Ajuste Manual - Saída',
+            ])],
+            'notes' => 'nullable|string',
+        ]);
+
+        $quantity = $validated['quantity'];
+        $type = $validated['type'];
+        
+        $exitTypes = ['Perda de Produção', 'Defeito de Fabricação', 'Ajuste Manual - Saída'];
+        if (in_array($type, $exitTypes)) {
+            $quantity = -$quantity;
+        }
+
+        $movement = StockMovement::create([
+            'product_id' => $validated['product_id'],
+            'quantity' => $quantity,
+            'type' => $type,
+            'notes' => $validated['notes'] ?? null,
+        ]);
+
+        return response()->json($movement, 201);
+    }
+}
