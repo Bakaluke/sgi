@@ -15,6 +15,7 @@ class DashboardController extends Controller
         $user = $request->user();
         $quoteStats = [];
         $orderStats = [];
+        $quotesOverTime = [];
 
         $formatStats = function ($queryResult) {
             $stats = ['Aberto' => 0, 'Negociação' => 0, 'Aprovado' => 0, 'Cancelado' => 0, 'Pendente' => 0, 'Em Produção' => 0, 'Concluído' => 0];
@@ -24,43 +25,47 @@ class DashboardController extends Controller
             return $stats;
         };
 
-        switch ($user->role) {
-            case 'admin':
-                $quoteStatsQuery = Quote::query()
-                    ->select('status', DB::raw('count(*) as total'))
-                    ->groupBy('status')->get();
-                $orderStatsQuery = ProductionOrder::query()
-                    ->select('status', DB::raw('count(*) as total'))
-                    ->groupBy('status')->get();
+        $baseQuoteQuery = Quote::query();
+        if ($user->role === 'vendedor') {
+            $baseQuoteQuery->where('user_id', $user->id);
+        }
 
-                $quoteStats = $formatStats($quoteStatsQuery);
-                $orderStats = $formatStats($orderStatsQuery);
-                break;
+        $baseOrderQuery = ProductionOrder::query();
+        if ($user->role === 'vendedor') {
+            $baseOrderQuery->where('user_id', $user->id);
+        }
 
-            case 'vendedor':
-                $quoteStatsQuery = Quote::where('user_id', $user->id)
-                    ->select('status', DB::raw('count(*) as total'))
-                    ->groupBy('status')->get();
-                $orderStatsQuery = ProductionOrder::where('user_id', $user->id)
-                    ->select('status', DB::raw('count(*) as total'))
-                    ->groupBy('status')->get();
+        if (in_array($user->role, ['admin', 'vendedor'])) {
+            $quoteStatsQuery = (clone $baseQuoteQuery)
+                ->select('status', DB::raw('count(*) as total'))
+                ->groupBy('status')->get();
+            $quoteStats = $formatStats($quoteStatsQuery);
 
-                $quoteStats = $formatStats($quoteStatsQuery);
-                $orderStats = $formatStats($orderStatsQuery);
-                break;
+            $quotesOverTime = (clone $baseQuoteQuery)
+                ->where('created_at', '>=', now()->subDays(6))
+                ->groupBy('date')
+                ->orderBy('date', 'ASC')
+                ->get([
+                    DB::raw('DATE(created_at) as date'),
+                    DB::raw('count(*) as count')
+                ])
+                ->map(function ($item) {
+                    $item->date = (new \DateTime($item->date))->format('d/m');
+                    return $item;
+                });
+        }
 
-            case 'producao':
-                $orderStatsQuery = ProductionOrder::query()
-                    ->select('status', DB::raw('count(*) as total'))
-                    ->groupBy('status')->get();
-
-                $orderStats = $formatStats($orderStatsQuery);
-                break;
+        if (in_array($user->role, ['admin', 'vendedor', 'producao'])) {
+            $orderStatsQuery = (clone $baseOrderQuery)
+                ->select('status', DB::raw('count(*) as total'))
+                ->groupBy('status')->get();
+            $orderStats = $formatStats($orderStatsQuery);
         }
 
         return response()->json([
             'quoteStats' => $quoteStats,
             'orderStats' => $orderStats,
+            'quotesOverTime' => $quotesOverTime,
         ]);
     }
 }

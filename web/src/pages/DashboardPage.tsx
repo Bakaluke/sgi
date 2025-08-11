@@ -1,67 +1,90 @@
 import { useEffect, useState } from 'react';
-import { Container, Title, SimpleGrid, Paper, Text, Group } from '@mantine/core';
+import { Container, Title, Paper, Text, Skeleton } from '@mantine/core';
+import { BarChart, AreaChart } from '@mantine/charts';
 import { useAuth } from '../context/AuthContext';
+import { Cell } from 'recharts';
 import api from '../api/axios';
 
 interface Stats {
   quoteStats: { [key: string]: number };
   orderStats: { [key: string]: number };
+  quotesOverTime: { date: string, count: number }[];
 }
 
-const StatCard = ({ title, value, color }: { title: string, value: number, color: string }) => {
+const ChartTooltip = ({ label, payload }: { label: any, payload: any[] | undefined }) => {
+  if (!payload || !payload.length) return null;
   return (
-    <Paper withBorder p="md" radius="md">
-      <Text size="xl" fw={700} c={color}>{value}</Text>
-      <Text size="sm" c="dimmed">{title}</Text>
-    </Paper>
+  <Paper px="md" py="sm" withBorder shadow="md" radius="md">
+    <Text fw={700} mb={5}>{label}</Text>
+    {payload.map((item: any) => (
+      <Text key={item.name} c={item.color} size="sm">
+        {item.name === 'count' ? 'Orçamentos' : item.name}: {item.value}
+      </Text>
+    ))}
+  </Paper>
   );
 };
 
 function DashboardPage() {
   const { user } = useAuth();
   const [stats, setStats] = useState<Stats | null>(null);
-
+  
   useEffect(() => {
-    api.get('/dashboard/stats')
-      .then(response => {
-        setStats(response.data);
-      })
-      .catch(error => console.error("Erro ao buscar estatísticas do dashboard", error));
+    api.get('/dashboard/stats').then(response => { setStats(response.data); });
   }, []);
 
   if (!stats) {
-    return <Container><Title>Carregando dados...</Title></Container>;
+    return (
+    <Container>
+      <Skeleton height={40} mb="xl" />
+      <Skeleton height={200} mb="xl" />
+      <Skeleton height={200} />
+    </Container>
+    );
   }
 
-  const { quoteStats, orderStats } = stats;
+  const { quoteStats, orderStats, quotesOverTime } = stats;
+
+  const quoteStatusData = [
+    { status: 'Aberto', Orçamentos: quoteStats['Aberto'] || 0, color: 'blue.6' },
+    { status: 'Negociação', Orçamentos: quoteStats['Negociação'] || 0, color: 'yellow.6' },
+    { status: 'Aprovado', Orçamentos: quoteStats['Aprovado'] || 0, color: 'green.6' },
+    { status: 'Cancelado', Orçamentos: quoteStats['Cancelado'] || 0, color: 'red.6' },
+  ];
+  
+  const orderStatusData = [
+    { status: 'Pendente', Pedidos: orderStats['Pendente'] || 0, color: 'blue.6' },
+    { status: 'Em Produção', Pedidos: orderStats['Em Produção'] || 0, color: 'yellow.6' },
+    { status: 'Concluído', Pedidos: orderStats['Concluído'] || 0, color: 'green.6' },
+  ];
 
   return (
-    <Container>
-      <Title order={1} mb="xl">Dashboard</Title>
-
-      {/* Seção de Orçamentos - visível apenas para admin e vendedor */}
-      {user && ['admin', 'vendedor'].includes(user.role) && (
-        <Paper withBorder p="lg" mb="xl">
-          <Title order={3} mb="md">Resumo de Orçamentos</Title>
-          <SimpleGrid cols={{ base: 2, sm: 4 }}>
-            <StatCard title="Em Aberto" value={quoteStats['Aberto']} color="blue.6" />
-            <StatCard title="Em Negociação" value={quoteStats['Negociação']} color="yellow.6" />
-            <StatCard title="Aprovados" value={quoteStats['Aprovado']} color="green.6" />
-            <StatCard title="Cancelados" value={quoteStats['Cancelado']} color="red.6" />
-          </SimpleGrid>
-        </Paper>
-      )}
-
-      {/* Seção de Pedidos - visível para admin, vendedor e produção */}
-      <Paper withBorder p="lg">
-        <Title order={3} mb="md">Resumo de Pedidos</Title>
-        <SimpleGrid cols={{ base: 2, sm: 4 }}>
-          <StatCard title="Pendentes" value={orderStats['Pendente']} color="blue.6" />
-          <StatCard title="Em Produção" value={orderStats['Em Produção']} color="yellow.6" />
-          <StatCard title="Concluídos" value={orderStats['Concluído']} color="green.6" />
-        </SimpleGrid>
+  <Container>
+    <Title order={1} mb="xl">Dashboard</Title>
+    
+    {user && ['admin', 'vendedor'].includes(user.role) && (
+      <Paper withBorder p="lg" mb="xl">
+        <Title order={3} mb="md">Resumo de Orçamentos</Title>
+        <BarChart h={300} data={quoteStatusData} dataKey="status" series={[{ name: 'Orçamentos' }]} tooltipProps={{ content: ({ label, payload }) => <ChartTooltip label={label} payload={payload} />, cursor: false }} xAxisProps={{ angle: 0, textAnchor: 'end', fontSize: 11 }}>
+        {quoteStatusData.map((item) => (<Cell key={item.status} fill={`var(--mantine-color-${item.color})`} />))}
+        </BarChart>
       </Paper>
-    </Container>
+    )}
+    
+    <Paper withBorder p="lg" mb="xl">
+      <Title order={3} mb="md">Resumo de Pedidos</Title>
+      <BarChart h={300} data={orderStatusData} dataKey="status" series={[{ name: 'Pedidos' }]} tooltipProps={{ content: ({ label, payload }) => <ChartTooltip label={label} payload={payload} />, cursor: false }} xAxisProps={{ angle: 0, textAnchor: 'end', fontSize: 11 }}>
+      {orderStatusData.map((item) => (<Cell key={item.status} fill={`var(--mantine-color-${item.color.replace('.', '-')})`} />))}
+      </BarChart>
+    </Paper>
+    
+    {user && ['admin', 'vendedor'].includes(user.role) && (
+      <Paper withBorder p="lg">
+        <Title order={3} mb="md">Orçamentos Criados (Últimos 7 Dias)</Title>
+        <AreaChart h={300} data={quotesOverTime} dataKey="date" series={[{ name: 'count', color: 'blue.6' }]} curveType="linear" tooltipProps={{ content: ({ label, payload }) => <ChartTooltip label={label} payload={payload} /> }} />
+      </Paper>
+    )}
+  </Container>
   );
 }
 

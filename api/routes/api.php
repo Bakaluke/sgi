@@ -40,4 +40,6 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::post('/stock-movements', [StockMovementController::class, 'store']);
 
+    Route::get('/products/{product}/stock-movements', [StockMovementController::class, 'history']);
+
 });

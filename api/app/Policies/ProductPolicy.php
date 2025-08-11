@@ -32,4 +32,9 @@ class ProductPolicy
         return $user->role === 'admin';
     }
 
+    public function viewStockHistory(User $user, Product $product): bool
+    {
+        return true;
+    }
+
 }

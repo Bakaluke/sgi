@@ -140,6 +140,7 @@ function ProductPage() {
             <Table.Td>{product.id}</Table.Td>
             <Table.Td>{product.name}</Table.Td>
             <Table.Td>{product.sku}</Table.Td>
+            <Table.Td>{formatCurrency(product.cost_price)}</Table.Td>
             <Table.Td>{formatCurrency(product.sale_price)}</Table.Td>
             <Table.Td>
                 {user && (
@@ -195,6 +196,7 @@ function ProductPage() {
                         <Table.Th>ID</Table.Th>
                         <Table.Th>Produto</Table.Th>
                         <Table.Th>Código</Table.Th>
+                        <Table.Th>Preço de Compra</Table.Th>
                         <Table.Th>Preço de Venda Sugerido</Table.Th>
                         <Table.Th>Ações</Table.Th>
                     </Table.Tr>

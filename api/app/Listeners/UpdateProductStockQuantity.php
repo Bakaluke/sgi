@@ -16,19 +16,29 @@ class UpdateProductStockQuantity
 
     public function handle(StockMovementCreated $event): void
     {
-        $movement = $event->stockMovement;
-        $product = $movement->product;
+        $product = $event->stockMovement->product;
 
         $newStockQuantity = StockMovement::where('product_id', $product->id)->sum('quantity');
 
-        $updateData = [
+        $revertedMovementIds = StockMovement::where('type', 'Ajuste - Estorno')
+            ->where('notes', 'like', 'Estorno da movimentação ID #%')
+            ->get()
+            ->map(function ($movement) {
+                return (int) str_replace('Estorno da movimentação ID #', '', $movement->notes);
+            });
+
+        $lastPurchase = StockMovement::where('product_id', $product->id)
+        ->whereIn('type', ['Compra/Reposição', 'Entrada Inicial'])
+        ->whereNotNull('cost_price')
+        ->whereNotIn('id', $revertedMovementIds)
+        ->latest()
+        ->first();
+
+        $newCostPrice = $lastPurchase ? $lastPurchase->cost_price : 0;
+
+        $product->update([
             'quantity_in_stock' => $newStockQuantity,
-        ];
-
-        if ($movement->quantity > 0 && is_numeric($movement->cost_price)) {
-            $updateData['cost_price'] = $movement->cost_price;
-        }
-
-        $product->update($updateData);
+            'cost_price' => $newCostPrice,
+        ]);
     }
 }
