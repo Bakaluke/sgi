@@ -11,11 +11,13 @@ use App\Http\Controllers\Api\ProductionOrderController;
 use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\SettingsController;
 use App\Http\Controllers\Api\StockMovementController;
+use App\Http\Controllers\Api\UserController;
+use App\Http\Controllers\Api\ProfileController;
+use App\Http\Controllers\Api\CategoryController;
 
 Route::post('/login', [LoginController::class, 'login']);
 
 Route::middleware('auth:sanctum')->group(function () {
-
     Route::get('/user', function (Request $request) {
         return $request->user();
     });
@@ -34,12 +36,16 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::get('/dashboard/stats', [DashboardController::class, 'getStats']);
 
-    Route::get('/settings', [SettingsController::class, 'show']);
-    
+    Route::get('/settings', [SettingsController::class, 'show']);    
     Route::post('/settings', [SettingsController::class, 'update']);
 
     Route::post('/stock-movements', [StockMovementController::class, 'store']);
-
     Route::get('/products/{product}/stock-movements', [StockMovementController::class, 'history']);
 
+    Route::apiResource('users', UserController::class);
+
+    Route::post('/user/profile', [ProfileController::class, 'updateProfile']);
+    Route::put('/user/password', [ProfileController::class, 'updatePassword']);
+
+    Route::apiResource('categories', CategoryController::class);
 });
