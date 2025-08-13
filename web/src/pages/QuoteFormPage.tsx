@@ -133,6 +133,13 @@ function QuoteFormPage() {
     }
   }, [quoteId]);
 
+  const updateQuoteField = (field: keyof Quote, value: any) => {
+        setQuote(currentQuote => {
+            if (!currentQuote) return null;
+            return { ...currentQuote, [field]: value };
+        });
+    };
+
   const handleAddItem = () => {
     if (!selectedProduct || !quantity) return;
     api.post(`/quotes/${quoteId}/items`, { product_id: selectedProduct, quantity }).then(res => {
@@ -281,13 +288,48 @@ function QuoteFormPage() {
 
         <Fieldset legend="Dados Gerais do Orçamento" mt="md">
           <Grid>
-            <Grid.Col span={{ base: 12, md: 6 }}><Select label="Status" value={quote.status} onChange={(value) => setQuote(q => q ? {...q, status: value || 'Aberto'} : null)} data={['Aberto', 'Negociação', 'Aprovado', 'Cancelado']} disabled={isLocked} required /></Grid.Col>
-            <Grid.Col span={{ base: 12, md: 6 }}><Select label="Forma de Pagamento" value={quote.payment_method} onChange={(value) => setQuote(q => q ? {...q, payment_method: value} : null)} data={['PIX', 'Cartão de Crédito', 'Boleto Bancário', 'Dinheiro']} disabled={isLocked} allowDeselect required /></Grid.Col>
-            <Grid.Col span={{ base: 12, md: 4 }}><NumberInput label="Desconto Geral (%)" value={quote?.discount_percentage || 0} onChange={(value) => { if (!quote) return; setQuote({ ...quote, discount_percentage: Number(value) || 0 }); }} min={0} max={99} allowDecimal={false} rightSection="%" disabled={isLocked} /></Grid.Col>
-            <Grid.Col span={{ base: 12, md: 4 }}><Select label="Opção de Entrega" value={quote.delivery_method} onChange={(value) => setQuote(q => q ? {...q, delivery_method: value} : null)} data={['Retirada na Loja', 'Correios', 'Transportadora', 'Delivery']} disabled={isLocked} allowDeselect required /></Grid.Col>
-            <Grid.Col span={{ base: 12, md: 4 }}><DateTimePicker label="Data/Hora da Entrega" placeholder="Selecione a data e hora" value={quote.delivery_datetime ? new Date(quote.delivery_datetime) : null} onChange={(date) => setQuote(q => q ? {...q, delivery_datetime: date?.toString() || null} : null)} disabled={isLocked} clearable required minDate={new Date()} /></Grid.Col>
-            <Grid.Col span={12}><Textarea label="Observações" placeholder="Adicione observações sobre o pedido..." value={quote.notes || ''} onChange={(event) => setQuote(q => q ? {...q, notes: event.currentTarget.value} : null)} disabled={isLocked} autosize minRows={2} /></Grid.Col>
-          </Grid>
+                        <Grid.Col span={{ base: 12, md: 6 }}>
+                            <Select label="Status" value={quote.status}
+                                onChange={(value) => updateQuoteField('status', value || 'Aberto')}
+                                data={['Aberto', 'Negociação', 'Aprovado', 'Cancelado']}
+                                disabled={isLocked} required
+                            />
+                        </Grid.Col>
+                        <Grid.Col span={{ base: 12, md: 6 }}>
+                            <Select label="Forma de Pagamento" value={quote.payment_method}
+                                onChange={(value) => updateQuoteField('payment_method', value)}
+                                data={['PIX', 'Cartão de Crédito', 'Boleto Bancário', 'Dinheiro']}
+                                disabled={isLocked} allowDeselect required
+                            />
+                        </Grid.Col>
+                        <Grid.Col span={{ base: 12, md: 4 }}>
+                            <NumberInput label="Desconto Geral (%)" value={quote.discount_percentage || 0}
+                                onChange={(value) => updateQuoteField('discount_percentage', Number(value) || 0)}
+                                min={0} max={99} allowDecimal={false} rightSection="%" disabled={isLocked}
+                            />
+                        </Grid.Col>
+                        <Grid.Col span={{ base: 12, md: 4 }}>
+                            <Select label="Opção de Entrega" value={quote.delivery_method}
+                                onChange={(value) => updateQuoteField('delivery_method', value)}
+                                data={['Retirada na Loja', 'Correios', 'Transportadora', 'Delivery']}
+                                disabled={isLocked} allowDeselect required
+                            />
+                        </Grid.Col>
+                        <Grid.Col span={{ base: 12, md: 4 }}>
+                            <DateTimePicker label="Data/Hora da Entrega" placeholder="Selecione data e hora"
+                                value={quote.delivery_datetime ? new Date(quote.delivery_datetime) : null}
+                                onChange={(date) => updateQuoteField('delivery_datetime', date?.toString() || null)}
+                                disabled={isLocked} clearable required minDate={new Date()}
+                            />
+                        </Grid.Col>
+                        <Grid.Col span={12}>
+                            <Textarea label="Observações" placeholder="Adicione observações sobre o pedido..."
+                                value={quote.notes || ''}
+                                onChange={(event) => updateQuoteField('notes', event.currentTarget.value)}
+                                disabled={isLocked} autosize minRows={2}
+                            />
+                        </Grid.Col>
+                    </Grid>
         </Fieldset>
         <Group justify="flex-end" mt="md">
           <Button component="a" href={`${import.meta.env.VITE_API_BASE_URL.replace('/api', '')}/quotes/${quote.id}/pdf`} target="_blank" variant="default" leftSection={<IconPrinter size={16} />}>Imprimir</Button>

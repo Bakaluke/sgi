@@ -15,11 +15,16 @@ class ProductController extends Controller
         
         $query = Product::query();
 
-        if ($request->has('search')) {
+        $query->with('category');
+
+        if ($request->has('search') && $request->input('search') != '') {
             $searchTerm = $request->input('search');
             $query->where(function ($q) use ($searchTerm) {
                 $q->where('name', 'like', "%{$searchTerm}%")
-                ->orWhere('sku', 'like', "%{$searchTerm}%");
+                ->orWhere('sku', 'like', "%{$searchTerm}%")
+                ->orWhereHas('category', function($subQ) use ($searchTerm) {
+                    $subQ->where('name', 'like', "%{$searchTerm}%");
+                });
             });
         }
         
@@ -45,6 +50,7 @@ class ProductController extends Controller
             'description' => 'nullable|string',
             'sale_price' => 'required|numeric|min:0',
             'image' => 'nullable|image|mimes:jpeg,png,jpg|max:10240',
+            'category_id' => 'nullable|exists:categories,id',
         ]);
 
         if ($request->hasFile('image')) {
@@ -78,6 +84,7 @@ class ProductController extends Controller
             'description' => 'nullable|string',
             'sale_price' => 'required|numeric|min:0',
             'image' => 'nullable|image|mimes:jpeg,png,jpg|max:10240',
+            'category_id' => 'nullable|exists:categories,id',
         ]);
 
         if ($request->hasFile('image')) {

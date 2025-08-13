@@ -12,7 +12,9 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->string('sku')->unique();
+            $table->foreignId('category_id')->nullable()->constrained('categories')->onDelete('set null');
             $table->text('description')->nullable();
+            $table->string('image_path')->nullable();
             $table->decimal('cost_price', 10, 2)->default(0);
             $table->decimal('sale_price', 10, 2);
             $table->integer('quantity_in_stock')->default(0);

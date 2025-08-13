@@ -38,7 +38,7 @@
                 </tr>
             </table>
             <hr>
-            <h1>Orçamento Nº {{ $quote->id }}</h1>
+            <h2>Orçamento Nº {{ $quote->id }}</h2>
             <p>Data de Emissão: {{ $quote->created_at->format('d/m/Y') }}</p>
         </div>
 
@@ -57,56 +57,62 @@
             <p><strong>Opção de Entrega:</strong> {{ $quote->delivery_method ?? 'N/A' }}</p>
         </div>
 
-        <table>
-            <thead>
-                <tr>
-                    <th style="width: 50px;"></th>
-                    <th>Produto</th>
-                    <th>Qtd.</th>
-                    <th>Preço Unit.</th>
-                    <th>Subtotal</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach($quote->items as $item)
-                <tr>
-                    <td>
-                        @if($item->product && $item->product->image_path)
-                        <img src="{{ public_path('storage/' . $item->product->image_path) }}" style="width: 50px; height: 50px; object-fit: cover;">
-                        @endif
-                    </td>
-                    <td>{{ $item->product_name }}</td>
-                    <td>{{ $item->quantity }}</td>
-                    <td>R$ {{ number_format($item->unit_sale_price, 2, ',', '.') }}</td>
-                    <td>R$ {{ number_format($item->total_price, 2, ',', '.') }}</td>
-                </tr>
-                @endforeach
-            </tbody>
-        </table>
-
-        <div class="totals">
+        <div class="quote-table">
             <table>
-                <tr>
-                    <th>Subtotal:</th>
-                    <td>R$ {{ number_format($quote->subtotal, 2, ',', '.') }}</td>
-                </tr>
-                <tr>
-                    <th>Desconto:</th>
-                    <td>{{ $quote->discount_percentage }}%</td>
-                </tr>
-                <tr>
-                    <th>Total:</th>
-                    <td><strong>R$ {{ number_format($quote->total_amount, 2, ',', '.') }}</strong></td>
-                </tr>
+                <thead>
+                    <tr>
+                        <th style="width: 50px;"></th>
+                        <th>Produto</th>
+                        <th>Qtd.</th>
+                        <th>Preço Unit.</th>
+                        <th>Subtotal</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($quote->items as $item)
+                    <tr>
+                        <td>
+                            @if($item->product && $item->product->image_path)
+                            <img src="{{ public_path('storage/' . $item->product->image_path) }}" style="width: 50px; height: 50px; object-fit: cover;">
+                            @endif
+                        </td>
+                        <td>{{ $item->product_name }}</td>
+                        <td>{{ $item->quantity }}</td>
+                        <td>R$ {{ number_format($item->unit_sale_price, 2, ',', '.') }}</td>
+                        <td>R$ {{ number_format($item->total_price, 2, ',', '.') }}</td>
+                    </tr>
+                    @endforeach
+                </tbody>
             </table>
         </div>
 
-        @if($quote->notes)
-        <div class="notes">
-            <h4>Observações:</h4>
-            <p>{{ $quote->notes }}</p>
+        
+
+        <div class="footer-block">
+            <div class="totals">
+                <table>
+                    <tr>
+                        <th>Subtotal:</th>
+                        <td>R$ {{ number_format($quote->subtotal, 2, ',', '.') }}</td>
+                    </tr>
+                    <tr>
+                        <th>Desconto:</th>
+                        <td>{{ $quote->discount_percentage }}%</td>
+                    </tr>
+                    <tr>
+                        <th>Total:</th>
+                        <td><strong>R$ {{ number_format($quote->total_amount, 2, ',', '.') }}</strong></td>
+                    </tr>
+                </table>
+            </div>
+
+            @if($quote->notes)
+            <div class="notes">
+                <h4>Observações:</h4>
+                <p>{{ $quote->notes }}</p>
+            </div>
+            @endif
         </div>
-        @endif
 
         <div class="signatures">
             <table style="width: 100%; border: none; text-align: center;">

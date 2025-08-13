@@ -1,12 +1,13 @@
 body { font-family: 'Helvetica', sans-serif; font-size: 12px; }
 .container { width: 100%; margin: 0 auto; }
 .header, .footer { text-align: center; }
-.header h1 { margin: 0; }
-.customer-info, .quote-info { margin-top: 5px; border: 1px solid #eee; }
-table { width: 100%; border-collapse: collapse; }
+.header h2 { margin: 0; }
+.customer-info, .quote-info, .quote-table { margin-top: 5px; border: 1px solid #eee; }
+.quote-table table { width: 100%; border-collapse: collapse; }
 th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
 th { background-color: #f2f2f2; }
-.totals { float: right; width: 250px; margin-top: 5px; }
-.totals table { width: 100%; }
-.signatures { margin-top: 50px; }
-.notes { margin-top: 100px; }
+.notes { margin-top: 10px; width: 400px; }
+.footer-block { width: 100%; page-break-inside: avoid; margin-top: 10px; }
+.totals { width: 100%;}
+.totals table { width: 250px; float: right; }
+.signatures { margin-top: 40px; }

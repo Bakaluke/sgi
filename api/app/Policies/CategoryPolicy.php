@@ -7,14 +7,28 @@ use App\Models\User;
 
 class CategoryPolicy
 {
-    public function before(User $user, string $ability): bool|null
+    public function viewAny(User $user): bool
     {
-        return $user->role === 'admin' ? true : null;
+        return in_array($user->role, ['admin', 'vendedor', 'producao']);
     }
 
-    public function viewAny(User $user): bool { return false; }
-    public function view(User $user, Category $category): bool { return false; }
-    public function create(User $user): bool { return false; }
-    public function update(User $user, Category $category): bool { return false; }
-    public function delete(User $user, Category $category): bool { return false; }
+    public function view(User $user, Category $category): bool
+    {
+        return in_array($user->role, ['admin', 'vendedor', 'producao']);
+    }
+
+    public function create(User $user): bool
+    {
+        return in_array($user->role, ['admin', 'vendedor', 'producao']);
+    }
+
+    public function update(User $user, Category $category): bool
+    {
+        return in_array($user->role, ['admin', 'vendedor', 'producao']);
+    }
+
+    public function delete(User $user, Category $category): bool
+    {
+        return $user->role === 'admin';
+    }
 }

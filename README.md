@@ -29,12 +29,7 @@ O SGI conta com um conjunto completo de módulos integrados para gerenciar as op
 - Suporte para upload de imagem por produto.
 - Lógica de busca "live" (com debounce) e paginação.
 - Campo de preço com formatação de moeda inteligente.
-
-### 👥 **Módulo de Clientes**
-- CRUD completo para clientes (Pessoa Física e Jurídica).
-- Formulário inteligente com busca automática de dados de CNPJ e CEP via API externa (BrasilAPI).
-- Arquitetura com endereços separados para maior escalabilidade.
-- Busca "live" e paginação.
+- Possibilidade de definição de "Categorias" dos produtos.
 
 ### 📝 **Módulo de Orçamentos**
 - Fluxo de criação moderno via modal, em duas etapas (Cabeçalho -> Itens).
@@ -57,9 +52,21 @@ O SGI conta com um conjunto completo de módulos integrados para gerenciar as op
 - Atualização do **preço de custo** do produto baseada na última compra.
 - Sistema de **estorno** para corrigir movimentações incorretas de forma segura e auditável.
 
+### 👥 **Módulo de Clientes**
+- CRUD completo para clientes (Pessoa Física e Jurídica).
+- Formulário inteligente com busca automática de dados de CNPJ e CEP via API externa (BrasilAPI).
+- Arquitetura com endereços separados para maior escalabilidade.
+- Busca "live" e paginação.
+
+### 👤 **Módulo de Usuários**
+- Painel completo para o administrador gerenciar os funcionários e seus acessos ao sistema.
+- Criação, edição e exclusão de usuários com papéis definidos ('Vendedor', 'Produção').
+- Acesso à página e suas ações restrito apenas para o perfil de admin, com regras de segurança.
+- Validação de dados robusta, incluindo confirmação de senha para maior segurança no cadastro.
+- Página de "Meu Perfil" para que cada usuário possa alterar suas próprias informações e senha.
+
 ### ⚙️ **Módulo de Configurações**
-- Página dedicada para o `admin` configurar os dados da empresa (nome, CNPJ, endereço, etc.).
-- Funcionalidade de **upload de logotipo**, que é usado dinamicamente nos PDFs e no layout.
+- Página dedicada para o `admin` configurar as principais funcionalidades do sistema.
 
 ---
 

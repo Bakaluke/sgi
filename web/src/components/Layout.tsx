@@ -1,10 +1,21 @@
 import { useEffect } from 'react';
-import { AppShell, Burger, Group, NavLink, Button, Title, Text } from '@mantine/core';
+import { AppShell, Burger, Group, NavLink, Title, Text, Menu, Avatar } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { Outlet, NavLink as RouterNavLink } from 'react-router-dom';
-import { IconHome, IconUsers, IconPackage, IconLogout, IconFileInvoice, IconTools, IconSettings, IconClipboardList } from '@tabler/icons-react';
+import { IconHome, IconUsers, IconPackage, IconLogout, IconFileInvoice, IconTools, IconSettings, IconClipboardList, IconUsersGroup, IconUserCircle, IconChevronDown } from '@tabler/icons-react';
 import { useAuth } from '../context/AuthContext';
 import { useSettings } from '../context/SettingsContext';
+
+const getInitials = (name: string | undefined): string => {
+    if (!name) return '?';
+    const parts = name.trim().split(' ');
+    const firstInitial = parts[0].charAt(0);
+    if (parts.length > 1) {
+        const lastInitial = parts[parts.length - 1].charAt(0);
+        return `${firstInitial}${lastInitial}`.toUpperCase();
+    }
+    return firstInitial.toUpperCase();
+};
 
 export function Layout() {
   const [opened, { toggle }] = useDisclosure();
@@ -23,10 +34,24 @@ export function Layout() {
         <Group h="100%" px="md" justify="space-between">
           <Burger opened={opened} onClick={toggle} hiddenFrom="sm" size="sm" />
           <Title order={3}>{settings?.company_fantasy_name || 'SGI Cake Web Dev'}</Title>
-          <Group>
-            <Title order={5}>Olá, {user?.name}</Title>
-            <Button variant="light" size="xs" onClick={logout} leftSection={<IconLogout size={14}/>}>Sair</Button>
-          </Group>
+          <Menu shadow="md" width={200}>
+            <Menu.Target>
+              <Group gap="xs" style={{ cursor: 'pointer' }}>
+                <Avatar color="blue" radius="xl">{getInitials(user?.name)}</Avatar>
+                <Text size="sm" fw={500}>{user?.name}</Text>
+                <IconChevronDown size={14} />
+              </Group>
+            </Menu.Target>
+            <Menu.Dropdown>
+              <Menu.Item leftSection={<IconUserCircle size={14} />}component={RouterNavLink} to="/profile">Meu Perfil</Menu.Item>
+              {user?.role === 'admin' && (<>
+              <Menu.Item leftSection={<IconUsersGroup size={14} />} component={RouterNavLink} to="/users">Usuários</Menu.Item>
+              <Menu.Item leftSection={<IconSettings size={14} />} component={RouterNavLink} to="/settings">Configurações</Menu.Item>
+              </>)}
+              <Menu.Divider />
+              <Menu.Item color="red" leftSection={<IconLogout size={14} />} onClick={logout}>Sair</Menu.Item>
+            </Menu.Dropdown>
+          </Menu>
         </Group>
       </AppShell.Header>
 
@@ -37,7 +62,6 @@ export function Layout() {
         <NavLink label="Produtos" component={RouterNavLink} to="/products" leftSection={<IconPackage size="1rem" />} />
         <NavLink label="Estoque" component={RouterNavLink} to="/stock" leftSection={<IconClipboardList size="1rem" />} />
         <NavLink label="Clientes" component={RouterNavLink} to="/customers" leftSection={<IconUsers size="1rem" />} />
-        {user && ['admin'].includes(user.role) && (<NavLink label="Configurações" component={RouterNavLink} to="/settings" leftSection={<IconSettings size="1rem" />} />)}
       </AppShell.Navbar>
 
       <AppShell.Footer p="xs" style={{ background: 'var(--mantine-color-body)' }}>

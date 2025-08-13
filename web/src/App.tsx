@@ -10,6 +10,8 @@ import QuoteFormPage from './pages/QuoteFormPage';
 import ProductionPage from './pages/ProductionPage';
 import SettingsPage from './pages/SettingsPage';
 import StockPage from './pages/StockPage';
+import UsersPage from './pages/UsersPage';
+import ProfilePage from './pages/ProfilePage';
 
 function App() {
   return (
@@ -25,6 +27,8 @@ function App() {
           <Route path="quotes" element={<ProtectedRoute allowedRoles={['admin', 'vendedor']}><QuoteListPage /></ProtectedRoute>} />
           <Route path="quotes/:quoteId" element={<ProtectedRoute allowedRoles={['admin', 'vendedor']}><QuoteFormPage /></ProtectedRoute>} />
           <Route path="production" element={<ProductionPage />} />
+          <Route path="profile" element={<ProfilePage />} />
+          <Route path="users" element={<ProtectedRoute allowedRoles={['admin']}><UsersPage /></ProtectedRoute>} />
           <Route path="settings" element={<ProtectedRoute allowedRoles={['admin']}><SettingsPage /></ProtectedRoute>} />
         </Route>
         <Route path="*" element={<Navigate to="/login" />} />

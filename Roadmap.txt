@@ -1,0 +1,13 @@
+Módulo de Configurações (Refatorado):
+
+Criação/Edição de Cargos/Funções (e a possibilidade do que cada perfil pode fazer/acessar);
+
+Criação/Edição de Formas de Pagamento (trazer mais personalizações nos Orçamentos, mas que pode ser implementado quando fizermos o módulo financeiro);
+
+Criação/Edição de Formas de Entrega (trazer mais personalizações nos Orçamentos);
+
+Criação/Edição de Status do Orçamento (trazer mais personalizações nos Orçamentos);
+
+Criação/Edição de Origem da Negociação (uma opção a mais para ser inserida nos Orçamentos);
+
+Criação/Edição de Status da Produção (trazer mais personalizações nas Ordens de Produção);

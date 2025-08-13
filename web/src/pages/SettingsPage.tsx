@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Container, Title, Paper, Grid, TextInput, Button, Group, FileInput, Image, Loader } from '@mantine/core';
+import { Container, Title, Paper, Grid, TextInput, Button, Group, FileInput, Image, Loader, Tabs } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
 import { IconUpload } from '@tabler/icons-react';
 import api from '../api/axios';
@@ -132,42 +132,66 @@ function SettingsPage() {
     };
 
     if (!settings) {
-        return <Container><Title>Carregando Configurações...</Title></Container>;
+        return <Container><Title>Carregando...</Title></Container>;
     }
     
     const logoUrl = settings.logo_path ? `${import.meta.env.VITE_API_BASE_URL.replace('/api', '')}/storage/${settings.logo_path}` : null;
     
     return (
         <Container>
-            <Title order={1} mb="xl">Configurações da Empresa</Title>
-            <Paper withBorder p="lg">
-                <Grid>
-                    <Grid.Col span={{ base: 12, md: 8 }}>
+            <Title order={1} mb="xl">Configurações do Sistema</Title>
+
+            <Tabs defaultValue="company">
+                <Tabs.List>
+                    <Tabs.Tab value="company">Dados da Empresa</Tabs.Tab>
+                    <Tabs.Tab value="roles">Cargos e Funções</Tabs.Tab>
+                    <Tabs.Tab value="quotes">Ajustes do Orçamento</Tabs.Tab>
+                    <Tabs.Tab value="productions">Ajustes da Produção</Tabs.Tab>
+                </Tabs.List>
+
+                <Tabs.Panel value="company" pt="md">
+                    <Paper withBorder p="lg">
                         <Grid>
-                            <Grid.Col span={{ base: 12, md: 6 }}><TextInput label="CNPJ" value={formatCnpj(settings.cnpj)} onChange={(e) => setSettings({...settings, cnpj: e.currentTarget.value})} onBlur={handleCnpjBlur} rightSection={isCnpjLoading ? <Loader size="xs" /> : null} /></Grid.Col>
-                            <Grid.Col span={{ base: 12, md: 6 }}><TextInput label="Nome Fantasia" value={settings.company_fantasy_name} onChange={(e) => setSettings({...settings, company_fantasy_name: e.currentTarget.value})} /></Grid.Col>
-                            <Grid.Col span={12}><TextInput label="Razão Social" value={settings.legal_name} onChange={(e) => setSettings({...settings, legal_name: e.currentTarget.value})} /></Grid.Col>
-                            <Grid.Col span={{ base: 12, md: 6 }}><TextInput label="Telefone" value={formatPhone(settings.phone)} onChange={(e) => setSettings({...settings, phone: e.currentTarget.value})} /></Grid.Col>
-                            <Grid.Col span={{ base: 12, md: 6 }}><TextInput label="E-mail de Contato" value={settings.email} onChange={(e) => setSettings({...settings, email: e.currentTarget.value})} /></Grid.Col>
-                            
-                            <Grid.Col span={12}><Title order={5} mt="sm">Endereço</Title></Grid.Col>
-                            <Grid.Col span={{ base: 12, md: 4 }}><TextInput label="CEP" value={settings.cep} onChange={(e) => setSettings({...settings, cep: e.currentTarget.value})} onBlur={handleCepBlur} rightSection={isCepLoading ? <Loader size="xs" /> : null} /></Grid.Col>
-                            <Grid.Col span={{ base: 12, md: 8 }}><TextInput label="Rua / Logradouro" value={settings.street} onChange={(e) => setSettings({...settings, street: e.currentTarget.value})} /></Grid.Col>
-                            <Grid.Col span={{ base: 12, md: 4 }}><TextInput label="Número" value={settings.number} onChange={(e) => setSettings({...settings, number: e.currentTarget.value})} /></Grid.Col>
-                            <Grid.Col span={{ base: 12, md: 8 }}><TextInput label="Complemento" value={settings.complement || ''} onChange={(e) => setSettings({...settings, complement: e.currentTarget.value})} /></Grid.Col>
-                            <Grid.Col span={{ base: 12, md: 5 }}><TextInput label="Bairro" value={settings.neighborhood} onChange={(e) => setSettings({...settings, neighborhood: e.currentTarget.value})} /></Grid.Col>
-                            <Grid.Col span={{ base: 12, md: 5 }}><TextInput label="Cidade" value={settings.city} onChange={(e) => setSettings({...settings, city: e.currentTarget.value})} /></Grid.Col>
-                            <Grid.Col span={{ base: 12, md: 2 }}><TextInput label="UF" value={settings.state} onChange={(e) => setSettings({...settings, state: e.currentTarget.value})} /></Grid.Col>
+                            <Grid.Col span={{ base: 12, md: 8 }}>
+                                <Grid>
+                                    <Grid.Col span={{ base: 12, md: 6 }}><TextInput label="CNPJ" value={formatCnpj(settings.cnpj)} onChange={(e) => setSettings({...settings, cnpj: e.currentTarget.value})} onBlur={handleCnpjBlur} rightSection={isCnpjLoading ? <Loader size="xs" /> : null} /></Grid.Col>
+                                    <Grid.Col span={{ base: 12, md: 6 }}><TextInput label="Nome Fantasia" value={settings.company_fantasy_name} onChange={(e) => setSettings({...settings, company_fantasy_name: e.currentTarget.value})} /></Grid.Col>
+                                    <Grid.Col span={12}><TextInput label="Razão Social" value={settings.legal_name} onChange={(e) => setSettings({...settings, legal_name: e.currentTarget.value})} /></Grid.Col>
+                                    <Grid.Col span={{ base: 12, md: 6 }}><TextInput label="Telefone" value={formatPhone(settings.phone)} onChange={(e) => setSettings({...settings, phone: e.currentTarget.value})} /></Grid.Col>
+                                    <Grid.Col span={{ base: 12, md: 6 }}><TextInput label="E-mail de Contato" value={settings.email} onChange={(e) => setSettings({...settings, email: e.currentTarget.value})} /></Grid.Col>
+                                    
+                                    <Grid.Col span={12}><Title order={5} mt="sm">Endereço</Title></Grid.Col>
+                                    <Grid.Col span={{ base: 12, md: 4 }}><TextInput label="CEP" value={settings.cep} onChange={(e) => setSettings({...settings, cep: e.currentTarget.value})} onBlur={handleCepBlur} rightSection={isCepLoading ? <Loader size="xs" /> : null} /></Grid.Col>
+                                    <Grid.Col span={{ base: 12, md: 8 }}><TextInput label="Rua / Logradouro" value={settings.street} onChange={(e) => setSettings({...settings, street: e.currentTarget.value})} /></Grid.Col>
+                                    <Grid.Col span={{ base: 12, md: 4 }}><TextInput label="Número" value={settings.number} onChange={(e) => setSettings({...settings, number: e.currentTarget.value})} /></Grid.Col>
+                                    <Grid.Col span={{ base: 12, md: 8 }}><TextInput label="Complemento" value={settings.complement || ''} onChange={(e) => setSettings({...settings, complement: e.currentTarget.value})} /></Grid.Col>
+                                    <Grid.Col span={{ base: 12, md: 5 }}><TextInput label="Bairro" value={settings.neighborhood} onChange={(e) => setSettings({...settings, neighborhood: e.currentTarget.value})} /></Grid.Col>
+                                    <Grid.Col span={{ base: 12, md: 5 }}><TextInput label="Cidade" value={settings.city} onChange={(e) => setSettings({...settings, city: e.currentTarget.value})} /></Grid.Col>
+                                    <Grid.Col span={{ base: 12, md: 2 }}><TextInput label="UF" value={settings.state} onChange={(e) => setSettings({...settings, state: e.currentTarget.value})} /></Grid.Col>
+                                </Grid>
+                            </Grid.Col>
+                            <Grid.Col span={{ base: 12, md: 4 }}>
+                                <Title order={5} mb="xs">Logotipo</Title>
+                                {logoUrl && <Image radius="md" h={120} w="auto" fit="contain" src={logoUrl} mb="md" />}
+                                <FileInput label="Alterar logotipo" placeholder="Escolha uma imagem" leftSection={<IconUpload size={14} />} value={logoFile} onChange={setLogoFile} accept="image/png,image/jpeg" />
+                            </Grid.Col>
                         </Grid>
-                    </Grid.Col>
-                    <Grid.Col span={{ base: 12, md: 4 }}>
-                        <Title order={5} mb="xs">Logotipo</Title>
-                        {logoUrl && <Image radius="md" h={120} w="auto" fit="contain" src={logoUrl} mb="md" />}
-                        <FileInput label="Alterar logotipo" placeholder="Escolha uma imagem" leftSection={<IconUpload size={14} />} value={logoFile} onChange={setLogoFile} accept="image/png,image/jpeg" />
-                    </Grid.Col>
-                </Grid>
-                <Group justify="flex-end" mt="xl"><Button onClick={handleSave} loading={isSaving}>Salvar Configurações</Button></Group>
-            </Paper>
+                        <Group justify="flex-end" mt="xl"><Button onClick={handleSave} loading={isSaving}>Salvar Configurações</Button></Group>
+                    </Paper>
+                </Tabs.Panel>
+
+                <Tabs.Panel value="roles" pt="md">
+                    <Group justify="flex-end" mb="md"></Group>
+                </Tabs.Panel>
+
+                <Tabs.Panel value="quotes" pt="md">
+                    <Group justify="flex-end" mb="md"></Group>
+                </Tabs.Panel>
+
+                <Tabs.Panel value="productions" pt="md">
+                    <Group justify="flex-end" mb="md"></Group>
+                </Tabs.Panel>
+            </Tabs>
         </Container>
     );
 }

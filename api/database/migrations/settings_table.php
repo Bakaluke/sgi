@@ -10,11 +10,18 @@ return new class extends Migration
     {
         Schema::create('settings', function (Blueprint $table) {
             $table->id();
-            $table->string('company_name')->nullable();
+            $table->string('legal_name')->nullable();
+            $table->string('company_fantasy_name')->nullable();
             $table->string('cnpj', 18)->nullable();
             $table->string('email')->nullable();
             $table->string('phone', 20)->nullable();
-            $table->text('address')->nullable();
+            $table->string('cep', 9)->nullable();
+            $table->string('street')->nullable();
+            $table->string('number', 20)->nullable();
+            $table->string('complement')->nullable();
+            $table->string('neighborhood')->nullable();
+            $table->string('city')->nullable();
+            $table->string('state', 2)->nullable();
             $table->string('logo_path')->nullable();
             $table->timestamps();
         });

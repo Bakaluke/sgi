@@ -1,12 +1,11 @@
-// src/context/AuthContext.tsx
-
-import React, { createContext, useState, useContext, ReactNode, useEffect } from 'react';
+import { createContext, useState, useContext, type ReactNode, useEffect } from 'react';
 import api from '../api/axios';
 
 interface User {
   id: number;
   name: string;
   email: string;
+  phone: string | null;
   role: string;
 }
 
