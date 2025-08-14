@@ -9,20 +9,20 @@ class QuotePolicy
 {
     public function viewAny(User $user): bool
     {
-        return $user->role === 'admin';
+        return $user->can('quotes.view');
     }
 
     public function view(User $user, Quote $quote): bool
     {
-        if ($user->role === 'admin') {
+        if ($user->can('quotes.view_all')) {
             return true;
         }
-        return $user->id === $quote->user_id;
+        return $user->can('quotes.view') && $user->id === $quote->user_id;
     }
 
     public function create(User $user): bool
     {
-        return in_array($user->role, ['admin', 'vendedor']);
+        return $user->can('quotes.create');
     }
 
     public function update(User $user, Quote $quote): bool
@@ -31,14 +31,11 @@ class QuotePolicy
             return false;
         }
 
-        if ($user->role === 'admin') {
-            return true;
-        }
-        return $user->id === $quote->user_id;
+        return $user->can('quotes.edit');
     }
 
     public function delete(User $user, Quote $quote): bool
     {
-        return $user->role === 'admin';
+        return $user->can('quotes.delete');
     }
 }

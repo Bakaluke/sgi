@@ -51,8 +51,8 @@ class QuoteController extends Controller
 
         $validated = $request->validate([
             'customer_id' => 'required|exists:customers,id',
-            'payment_method' => 'required|string|max:255',
-            'delivery_method' => 'required|string|max:255',
+            'payment_method' => 'nullable|string|max:255',
+            'delivery_method' => 'nullable|string|max:255',
             'delivery_datetime' => 'nullable|date',
             'notes' => 'nullable|string',
         ]);

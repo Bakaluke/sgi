@@ -9,27 +9,27 @@ class ProductPolicy
 {
     public function viewAny(User $user): bool
     {
-        return true;
+        return $user->can('products.view');
     }
 
     public function view(User $user, Product $product): bool
     {
-        return true;
+        return $user->can('products.view');
     }
 
     public function create(User $user): bool
     {
-        return in_array($user->role, ['admin', 'vendedor', 'producao']);
+        return $user->can('products.create');
     }
 
     public function update(User $user, Product $product): bool
     {
-        return in_array($user->role, ['admin', 'vendedor', 'producao']);
+        return $user->can('products.edit');
     }
 
     public function delete(User $user, Product $product): bool
     {
-        return $user->role === 'admin';
+        return $user->can('products.delete');
     }
 
     public function viewStockHistory(User $user, Product $product): bool

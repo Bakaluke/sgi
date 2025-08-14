@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Policies;
 
 use App\Models\ProductionOrder;
@@ -8,16 +9,18 @@ class ProductionOrderPolicy
 {
     public function viewAny(User $user): bool
     {
-        return in_array($user->role, ['admin', 'producao', 'vendedor']);
+        return $user->can('production_orders.view') || $user->can('production_orders.view_all');
     }
 
     public function view(User $user, ProductionOrder $productionOrder): bool
     {
-        if (in_array($user->role, ['admin', 'producao'])) {
+        if ($user->can('production_orders.view_all')) {
             return true;
         }
-        
-        return $user->id === $productionOrder->quote->user_id;
+        if ($user->can('production_orders.view')) {
+            return $user->id === $productionOrder->user_id;
+        }
+        return false;
     }
 
     public function create(User $user): bool
@@ -27,11 +30,11 @@ class ProductionOrderPolicy
 
     public function update(User $user, ProductionOrder $productionOrder): bool
     {
-        return in_array($user->role, ['admin', 'producao']);
+        return $user->can('production_orders.update_status');
     }
 
     public function delete(User $user, ProductionOrder $productionOrder): bool
     {
-        return $user->role === 'admin';
+        return $user->can('production_orders.delete');
     }
 }

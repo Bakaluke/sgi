@@ -8,11 +8,11 @@ class SettingPolicy
 {
     public function view(User $user, Setting $setting): bool
     {
-        return $user->role === 'admin';
+        return $user->can('users.manage');
     }
 
     public function update(User $user, Setting $setting): bool
     {
-        return $user->role === 'admin';
+        return $user->can('users.manage');
     }
 }

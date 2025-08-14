@@ -13,7 +13,7 @@ class QuoteFactory extends Factory
     public function definition(): array
     {
         $customer = Customer::has('addresses')->with('addresses')->inRandomOrder()->first();
-        $user = User::where('role', 'vendedor')->inRandomOrder()->first();
+        $user = User::role('vendedor')->inRandomOrder()->first();
 
         $primaryAddress = $customer->addresses->first();
         $addressString = $primaryAddress ? implode(', ', array_filter([
