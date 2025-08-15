@@ -10,22 +10,28 @@ class LoginController extends Controller
 {
     public function login(Request $request)
     {
-        $credentials = $request->validate([
+        $request->validate([
             'email' => 'required|email',
             'password' => 'required',
         ]);
 
-        if (Auth::attempt($credentials)) {
-            $user = Auth::user();
-            $token = $user->createToken('auth_token')->plainTextToken;
-
-            return response()->json([
-                'message' => 'Login bem-sucedido!',
-                'user' => $user,
-                'token' => $token,
+        if (!Auth::guard('web')->attempt($request->only('email', 'password'))) {
+            throw ValidationException::withMessages([
+                'email' => ['As credenciais fornecidas estão incorretas.'],
             ]);
         }
 
-        return response()->json(['message' => 'Credenciais inválidas'], 401);
+        $user = Auth::user();
+        
+        $token = $user->createToken('auth_token')->plainTextToken;
+        
+        $user->permissions = $user->getAllPermissions()->pluck('name');
+
+        unset($user->roles);
+        
+        return response()->json([
+            'user' => $user,
+            'token' => $token,
+        ]);
     }
 }

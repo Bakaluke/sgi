@@ -14,6 +14,7 @@ use App\Http\Controllers\Api\StockMovementController;
 use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\ProfileController;
 use App\Http\Controllers\Api\CategoryController;
+use App\Http\Controllers\Api\RoleController;
 
 Route::post('/login', [LoginController::class, 'login']);
 
@@ -48,4 +49,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/user/password', [ProfileController::class, 'updatePassword']);
 
     Route::apiResource('categories', CategoryController::class);
+
+    Route::apiResource('roles', RoleController::class);
+    Route::get('/permissions', [RoleController::class, 'getPermissions']);
 });

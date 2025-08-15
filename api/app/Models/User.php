@@ -19,6 +19,8 @@ class User extends Authenticatable
         $this->attributes['password'] = Hash::make($value);
     }
 
+    public string $guard_name = 'api';
+
     /**
      * @var list<string>
      */
