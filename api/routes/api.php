@@ -20,7 +20,16 @@ Route::post('/login', [LoginController::class, 'login']);
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user', function (Request $request) {
-        return $request->user();
+        $user = $request->user();
+
+        $permissions = $user->roles()->with('permissions')->get()
+        ->pluck('permissions')->flatten()->pluck('name')->unique()->values()->all();
+
+        $user->permissions = $permissions;
+        $user->role = $user->getRoleNames()->first();
+        unset($user->roles);
+
+        return $user;
     });
 
     Route::apiResource('products', ProductController::class);
@@ -28,7 +37,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('customers', CustomerController::class);
 
     Route::apiResource('quotes', QuoteController::class);
-
     Route::post('quotes/{quote}/items', [QuoteItemController::class, 'store']);
     Route::put('quotes/{quote}/items/{quote_item}', [QuoteItemController::class, 'update']);
     Route::delete('quotes/{quote}/items/{quote_item}', [QuoteItemController::class, 'destroy']);
@@ -44,7 +52,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/products/{product}/stock-movements', [StockMovementController::class, 'history']);
 
     Route::apiResource('users', UserController::class);
-
     Route::post('/user/profile', [ProfileController::class, 'updateProfile']);
     Route::put('/user/password', [ProfileController::class, 'updatePassword']);
 

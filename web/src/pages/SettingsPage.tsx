@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react';
-import { Container, Title, Paper, Grid, TextInput, Button, Group, FileInput, Image, Loader, Tabs } from '@mantine/core';
+import { Container, Title, Paper, Grid, TextInput, Button, Group, FileInput, Image, Loader, Tabs, Table, ActionIcon, Tooltip, Modal, Checkbox } from '@mantine/core';
+import { useForm } from '@mantine/form';
+import { useDisclosure } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
-import { IconUpload } from '@tabler/icons-react';
+import { IconUpload, IconPencil, IconTrash, IconPlus } from '@tabler/icons-react';
 import api from '../api/axios';
 import axios from 'axios';
 
@@ -19,6 +21,16 @@ interface SettingsData {
     city: string;
     state: string;
     logo_path: string | null;
+}
+interface Permission {
+    id: number;
+    name: string;
+}
+interface Role {
+    id: number;
+    name: string;
+    display_name: string;
+    permissions: Permission[];
 }
 
 const formatCnpj = (cnpj: string = '') => {
@@ -40,16 +52,67 @@ const formatPhone = (phone: string = '') => {
     return `(${cleaned.substring(0, 2)}) ${cleaned.substring(2, 7)}-${cleaned.substring(7)}`;
 };
 
+const groupTranslations: { [key: string]: string } = {
+    'users': 'Usuários',
+    'settings': 'Configurações',
+    'products': 'Produtos',
+    'customers': 'Clientes',
+    'quotes': 'Orçamentos',
+    'production_orders': 'Ordens de Produção',
+    'stock': 'Estoque',
+    'categories': 'Categorias',
+};
+
+const permissionTranslations: { [key: string]: string } = {
+    'users.manage': 'Gerenciar Usuários',
+    'settings.manage': 'Gerenciar Configurações da Empresa',
+    'products.view': 'Visualizar Produtos',
+    'products.create': 'Criar Produtos',
+    'products.edit': 'Editar Produtos',
+    'products.delete': 'Excluir Produtos',
+    'customers.view': 'Visualizar Clientes',
+    'customers.create': 'Criar Clientes',
+    'customers.edit': 'Editar Clientes',
+    'customers.delete': 'Excluir Clientes',
+    'quotes.view': 'Ver próprios Orçamentos',
+    'quotes.view_all': 'Ver TODOS os Orçamentos',
+    'quotes.create': 'Criar Orçamentos',
+    'quotes.edit': 'Editar Orçamentos',
+    'quotes.delete': 'Excluir Orçamentos',
+    'quotes.approve': 'Aprovar Orçamentos',
+    'production_orders.view': 'Ver próprias Ordens de Produção',
+    'production_orders.view_all': 'Ver TODAS as Ordens de Produção',
+    'production_orders.update_status': 'Atualizar Status da Produção',
+    'production_orders.delete': 'Excluir Ordens de Produção',
+    'stock.manage': 'Gerenciar Estoque',
+    'categories.manage': 'Gerenciar Categorias',
+};
+
 function SettingsPage() {
     const [settings, setSettings] = useState<SettingsData | null>(null);
     const [logoFile, setLogoFile] = useState<File | null>(null);
     const [isSaving, setIsSaving] = useState(false);
     const [isCnpjLoading, setIsCnpjLoading] = useState(false);
     const [isCepLoading, setIsCepLoading] = useState(false);
+    const [roles, setRoles] = useState<Role[]>([]);
+    const [permissions, setPermissions] = useState<Permission[]>([]);
+    const [modalOpened, { open: openModal, close: closeModal }] = useDisclosure(false);
+    const [editingRole, setEditingRole] = useState<Role | null>(null);
+
+    const roleForm = useForm({
+        initialValues: { display_name: '', permissions: [] as string[] },
+        validate: { display_name: (value: string) => (value.trim().length < 2 ? 'O nome da função é obrigatório.' : null) },
+    });
 
     useEffect(() => {
         api.get('/settings').then(res => setSettings(res.data));
+        api.get('/permissions').then(res => setPermissions(res.data));
+        fetchRoles();
     }, []);
+
+    const fetchRoles = () => {
+        api.get('/roles').then(res => setRoles(res.data));
+    };
 
     const handleCnpjBlur = () => {
         if (!settings || !settings.cnpj) return;
@@ -131,6 +194,64 @@ function SettingsPage() {
         .finally(() => setIsSaving(false));
     };
 
+    const handleOpenCreateRoleModal = () => {
+        setEditingRole(null); roleForm.reset(); openModal();
+    };
+
+    const handleOpenEditRoleModal = (role: Role) => {
+        setEditingRole(role);
+        roleForm.setValues({
+            display_name: role.display_name,
+            permissions: role.permissions.map(p => p.name),
+        });
+        openModal();
+    };
+
+    const handleRoleSubmit = (values: { display_name: string, permissions: string[] }) => {
+        const promise = editingRole
+            ? api.put(`/roles/${editingRole.id}`, values)
+            : api.post('/roles', values);
+        promise.then(() => {
+            closeModal();
+            notifications.show({ title: 'Sucesso!', message: `Função ${editingRole ? 'atualizada' : 'criada'}.`, color: 'green' });
+            fetchRoles();
+        }).catch(error => {
+            const message = error.response?.data?.message || 'Não foi possível salvar a função.';
+            notifications.show({ title: 'Erro!', message, color: 'red' });
+        });
+    };
+    
+    const handleRoleDelete = (role: Role) => {
+        if (window.confirm(`Tem certeza que deseja apagar a função "${role.name}"?`)) {
+            api.delete(`/roles/${role.id}`).then(() => {
+                notifications.show({ title: 'Sucesso', message: 'Função excluída.', color: 'green' });
+                fetchRoles();
+            });
+        }
+    };
+    
+    const roleRows = roles.map((role) => (
+        <Table.Tr key={role.id}>
+            <Table.Td fw={700}>{role.display_name}</Table.Td>
+            <Table.Td style={{ maxWidth: '400px', whiteSpace: 'normal' }}>
+                {role.permissions.map(p => permissionTranslations[p.name] || p.name).join(', ')}
+            </Table.Td>
+            <Table.Td>
+                <Group gap="xs">
+                    <Tooltip label="Editar Função"><ActionIcon variant="light" color="blue" onClick={() => handleOpenEditRoleModal(role)}><IconPencil size={16} /></ActionIcon></Tooltip>
+                    <Tooltip label="Excluir Função"><ActionIcon variant="light" color="red" onClick={() => handleRoleDelete(role)}><IconTrash size={16} /></ActionIcon></Tooltip>
+                </Group>
+            </Table.Td>
+        </Table.Tr>
+    ));
+
+    const groupedPermissions = permissions.reduce((acc, p) => {
+        const [group] = p.name.split('.');
+        if (!acc[group]) acc[group] = [];
+        acc[group].push(p);
+        return acc;
+    }, {} as Record<string, Permission[]>);
+
     if (!settings) {
         return <Container><Title>Carregando...</Title></Container>;
     }
@@ -144,7 +265,7 @@ function SettingsPage() {
             <Tabs defaultValue="company">
                 <Tabs.List>
                     <Tabs.Tab value="company">Dados da Empresa</Tabs.Tab>
-                    <Tabs.Tab value="roles">Cargos e Funções</Tabs.Tab>
+                    <Tabs.Tab value="roles">Funções & Permissões</Tabs.Tab>
                     <Tabs.Tab value="quotes">Ajustes do Orçamento</Tabs.Tab>
                     <Tabs.Tab value="productions">Ajustes da Produção</Tabs.Tab>
                 </Tabs.List>
@@ -181,7 +302,36 @@ function SettingsPage() {
                 </Tabs.Panel>
 
                 <Tabs.Panel value="roles" pt="md">
-                    <Group justify="flex-end" mb="md"></Group>
+                    <Modal opened={modalOpened} onClose={closeModal} title={editingRole ? 'Editar Função' : 'Nova Função'} size="lg">
+                        <form onSubmit={roleForm.onSubmit(handleRoleSubmit)}>
+                            <TextInput label="Nome da Função (Ex: Gerente)" required {...roleForm.getInputProps('display_name')} />
+                            <Title order={5} mt="lg" mb="sm">Permissões</Title>
+                            <Checkbox.Group {...roleForm.getInputProps('permissions')}>
+                                <Grid>
+                                    {Object.entries(groupedPermissions).map(([groupName, perms]) => (
+                                        <Grid.Col span={{ base: 12, md: 4 }} key={groupName}>
+                                            <Paper withBorder p="sm">
+                                                <Title order={6} mb="xs" style={{textTransform: 'capitalize'}}>{groupTranslations[groupName] || groupName}</Title>
+                                                {perms.map(p => <Checkbox key={p.name} value={p.name} label={permissionTranslations[p.name] || p.name} mb="xs" />)}
+                                            </Paper>
+                                        </Grid.Col>
+                                    ))}
+                                </Grid>
+                            </Checkbox.Group>
+                            <Group justify="flex-end" mt="lg"><Button type="submit">Salvar Função</Button></Group>
+                        </form>
+                    </Modal>
+
+                    <Group justify="flex-end" mb="md">
+                        <Button onClick={handleOpenCreateRoleModal} leftSection={<IconPlus size={16}/>}>Adicionar Função</Button>
+                    </Group>
+                    
+                    <Table>
+                        <Table.Thead>
+                            <Table.Tr><Table.Th>Função</Table.Th><Table.Th>Permissões</Table.Th><Table.Th>Ações</Table.Th></Table.Tr>
+                        </Table.Thead>
+                        <Table.Tbody>{roleRows}</Table.Tbody>
+                    </Table>
                 </Tabs.Panel>
 
                 <Tabs.Panel value="quotes" pt="md">

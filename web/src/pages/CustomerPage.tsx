@@ -52,7 +52,7 @@ const formatPhone = (phone: string = '') => {
 };
 
 function CustomerPage() {
-  const { user } = useAuth();
+  const { can } = useAuth();
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [opened, { open, close }] = useDisclosure(false);
   const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
@@ -232,16 +232,10 @@ function CustomerPage() {
       <Table.Td>{customer.email}</Table.Td>
       <Table.Td>{customer.phone ? formatPhone(customer.phone) : 'N/A'}</Table.Td>
       <Table.Td>
-        {user && (
-          <Group>
-            {['admin', 'vendedor', 'producao'].includes(user.role) && (
-              <Tooltip label="Editar Cliente"><Button variant="light" color="blue" size="xs" onClick={() => handleOpenEditModal(customer)}><IconPencil size={16} /></Button></Tooltip>
-            )}
-            {user.role === 'admin' && (
-              <Tooltip label="Excluir Cliente"><Button variant="light" color="red" size="xs" onClick={() => handleDelete(customer.id)}><IconTrash size={16} /></Button></Tooltip>
-            )}
-          </Group>
-        )}
+        <Group>
+          {can('customers.edit') && (<Tooltip label="Editar Cliente"><Button variant="light" color="blue" size="xs" onClick={() => handleOpenEditModal(customer)}><IconPencil size={16} /></Button></Tooltip>)}
+          {can('customers.delete') && (<Tooltip label="Excluir Cliente"><Button variant="light" color="red" size="xs" onClick={() => handleDelete(customer.id)}><IconTrash size={16} /></Button></Tooltip>)}
+        </Group>
       </Table.Td>
     </Table.Tr>
   ));
@@ -274,9 +268,7 @@ function CustomerPage() {
 
       <Group justify="space-between" my="lg">
         <Title order={1}>Gestão de Clientes</Title>
-        {user && ['admin', 'vendedor', 'producao'].includes(user.role) && (
-          <Button onClick={handleOpenCreateModal} leftSection={<IconPlus size={16} />}>Adicionar Cliente</Button>
-        )}
+        {can('customers.create') && (<Button onClick={handleOpenCreateModal} leftSection={<IconPlus size={16} />}>Adicionar Cliente</Button>)}
       </Group>
 
       <TextInput label="Buscar Cliente" placeholder="Digite o nome, documento ou e-mail..." value={searchTerm} onChange={(event) => setSearchTerm(event.currentTarget.value)} leftSection={<IconSearch size={16} />} mb="md" />

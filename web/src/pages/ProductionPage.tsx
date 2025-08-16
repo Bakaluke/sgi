@@ -17,18 +17,19 @@ interface QuoteItem {
   total_price: number;
 }
 interface ProductionOrder {
-    id: number;
-    quote_id: number;
-    customer: { name: string };
-    status: string;
-    created_at: string;
-    quote: {
-        items: QuoteItem[];
-    };
+  user: any;
+  id: number;
+  quote_id: number;
+  customer: { name: string };
+  status: string;
+  created_at: string;
+  quote: {
+    items: QuoteItem[];
+  };
 }
 
 function ProductionPage() {
-  const { user } = useAuth();
+  const { can } = useAuth();
   const [orders, setOrders] = useState<ProductionOrder[]>([]);
   const [activePage, setActivePage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -108,7 +109,6 @@ function ProductionPage() {
     }
   };
 
-  
   const rows = orders.map((order) => {
     const isExpanded = expandedOrderIds.includes(order.id);
     return (
@@ -118,43 +118,17 @@ function ProductionPage() {
         <Table.Td>{order.id}</Table.Td>
         <Table.Td>{order.quote_id}</Table.Td>
         <Table.Td>{order.customer.name}</Table.Td>
+        {can('production_orders.view_all') && <Table.Td>{order.user?.name || 'N/A'}</Table.Td>}
         <Table.Td style={{ width: 200 }}><Select value={order.status} onChange={(value) => handleStatusChange(order.id, value)} data={['Pendente', 'Em Produção', 'Concluído']} variant="unstyled" styles={(theme, { value }) => { const color = getStatusColor(value || 'Pendente'); return { input: { backgroundColor: theme.colors[color][1], color: theme.colors[color][9], fontWeight: 700, textAlign: 'center', border: `1px solid ${theme.colors[color][2]}`, paddingRight: '1.75rem', }, }; }} /></Table.Td>
         <Table.Td>{new Date(order.created_at).toLocaleDateString('pt-BR')}</Table.Td>
         <Table.Td>
             <Menu shadow="md" width={250}>
-                <Menu.Target>
-                    <ActionIcon variant="subtle" color="gray"><IconDotsVertical size={16} /></ActionIcon>
-                </Menu.Target>
+                <Menu.Target><ActionIcon variant="subtle" color="gray"><IconDotsVertical size={16} /></ActionIcon></Menu.Target>
                 <Menu.Dropdown>
                     <Menu.Label>Ações do Pedido</Menu.Label>
-                    <Menu.Item
-                        leftSection={<IconPrinter size={14} />}
-                        component="a"
-                        href={`${import.meta.env.VITE_API_BASE_URL.replace('/api', '')}/production-orders/${order.id}/work-order`}
-                        target="_blank"
-                    >
-                        Imprimir Ordem de Serviço
-                    </Menu.Item>
-                    <Menu.Item
-                        leftSection={<IconFileText size={14} />}
-                        component="a"
-                        href={`${import.meta.env.VITE_API_BASE_URL.replace('/api', '')}/production-orders/${order.id}/delivery-protocol`}
-                        target="_blank"
-                    >
-                        Imprimir Protocolo de Entrega
-                    </Menu.Item>
-                    {user?.role === 'admin' && (
-                        <>
-                            <Menu.Divider />
-                            <Menu.Item
-                                color="red"
-                                leftSection={<IconTrash size={14} />}
-                                onClick={() => handleDelete(order.id)}
-                            >
-                                Apagar Ordem de Produção
-                            </Menu.Item>
-                        </>
-                    )}
+                    <Menu.Item leftSection={<IconPrinter size={14} />} component="a" href={`${import.meta.env.VITE_API_BASE_URL.replace('/api', '')}/production-orders/${order.id}/work-order`} target="_blank">Imprimir Ordem de Serviço</Menu.Item>
+                    <Menu.Item leftSection={<IconFileText size={14} />} component="a" href={`${import.meta.env.VITE_API_BASE_URL.replace('/api', '')}/production-orders/${order.id}/delivery-protocol`} target="_blank">Imprimir Protocolo de Entrega</Menu.Item>
+                    {can('production_orders.delete') && (<><Menu.Divider /><Menu.Item color="red" leftSection={<IconTrash size={14} />} onClick={() => handleDelete(order.id)}>Apagar Ordem de Produção</Menu.Item></>)}
                 </Menu.Dropdown>
             </Menu>
         </Table.Td>
@@ -175,8 +149,8 @@ function ProductionPage() {
                 <Table.Tr key={item.id}>
                   <Table.Td>{item.product.name}</Table.Td>
                   <Table.Td>{item.quantity}</Table.Td>
-                </Table.Tr>
-              ))}</Table.Tbody>
+                </Table.Tr>))}
+              </Table.Tbody>
             </Table>
           </Paper>
           </Collapse>
@@ -199,6 +173,7 @@ function ProductionPage() {
           <Table.Th>Nº do Pedido</Table.Th>
           <Table.Th>Nº do Orçamento</Table.Th>
           <Table.Th>Cliente</Table.Th>
+          {can('production_orders.view_all') && <Table.Th>Vendedor</Table.Th>}
           <Table.Th>Status</Table.Th>
           <Table.Th>Data de Criação</Table.Th>
           <Table.Th>Ações</Table.Th>

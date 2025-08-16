@@ -3,7 +3,6 @@ import { Table, Title, Container, Button, Group, Modal, TextInput, Select, Passw
 import { useDisclosure } from '@mantine/hooks';
 import { useForm } from '@mantine/form';
 import { IconPencil, IconTrash, IconPlus } from '@tabler/icons-react';
-import { useAuth } from '../context/AuthContext';
 import api from '../api/axios';
 import { notifications } from '@mantine/notifications';
 

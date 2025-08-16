@@ -26,20 +26,24 @@ class RolesAndPermissionsSeeder extends Seeder
             Permission::create(['name' => $permission, 'guard_name' => 'api']);
         }
         
-        Role::create(['name' => 'vendedor', 'display_name' => 'Vendedor', 'guard_name' => 'api'])->givePermissionTo([
+        $vendedorRole = Role::create(['name' => 'vendedor', 'display_name' => 'Vendedor', 'guard_name' => 'api']);
+        $vendedorPermissions = [
             'products.view', 'products.create', 'products.edit',
             'customers.view', 'customers.create', 'customers.edit',
             'quotes.view', 'quotes.create', 'quotes.edit', 'quotes.approve',
             'production_orders.view', 'production_orders.update_status',
             'stock.manage', 'categories.manage',
-        ]);
+        ];
+        $vendedorRole->givePermissionTo($vendedorPermissions);
 
-        Role::create(['name' => 'producao', 'display_name' => 'Produção', 'guard_name' => 'api'])->givePermissionTo([
+        $producaoRole = Role::create(['name' => 'producao', 'display_name' => 'Produção', 'guard_name' => 'api']);
+        $producaoPermissions = [
             'products.view', 'products.create', 'products.edit',
             'customers.view', 'customers.create', 'customers.edit',
             'production_orders.view_all', 'production_orders.update_status',
             'stock.manage', 'categories.manage',
-        ]);
+        ];
+        $producaoRole->givePermissionTo($producaoPermissions);
         
         $adminRole = Role::create(['name' => 'admin', 'display_name' => 'Administrador', 'guard_name' => 'api']);
         $adminRole->givePermissionTo(Permission::all());

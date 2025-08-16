@@ -76,7 +76,7 @@ const formatPhone = (phone: string = '') => {
 
 function QuoteListPage() {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { can } = useAuth();
   const [quotes, setQuotes] = useState<Quote[]>([]);
   const [opened, { open, close }] = useDisclosure(false);
   const [formData, setFormData] = useState(initialFormData);
@@ -84,11 +84,10 @@ function QuoteListPage() {
   const [activePage, setActivePage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [searchTerm, setSearchTerm] = useState('');
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery] = useState('');
   const [customerOptions, setCustomerOptions] = useState<SelectOption[]>([]);
   const [customerSearch, setCustomerSearch] = useState('');
   const [isSearchingCustomers, setIsSearchingCustomers] = useState(false);
-  const [customerDetails, setCustomerDetails] = useState<Customer | null>(null);
   
   const fetchQuotes = useCallback((page: number, search: string) => {
     api.get('/quotes', {
@@ -234,7 +233,7 @@ function QuoteListPage() {
           </Table.Td>
           <Table.Td>{quote.id}</Table.Td>
           <Table.Td>{quote.customer.name}</Table.Td>
-          <Table.Td>{quote.user.name}</Table.Td>
+          {can('quotes.view_all') && <Table.Td>{quote.user.name}</Table.Td>}
           <Table.Td><Badge color={getStatusColor(quote.status)}>{quote.status}</Badge></Table.Td>
           <Table.Td>{new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(quote.total_amount)}</Table.Td>
           <Table.Td>{quote.created_at ? new Date(quote.created_at).toLocaleDateString('pt-BR') : ''}</Table.Td>
@@ -250,10 +249,8 @@ function QuoteListPage() {
                 <Menu.Divider />
                 <Menu.Item leftSection={<IconMail size={14} />} disabled>Enviar por E-mail</Menu.Item>
                 <Menu.Item leftSection={<IconBrandWhatsapp size={14} />} disabled>Enviar por WhatsApp</Menu.Item>
-                {user?.role === 'admin' && (<><Menu.Divider />
-                <Menu.Item color="red" leftSection={<IconTrash size={14} />} onClick={() => handleDelete(quote.id)} >Apagar Orçamento</Menu.Item>
-                </>)}
-              </Menu.Dropdown>
+                {can('quotes.delete') && (<><Menu.Divider /><Menu.Item color="red" leftSection={<IconTrash size={14} />} onClick={() => handleDelete(quote.id)} >Apagar Orçamento</Menu.Item></>)}
+                </Menu.Dropdown>
               </Menu>
             </Table.Td>
           </Table.Tr>
@@ -294,6 +291,8 @@ function QuoteListPage() {
         <Fieldset legend="Dados do Cliente" mt="md">
           <Grid>
             <Grid.Col span={12}><Select label="Selecione o Cliente" placeholder="Digite para buscar..." data={customerOptions} searchable required clearable value={formData.customer_id} onChange={handleCustomerSelect} onSearchChange={setCustomerSearch} searchValue={customerSearch} rightSection={isSearchingCustomers ? <Loader size="xs" /> : null} /></Grid.Col>
+            {/*<Grid.Col span={{ base: 12, md: 11 }}><Select label="Selecione o Cliente" placeholder="Digite para buscar..." data={customerOptions} searchable required clearable value={formData.customer_id} onChange={handleCustomerSelect} onSearchChange={setCustomerSearch} searchValue={customerSearch} rightSection={isSearchingCustomers ? <Loader size="xs" /> : null} /></Grid.Col>*/}
+            {/*<Grid.Col span={{ base: 12, md: 1 }}><Tooltip label="Cadastrar Cliente"><Button><IconUsersPlus size={16} /></Button></Tooltip></Grid.Col>*/}
             <Grid.Col span={{ base: 12, md: 6 }}><TextInput label="Email" value={formData.customer_email || ''} readOnly /></Grid.Col>
             <Grid.Col span={{ base: 12, md: 6 }}><TextInput label="Telefone" value={formData.customer_phone ? formatPhone(formData.customer_phone) : ''} readOnly /></Grid.Col>
             <Grid.Col span={12}><TextInput label="Endereço" value={formData.customer_address || ''} readOnly /></Grid.Col>
@@ -302,8 +301,8 @@ function QuoteListPage() {
         
         <Fieldset legend="Dados do Orçamento" mt="md">
           <Grid>
-            <Grid.Col span={{ base: 12, md: 4 }}><Select label="Forma de Pagamento" data={['PIX', 'Cartão de Crédito', 'Boleto Bancário', 'Dinheiro']} onChange={(value) => setFormData(p => ({ ...p, payment_method: value || '' }))} required /></Grid.Col>
-            <Grid.Col span={{ base: 12, md: 4 }}><Select label="Opção de Entrega" data={['Retirada na Loja', 'Correios', 'Transportadora', 'Delivery']} onChange={(value) => setFormData(p => ({ ...p, delivery_method: value || '' }))} required /></Grid.Col>
+            <Grid.Col span={{ base: 12, md: 4 }}><Select label="Forma de Pagamento" data={['PIX', 'Cartão de Crédito', 'Boleto Bancário', 'Dinheiro']} onChange={(value) => setFormData(p => ({ ...p, payment_method: value || '' }))} /></Grid.Col>
+            <Grid.Col span={{ base: 12, md: 4 }}><Select label="Opção de Entrega" data={['Retirada na Loja', 'Correios', 'Transportadora', 'Delivery']} onChange={(value) => setFormData(p => ({ ...p, delivery_method: value || '' }))} /></Grid.Col>
             <Grid.Col span={{ base: 12, md: 4 }}><DateTimePicker label="Data/Hora da Entrega" value={formData.delivery_datetime ? new Date(formData.delivery_datetime) : null} onChange={(value) => setFormData(p => ({ ...p, delivery_datetime: value || '' }))} placeholder="Selecione a data e hora" clearable minDate={new Date()} /></Grid.Col>
             <Grid.Col span={12}><Textarea label="Observações" onChange={(e) => setFormData(p => ({ ...p, notes: e.target.value }))} /></Grid.Col>
           </Grid>
@@ -317,7 +316,7 @@ function QuoteListPage() {
       
       <Group justify="space-between" my="lg">
         <Title order={1}>Orçamentos</Title>
-        <Button onClick={open} leftSection={<IconPlus size={16} />}>Novo Orçamento</Button>
+        {can('quotes.create') && (<Button onClick={open} leftSection={<IconPlus size={16} />}>Novo Orçamento</Button>)}
       </Group>
 
       <TextInput label="Buscar Orçamento" placeholder="Digite o Nº, nome do cliente ou status..." value={searchTerm} onChange={(event) => setSearchTerm(event.currentTarget.value)} leftSection={<IconSearch size={16} />} mb="md" />
@@ -328,7 +327,7 @@ function QuoteListPage() {
             <Table.Th w={40} />
             <Table.Th>Nº</Table.Th>
             <Table.Th>Cliente</Table.Th>
-            <Table.Th>Vendedor</Table.Th>
+            {can('quotes.view_all') && <Table.Th>Vendedor</Table.Th>}
             <Table.Th>Status</Table.Th>
             <Table.Th>Valor Total</Table.Th>
             <Table.Th>Data</Table.Th>

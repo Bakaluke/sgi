@@ -4,6 +4,7 @@ import { useDisclosure } from '@mantine/hooks';
 import { IconSearch, IconHistory, IconArrowsTransferUp, IconRefresh } from '@tabler/icons-react';
 import { notifications } from '@mantine/notifications';
 import api from '../api/axios';
+import { useAuth } from '../context/AuthContext';
 
 interface Product {
     id: number;
@@ -41,6 +42,7 @@ type StockMovementPayload = {
 };
 
 function StockPage() {
+    const { can } = useAuth();
     const [products, setProducts] = useState<Product[]>([]);
     const [activePage, setActivePage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
@@ -53,7 +55,7 @@ function StockPage() {
     const notesRef = useRef<HTMLTextAreaElement>(null);
     const [historyModalOpened, { open: openHistoryModal, close: closeHistoryModal }] = useDisclosure(false);
     const [historyData, setHistoryData] = useState<StockMovement[]>([]);
-    const [isLoadingHistory, setIsLoadingHistory] = useState(false);
+    const [, setIsLoadingHistory] = useState(false);
     const [productForHistory, setProductForHistory] = useState<Product | null>(null);
     
     const fetchProducts = useCallback((page: number, search: string) => {
@@ -149,12 +151,8 @@ function StockPage() {
             <Table.Td fw={700}>{product.quantity_in_stock}</Table.Td>
             <Table.Td>
                 <Group gap="xs">
-                    <Tooltip label="Registrar Movimentação">
-                        <Button variant="light" size="xs" leftSection={<IconArrowsTransferUp size={16} />} onClick={() => handleOpenMovementModal(product)}>Movimentar</Button>
-                    </Tooltip>
-                    <Tooltip label="Ver Histórico">
-                        <Button variant="light" color="gray" size="xs" leftSection={<IconHistory size={16} />} onClick={() => handleOpenHistoryModal(product)}>Histórico</Button>
-                    </Tooltip>
+                    {can('stock.manage') && (<Tooltip label="Registrar Movimentação"><Button variant="light" size="xs" leftSection={<IconArrowsTransferUp size={16} />} onClick={() => handleOpenMovementModal(product)}>Movimentar</Button></Tooltip>)}
+                    {can('stock.manage') && (<Tooltip label="Ver Histórico"><Button variant="light" color="orange" size="xs" leftSection={<IconHistory size={16} />} onClick={() => handleOpenHistoryModal(product)}>Histórico</Button></Tooltip>)}
                 </Group>
             </Table.Td>
         </Table.Tr>

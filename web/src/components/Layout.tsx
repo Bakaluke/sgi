@@ -19,7 +19,7 @@ const getInitials = (name: string | undefined): string => {
 
 export function Layout() {
   const [opened, { toggle }] = useDisclosure();
-  const { user, logout } = useAuth();
+  const { user, logout, can } = useAuth();
   const { settings } = useSettings();
 
   useEffect(() => {
@@ -44,10 +44,8 @@ export function Layout() {
             </Menu.Target>
             <Menu.Dropdown>
               <Menu.Item leftSection={<IconUserCircle size={14} />}component={RouterNavLink} to="/profile">Meu Perfil</Menu.Item>
-              {user?.role === 'admin' && (<>
-              <Menu.Item leftSection={<IconUsersGroup size={14} />} component={RouterNavLink} to="/users">Usuários</Menu.Item>
-              <Menu.Item leftSection={<IconSettings size={14} />} component={RouterNavLink} to="/settings">Configurações</Menu.Item>
-              </>)}
+              {can('users.manage') && (<Menu.Item leftSection={<IconUsersGroup size={14} />} component={RouterNavLink} to="/users">Usuários</Menu.Item>)}
+              {can('settings.manage') && (<Menu.Item leftSection={<IconSettings size={14} />} component={RouterNavLink} to="/settings">Configurações</Menu.Item>)}
               <Menu.Divider />
               <Menu.Item color="red" leftSection={<IconLogout size={14} />} onClick={logout}>Sair</Menu.Item>
             </Menu.Dropdown>
@@ -57,7 +55,7 @@ export function Layout() {
 
       <AppShell.Navbar p="md">
         <NavLink label="Dashboard" component={RouterNavLink} to="/dashboard" leftSection={<IconHome size="1rem" />} />
-        {user && ['admin', 'vendedor'].includes(user.role) && (<NavLink label="Orçamentos" component={RouterNavLink} to="/quotes" leftSection={<IconFileInvoice size="1rem" />} />)}
+        {can('quotes.view') && (<NavLink label="Orçamentos" component={RouterNavLink} to="/quotes" leftSection={<IconFileInvoice size="1rem" />} />)}
         <NavLink label="Produção" component={RouterNavLink} to="/production" leftSection={<IconTools size="1rem" />} />
         <NavLink label="Produtos" component={RouterNavLink} to="/products" leftSection={<IconPackage size="1rem" />} />
         <NavLink label="Estoque" component={RouterNavLink} to="/stock" leftSection={<IconClipboardList size="1rem" />} />

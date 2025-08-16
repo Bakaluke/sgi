@@ -39,30 +39,10 @@ function LoginPage() {
       <Title ta="center" order={4}>Faça seu acesso para continuar</Title>
       <Paper withBorder shadow="md" p={30} mt={30} radius="md">
         <form onSubmit={handleSubmit}>
-          {error && (
-            <Alert withCloseButton onClose={() => setError('')} title="Erro de Autenticação" color="red" icon={<IconAlertCircle />}>
-              {error}
-            </Alert>
-          )}
-          <TextInput
-            label="E-mail"
-            placeholder="seu@email.com"
-            value={email}
-            onChange={(event) => setEmail(event.currentTarget.value)}
-            required
-            mt="md"
-          />
-          <PasswordInput
-            label="Senha"
-            placeholder="Sua senha"
-            value={password}
-            onChange={(event) => setPassword(event.currentTarget.value)}
-            required
-            mt="md"
-          />
-          <Button type="submit" fullWidth mt="xl">
-            Entrar
-          </Button>
+          {error && (<Alert withCloseButton onClose={() => setError('')} title="Erro de Autenticação" color="red" icon={<IconAlertCircle />}>{error}</Alert>)}
+          <TextInput label="E-mail" placeholder="seu@email.com" value={email} onChange={(event) => setEmail(event.currentTarget.value)} required mt="md" />
+          <PasswordInput label="Senha" placeholder="Sua senha" value={password} onChange={(event) => setPassword(event.currentTarget.value)} required mt="md" />
+          <Button type="submit" fullWidth mt="xl">Entrar</Button>
         </form>
       </Paper>
     </Container>

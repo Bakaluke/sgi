@@ -3,7 +3,7 @@ import { Table, Title, Container, Button, Modal, TextInput, Textarea, Group, Too
 import { notifications } from '@mantine/notifications';
 import { useDisclosure } from '@mantine/hooks';
 import { useForm } from '@mantine/form';
-import { IconPencil, IconTrash, IconPlus, IconSearch, IconUpload, IconSettings } from '@tabler/icons-react';
+import { IconPencil, IconTrash, IconPlus, IconSearch, IconUpload, IconCategory, IconCategoryPlus } from '@tabler/icons-react';
 import { useAuth } from '../context/AuthContext';
 import api from '../api/axios';
 
@@ -42,7 +42,7 @@ const formatCurrency = (value: number) => {
 };
 
 function ProductPage() {
-    const { user } = useAuth();
+    const { can } = useAuth();
     const [products, setProducts] = useState<Product[]>([]);
     const [productModalOpened, { open: openProductModal, close: closeProductModal }] = useDisclosure(false);
     const [editingProduct, setEditingProduct] = useState<Product | null>(null);
@@ -200,10 +200,8 @@ function ProductPage() {
             <Table.Td>{product.quantity_in_stock}</Table.Td>
             <Table.Td>
                 <Group gap="xs">
-                    <Tooltip label="Editar Produto"><ActionIcon variant="light" color="blue" onClick={() => handleOpenEditModal(product)}><IconPencil size={16} /></ActionIcon></Tooltip>
-                    {user?.role === 'admin' && (
-                        <Tooltip label="Excluir Produto"><ActionIcon variant="light" color="red" onClick={() => handleDelete(product.id)}><IconTrash size={16} /></ActionIcon></Tooltip>
-                    )}
+                    {can('products.edit') && (<Tooltip label="Editar Produto"><ActionIcon variant="light" color="blue" onClick={() => handleOpenEditModal(product)}><IconPencil size={16} /></ActionIcon></Tooltip>)}
+                    {can('products.delete') && (<Tooltip label="Excluir Produto"><ActionIcon variant="light" color="red" onClick={() => handleDelete(product.id)}><IconTrash size={16} /></ActionIcon></Tooltip>)}
                 </Group>
             </Table.Td>
         </Table.Tr>
@@ -215,10 +213,8 @@ function ProductPage() {
             <Table.Td>{category.products_count}</Table.Td>
             <Table.Td>
                 <Group gap="xs">
-                    <Tooltip label="Editar Categoria"><ActionIcon variant="light" color="blue" onClick={() => handleOpenEditCategoryModal(category)}><IconPencil size={16} /></ActionIcon></Tooltip>
-                    {user?.role === 'admin' && (
-                        <Tooltip label="Excluir Categoria"><ActionIcon variant="light" color="red" onClick={() => handleCategoryDelete(category.id)}><IconTrash size={16} /></ActionIcon></Tooltip>
-                    )}
+                    {can('categories.manage') && (<Tooltip label="Editar Categoria"><ActionIcon variant="light" color="blue" onClick={() => handleOpenEditCategoryModal(category)}><IconPencil size={16} /></ActionIcon></Tooltip>)}
+                    {can('categories.manage') && (<Tooltip label="Excluir Categoria"><ActionIcon variant="light" color="red" onClick={() => handleCategoryDelete(category.id)}><IconTrash size={16} /></ActionIcon></Tooltip>)}
                 </Group>
             </Table.Td>
         </Table.Tr>
@@ -249,7 +245,7 @@ function ProductPage() {
                 </form>
             </Modal>
             
-            <Modal opened={categoryModalOpened} onClose={closeCategoryModal} title={editingCategory ? 'Editar Categoria' : 'Nova Categoria'}>
+            <Modal opened={categoryModalOpened} onClose={closeCategoryModal} title={editingCategory ? 'Editar Categoria' : 'Categorias'}>
                 <Table>
                     <Table.Thead>
                         <Table.Tr>
@@ -263,7 +259,7 @@ function ProductPage() {
                 <form onSubmit={categoryForm.onSubmit(handleCategorySubmit)}>
                     <Group mt="md" grow>
                         <TextInput placeholder="Nova categoria..." required {...categoryForm.getInputProps('name')} />
-                        <Button type="submit">Adicionar</Button>
+                        <Button type="submit" leftSection={<IconCategoryPlus size={16}/>}>Adicionar</Button>
                     </Group>
                 </form>
             </Modal>
@@ -271,8 +267,8 @@ function ProductPage() {
             <Group justify="space-between" my="lg">
                 <Title order={1}>Gestão de Produtos</Title>
                 <Group>
-                    <Button variant="default" onClick={handleOpenCreateCategoryModal} leftSection={<IconSettings size={16}/>}>Gerenciar Categorias</Button>
-                    <Button onClick={handleOpenCreateModal} leftSection={<IconPlus size={16} />}>Adicionar Produto</Button>
+                    {can('categories.manage') && (<Button variant="default" onClick={handleOpenCreateCategoryModal} leftSection={<IconCategory size={16}/>}>Gerenciar Categorias</Button>)}
+                    {can('products.create') && (<Button onClick={handleOpenCreateModal} leftSection={<IconPlus size={16} />}>Adicionar Produto</Button>)}
                 </Group>
             </Group>
 
