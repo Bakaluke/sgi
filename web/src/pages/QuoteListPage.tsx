@@ -43,6 +43,7 @@ interface Quote {
   customer: Customer;
   user: { name: string };
   status: string;
+  payment_method_id: number | null;
   total_amount: number;
   created_at: string;
   items: QuoteItem[];
@@ -58,7 +59,7 @@ const initialFormData = {
   customer_phone: '',
   customer_email: '',
   customer_address: '',
-  payment_method: '',
+  payment_method_id: null as number | null,
   delivery_method: '',
   delivery_datetime: '',
   notes: '',
@@ -88,6 +89,7 @@ function QuoteListPage() {
   const [customerOptions, setCustomerOptions] = useState<SelectOption[]>([]);
   const [customerSearch, setCustomerSearch] = useState('');
   const [isSearchingCustomers, setIsSearchingCustomers] = useState(false);
+  const [paymentMethods, setPaymentMethods] = useState<SelectOption[]>([]);
   
   const fetchQuotes = useCallback((page: number, search: string) => {
     api.get('/quotes', {
@@ -122,6 +124,15 @@ function QuoteListPage() {
     }, 300);
     return () => clearTimeout(searchTimer);
   }, [customerSearch]);
+
+  useEffect(() => {
+    api.get('/payment-methods').then(res => {
+      setPaymentMethods(res.data.map((pm: {id: number, name: string}) => ({
+        value: String(pm.id),
+        label: pm.name
+      })));
+    });
+  }, []);
   
   const handleCustomerSelect = (customerId: string | null) => {
     if (!customerId) {
@@ -151,7 +162,7 @@ function QuoteListPage() {
 
     const payload = {
       customer_id: formData.customer_id,
-      payment_method: formData.payment_method,
+      payment_method_id: formData.payment_method_id,
       delivery_method: formData.delivery_method,
       notes: formData.notes,
       delivery_datetime: formData.delivery_datetime,
@@ -301,7 +312,7 @@ function QuoteListPage() {
         
         <Fieldset legend="Dados do Orçamento" mt="md">
           <Grid>
-            <Grid.Col span={{ base: 12, md: 4 }}><Select label="Forma de Pagamento" data={['PIX', 'Cartão de Crédito', 'Boleto Bancário', 'Dinheiro']} onChange={(value) => setFormData(p => ({ ...p, payment_method: value || '' }))} /></Grid.Col>
+            <Grid.Col span={{ base: 12, md: 4 }}><Select label="Forma de Pagamento" placeholder="Selecione..." data={paymentMethods} value={String(formData.payment_method_id || '')} onChange={(value) => setFormData(p => ({ ...p, payment_method_id: value ? Number(value) : null }))} /></Grid.Col>
             <Grid.Col span={{ base: 12, md: 4 }}><Select label="Opção de Entrega" data={['Retirada na Loja', 'Correios', 'Transportadora', 'Delivery']} onChange={(value) => setFormData(p => ({ ...p, delivery_method: value || '' }))} /></Grid.Col>
             <Grid.Col span={{ base: 12, md: 4 }}><DateTimePicker label="Data/Hora da Entrega" value={formData.delivery_datetime ? new Date(formData.delivery_datetime) : null} onChange={(value) => setFormData(p => ({ ...p, delivery_datetime: value || '' }))} placeholder="Selecione a data e hora" clearable minDate={new Date()} /></Grid.Col>
             <Grid.Col span={12}><Textarea label="Observações" onChange={(e) => setFormData(p => ({ ...p, notes: e.target.value }))} /></Grid.Col>

@@ -177,6 +177,7 @@ return [
 
         // Orçamentos
         'payment_method' => 'Forma de Pagamento',
+        'payment_method_id' => 'Forma de Pagamento',
         'delivery_method' => 'Forma de Entrega',
         'delivery_datetime' => 'Data/Hora da Entrega',
         'notes' => 'Observações',

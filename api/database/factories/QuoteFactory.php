@@ -6,6 +6,7 @@ use App\Models\Customer;
 use App\Models\Quote;
 use App\Models\QuoteItem;
 use App\Models\User;
+use App\Models\PaymentMethod;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class QuoteFactory extends Factory
@@ -14,6 +15,7 @@ class QuoteFactory extends Factory
     {
         $customer = Customer::has('addresses')->with('addresses')->inRandomOrder()->first();
         $user = User::whereHas('roles', fn ($query) => $query->where('name', 'vendedor'))->inRandomOrder()->first();
+        $paymentMethod = PaymentMethod::inRandomOrder()->first();
 
         $primaryAddress = $customer->addresses->first();
         $addressString = $primaryAddress ? implode(', ', array_filter([
@@ -39,7 +41,7 @@ class QuoteFactory extends Factory
             'customer_data' => $customerSnapshot,
             'salesperson_name' => $user->name,
             'delivery_method' => fake()->randomElement(['Retirada na Loja', 'Correios', 'Transportadora', 'Delivery']),
-            'payment_method' => fake()->randomElement(['PIX', 'Cartão de Crédito', 'Boleto Bancário', 'Dinheiro']),
+            'payment_method_id' => $paymentMethod->id,
             'notes' => fake()->sentence(),
         ];
     }

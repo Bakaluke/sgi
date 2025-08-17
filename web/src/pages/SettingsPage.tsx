@@ -32,6 +32,10 @@ interface Role {
     display_name: string;
     permissions: Permission[];
 }
+interface PaymentMethod {
+    id: number;
+    name: string;
+}
 
 const formatCnpj = (cnpj: string = '') => {
     return cnpj
@@ -98,6 +102,14 @@ function SettingsPage() {
     const [permissions, setPermissions] = useState<Permission[]>([]);
     const [modalOpened, { open: openModal, close: closeModal }] = useDisclosure(false);
     const [editingRole, setEditingRole] = useState<Role | null>(null);
+    const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
+    const [pmModalOpened, { open: openPmModal, close: closePmModal }] = useDisclosure(false);
+    const [editingPm, setEditingPm] = useState<PaymentMethod | null>(null);
+
+    const pmForm = useForm({
+        initialValues: { name: '' },
+        validate: { name: (value: string) => (value.trim().length < 2 ? 'O nome é obrigatório.' : null) },
+    });
 
     const roleForm = useForm({
         initialValues: { display_name: '', permissions: [] as string[] },
@@ -108,10 +120,15 @@ function SettingsPage() {
         api.get('/settings').then(res => setSettings(res.data));
         api.get('/permissions').then(res => setPermissions(res.data));
         fetchRoles();
+        fetchPaymentMethods();
     }, []);
 
     const fetchRoles = () => {
         api.get('/roles').then(res => setRoles(res.data));
+    };
+
+    const fetchPaymentMethods = () => {
+        api.get('/payment-methods').then(res => setPaymentMethods(res.data));
     };
 
     const handleCnpjBlur = () => {
@@ -229,6 +246,33 @@ function SettingsPage() {
             });
         }
     };
+
+    const handleOpenCreatePmModal = () => {
+        setEditingPm(null); pmForm.reset(); openPmModal();
+    };
+
+    const handleOpenEditPmModal = (pm: PaymentMethod) => {
+        setEditingPm(pm); pmForm.setValues({ name: pm.name }); openPmModal();
+    };
+
+    const handlePmSubmit = (values: typeof pmForm.values) => {
+        const promise = editingPm
+            ? api.put(`/payment-methods/${editingPm.id}`, values)
+            : api.post('/payment-methods', values);
+        promise.then(() => {
+            closePmModal();
+            notifications.show({ title: 'Sucesso!', message: `Forma de pagamento salva.`, color: 'green' });
+            fetchPaymentMethods();
+        });
+    };
+    const handlePmDelete = (id: number) => {
+        if (window.confirm('Tem certeza?')) {
+            api.delete(`/payment-methods/${id}`).then(() => {
+                notifications.show({ title: 'Sucesso', message: 'Forma de pagamento excluída.', color: 'green' });
+                fetchPaymentMethods();
+            });
+        }
+    };
     
     const roleRows = roles.map((role) => (
         <Table.Tr key={role.id}>
@@ -240,6 +284,18 @@ function SettingsPage() {
                 <Group gap="xs">
                     <Tooltip label="Editar Função"><ActionIcon variant="light" color="blue" onClick={() => handleOpenEditRoleModal(role)}><IconPencil size={16} /></ActionIcon></Tooltip>
                     <Tooltip label="Excluir Função"><ActionIcon variant="light" color="red" onClick={() => handleRoleDelete(role)}><IconTrash size={16} /></ActionIcon></Tooltip>
+                </Group>
+            </Table.Td>
+        </Table.Tr>
+    ));
+
+    const pmRows = paymentMethods.map((pm) => (
+        <Table.Tr key={pm.id}>
+            <Table.Td>{pm.name}</Table.Td>
+            <Table.Td>
+                <Group gap="xs">
+                    <ActionIcon variant="light" color="blue" onClick={() => handleOpenEditPmModal(pm)}><IconPencil size={16} /></ActionIcon>
+                    <ActionIcon variant="light" color="red" onClick={() => handlePmDelete(pm.id)}><IconTrash size={16} /></ActionIcon>
                 </Group>
             </Table.Td>
         </Table.Tr>
@@ -266,7 +322,7 @@ function SettingsPage() {
                 <Tabs.List>
                     <Tabs.Tab value="company">Dados da Empresa</Tabs.Tab>
                     <Tabs.Tab value="roles">Funções & Permissões</Tabs.Tab>
-                    <Tabs.Tab value="quotes">Ajustes do Orçamento</Tabs.Tab>
+                    <Tabs.Tab value="quote_data">Ajustes do Orçamento</Tabs.Tab>
                     <Tabs.Tab value="productions">Ajustes da Produção</Tabs.Tab>
                 </Tabs.List>
 
@@ -304,7 +360,7 @@ function SettingsPage() {
                 <Tabs.Panel value="roles" pt="md">
                     <Modal opened={modalOpened} onClose={closeModal} title={editingRole ? 'Editar Função' : 'Nova Função'} size="lg">
                         <form onSubmit={roleForm.onSubmit(handleRoleSubmit)}>
-                            <TextInput label="Nome da Função (Ex: Gerente)" required {...roleForm.getInputProps('display_name')} />
+                            <TextInput label={editingRole ? "Nome da Função" : "Nome da Função (Ex: Gerente)"} required {...roleForm.getInputProps('display_name')} />
                             <Title order={5} mt="lg" mb="sm">Permissões</Title>
                             <Checkbox.Group {...roleForm.getInputProps('permissions')}>
                                 <Grid>
@@ -328,14 +384,39 @@ function SettingsPage() {
                     
                     <Table>
                         <Table.Thead>
-                            <Table.Tr><Table.Th>Função</Table.Th><Table.Th>Permissões</Table.Th><Table.Th>Ações</Table.Th></Table.Tr>
+                            <Table.Tr>
+                                <Table.Th>Função</Table.Th>
+                                <Table.Th>Permissões</Table.Th>
+                                <Table.Th>Ações</Table.Th>
+                            </Table.Tr>
                         </Table.Thead>
                         <Table.Tbody>{roleRows}</Table.Tbody>
                     </Table>
                 </Tabs.Panel>
 
-                <Tabs.Panel value="quotes" pt="md">
-                    <Group justify="flex-end" mb="md"></Group>
+                <Tabs.Panel value="quote_data" pt="md">
+                    <Modal opened={pmModalOpened} onClose={closePmModal} title={editingPm ? 'Editar Forma de Pagamento' : 'Nova Forma de Pagamento'}>
+                        <form onSubmit={pmForm.onSubmit(handlePmSubmit)}>
+                            <TextInput label="Nome" required {...pmForm.getInputProps('name')} />
+                            <Group justify="flex-end" mt="lg"><Button type="submit">Salvar</Button></Group>
+                        </form>
+                    </Modal>
+
+                    <Group justify="flex-end" mb="md">
+                        <Button onClick={handleOpenCreatePmModal} leftSection={<IconPlus size={16}/>}>Adicionar</Button>
+                    </Group>
+                    
+                    <Table>
+                        <Table.Thead>
+                            <Table.Tr>
+                                <Table.Th>Nome</Table.Th>
+                                <Table.Th w={120}>Ações</Table.Th>
+                            </Table.Tr>
+                        </Table.Thead>
+                        <Table.Tbody>
+                            {pmRows}
+                        </Table.Tbody>
+                    </Table>
                 </Tabs.Panel>
 
                 <Tabs.Panel value="productions" pt="md">

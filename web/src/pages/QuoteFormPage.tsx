@@ -39,6 +39,7 @@ interface QuoteItem {
   id: number; 
   product: Product; 
   quantity: number;
+  payment_method_id: number | null;
   unit_cost_price: number;
   unit_sale_price: number; 
   discount_percentage: number; 
@@ -65,7 +66,8 @@ interface Quote {
   created_at: string;
   items: QuoteItem[];
   discount_percentage: number;
-  payment_method: string | null;
+  payment_method_id: string | null;
+  payment_method: { id: number; name: string } | null;
   delivery_method: string | null;
   delivery_datetime: string | null;
   notes: string | null;
@@ -112,6 +114,7 @@ function QuoteFormPage() {
   const [selectedProduct, setSelectedProduct] = useState<string | null>(null);
   const [quantity, setQuantity] = useState<number | string>(1);
   const debounceTimers = useRef<{ [itemId: number]: number }>({});
+  const [paymentMethods, setPaymentMethods] = useState<SelectOption[]>([]);
   const isLocked = initialStatus === 'Aprovado' || initialStatus === 'Cancelado';
 
   useEffect(() => {
@@ -132,6 +135,15 @@ function QuoteFormPage() {
       });
     }
   }, [quoteId]);
+
+  useEffect(() => {
+    api.get('/payment-methods').then(res => {
+      setPaymentMethods(res.data.map((pm: {id: number, name: string}) => ({
+        value: String(pm.id),
+        label: pm.name
+      })));
+    });
+  }, []);
 
   const updateQuoteField = (field: keyof Quote, value: any) => {
         setQuote(currentQuote => {
@@ -155,7 +167,7 @@ function QuoteFormPage() {
     if (!quote) return;
     setIsSavingHeader(true);
     api.put(`/quotes/${quoteId}`, {
-      payment_method: quote.payment_method,
+      payment_method_id: quote.payment_method_id,
       delivery_method: quote.delivery_method,
       delivery_datetime: quote.delivery_datetime,
       discount_percentage: quote.discount_percentage,
@@ -289,9 +301,9 @@ function QuoteFormPage() {
         <Fieldset legend="Dados Gerais do Orçamento" mt="md">
           <Grid>
             <Grid.Col span={{ base: 12, md: 6 }}><Select label="Status" value={quote.status} onChange={(value) => updateQuoteField('status', value || 'Aberto')} data={['Aberto', 'Negociação', 'Aprovado', 'Cancelado']} disabled={isLocked} required /></Grid.Col>
-            <Grid.Col span={{ base: 12, md: 6 }}><Select label="Forma de Pagamento" value={quote.payment_method} onChange={(value) => updateQuoteField('payment_method', value)} data={['PIX', 'Cartão de Crédito', 'Boleto Bancário', 'Dinheiro']} disabled={isLocked} allowDeselect required /></Grid.Col>
+            <Grid.Col span={{ base: 12, md: 6 }}><Select label="Forma de Pagamento" value={String(quote.payment_method_id || '')} onChange={(value) => updateQuoteField('payment_method_id', value ? Number(value) : null)} data={paymentMethods} disabled={isLocked} required /></Grid.Col>
             <Grid.Col span={{ base: 12, md: 4 }}><NumberInput label="Desconto Geral (%)" value={quote.discount_percentage || 0} onChange={(value) => updateQuoteField('discount_percentage', Number(value) || 0)} min={0} max={99} allowDecimal={false} rightSection="%" disabled={isLocked} /></Grid.Col>
-            <Grid.Col span={{ base: 12, md: 4 }}><Select label="Opção de Entrega" value={quote.delivery_method} onChange={(value) => updateQuoteField('delivery_method', value)} data={['Retirada na Loja', 'Correios', 'Transportadora', 'Delivery']} disabled={isLocked} allowDeselect required /></Grid.Col>
+            <Grid.Col span={{ base: 12, md: 4 }}><Select label="Opção de Entrega" value={quote.delivery_method} onChange={(value) => updateQuoteField('delivery_method', value)} data={['Retirada na Loja', 'Correios', 'Transportadora', 'Delivery']} disabled={isLocked} required /></Grid.Col>
             <Grid.Col span={{ base: 12, md: 4 }}><DateTimePicker label="Data/Hora da Entrega" placeholder="Selecione data e hora" value={quote.delivery_datetime ? new Date(quote.delivery_datetime) : null} onChange={(date) => updateQuoteField('delivery_datetime', date?.toString() || null)} disabled={isLocked} clearable required minDate={new Date()} /></Grid.Col>
             <Grid.Col span={12}><Textarea label="Observações" placeholder="Adicione observações sobre o pedido..." value={quote.notes || ''} onChange={(event) => updateQuoteField('notes', event.currentTarget.value)} disabled={isLocked} autosize minRows={2} /></Grid.Col>
           </Grid>

@@ -15,7 +15,7 @@ class Quote extends Model
     protected $fillable = [
         'customer_id', 'user_id', 'status', 'customer_data',
         'salesperson_name', 'delivery_datetime', 'delivery_method',
-        'payment_method', 'subtotal', 'discount_percentage', 'total_amount', 'notes',
+        'payment_method_id', 'subtotal', 'discount_percentage', 'total_amount', 'notes',
     ];
 
     protected function customerData(): Attribute
@@ -34,6 +34,11 @@ class Quote extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function paymentMethod(): BelongsTo
+    {
+        return $this->belongsTo(PaymentMethod::class);
     }
 
     public function items(): HasMany

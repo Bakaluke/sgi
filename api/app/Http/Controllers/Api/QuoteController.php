@@ -51,7 +51,7 @@ class QuoteController extends Controller
 
         $validated = $request->validate([
             'customer_id' => 'required|exists:customers,id',
-            'payment_method' => 'nullable|string|max:255',
+            'payment_method_id' => 'nullable|exists:payment_methods,id',
             'delivery_method' => 'nullable|string|max:255',
             'delivery_datetime' => 'nullable|date',
             'notes' => 'nullable|string',
@@ -99,7 +99,7 @@ class QuoteController extends Controller
         $this->authorize('update', $quote);
 
         $validated = $request->validate([
-            'payment_method' => 'required|string|max:255',
+            'payment_method_id' => 'required|exists:payment_methods,id',
             'delivery_method' => 'required|string|max:255',
             'delivery_datetime' => 'required|date',
             'discount_percentage' => 'nullable|numeric|min:0|max:100',
