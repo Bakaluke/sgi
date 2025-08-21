@@ -37,6 +37,18 @@ interface PaymentMethod {
     name: string;
 }
 
+interface Permission {
+    id: number;
+    name: string;
+}
+
+interface Role {
+    id: number;
+    name: string;
+    display_name: string;
+    permissions: Permission[];
+}
+
 const formatCnpj = (cnpj: string = '') => {
     return cnpj
     .replace(/\D/g, '')

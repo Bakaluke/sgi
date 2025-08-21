@@ -193,6 +193,7 @@ function ProductPage() {
 
     const rows = products.map((product) => (
         <Table.Tr key={product.id}>
+            <Table.Td>{product.id}</Table.Td>
             <Table.Td>{product.name}</Table.Td>
             <Table.Td>{product.sku}</Table.Td>
             <Table.Td>{product.category?.name || 'N/A'}</Table.Td>
@@ -277,6 +278,7 @@ function ProductPage() {
             <Table>
                 <Table.Thead>
                     <Table.Tr>
+                        <Table.Th>ID</Table.Th>
                         <Table.Th>Produto</Table.Th>
                         <Table.Th>SKU</Table.Th>
                         <Table.Th>Categoria</Table.Th>

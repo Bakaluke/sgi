@@ -76,8 +76,8 @@ function ProfilePage() {
                     
                     <Tabs.Panel value="profile" pt="md">
                         <form onSubmit={profileForm.onSubmit(handleProfileUpdate)}>
-                            <TextInput label="Nome" required {...profileForm.getInputProps('name')} />
-                            <TextInput label="E-mail" type="email" required mt="md" {...profileForm.getInputProps('email')} />
+                            <TextInput label="Nome" required {...profileForm.getInputProps('name')} readOnly />
+                            <TextInput label="E-mail" type="email" required mt="md" {...profileForm.getInputProps('email')} readOnly />
                             <TextInput label="Telefone" placeholder="(XX) XXXXX-XXXX" mt="md" value={formatPhone(profileForm.values.phone || '')} onChange={(event) => profileForm.setFieldValue('phone', event.currentTarget.value.replace(/\D/g, ''))} error={profileForm.errors.phone} />
                             <Group justify="flex-end" mt="lg"><Button type="submit">Salvar Alterações</Button></Group>
                         </form>
