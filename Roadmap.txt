@@ -1,7 +1,5 @@
 Módulo de Configurações (Refatorado):
 
-Criação/Edição de Formas de Pagamento (trazer mais personalizações nos Orçamentos, mas que pode ser implementado quando fizermos o módulo financeiro);
-
 Criação/Edição de Formas de Entrega (trazer mais personalizações nos Orçamentos);
 
 Criação/Edição de Status do Orçamento (trazer mais personalizações nos Orçamentos);

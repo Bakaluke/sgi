@@ -5,6 +5,7 @@ interface User {
   id: number;
   name: string;
   email: string;
+  phone: string | null;
   role: string;
   permissions: string[];
 }
@@ -24,12 +25,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(localStorage.getItem('authToken'));
   const [isLoading, setIsLoading] = useState(true);
-
-  const can = (permissionName: string): boolean => {
-    if (!user) return false;
-    if (user.role === 'admin') return true;
-    return user.permissions?.includes(permissionName) || false;
-  };
 
   useEffect(() => {
     if (token) {

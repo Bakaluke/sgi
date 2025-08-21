@@ -69,22 +69,25 @@ class QuoteController extends Controller
         ])) : null;
 
         $customerSnapshot = [
-            'name' => $customer->name, 'email' => $customer->email,
-            'phone' => $customer->phone, 'address' => $addressString,
+            'name' => $customer->name,
+            'email' => $customer->email,
+            'phone' => $customer->phone,
+            'address' => $addressString,
         ];
 
         $quote = Quote::create([
             'customer_id' => $customer->id,
             'user_id' => $user->id,
-            'salesperson_name' => $user->name,
+            'status' => 'Aberto',
             'customer_data' => $customerSnapshot,
-            'payment_method' => $validated['payment_method'] ?? null,
-            'delivery_method' => $validated['delivery_method'] ?? null,
-            'delivery_datetime' => $validated['delivery_datetime'] ?? null,
+            'salesperson_name' => $user->name,
             'notes' => $validated['notes'] ?? null,
+            'delivery_datetime' => $validated['delivery_datetime'] ?? null,
+            'delivery_method' => $validated['delivery_method'],
+            'payment_method_id' => $validated['payment_method_id'],
         ]);
-
-        return $quote->load(['customer.addresses', 'user', 'items']);
+        
+        return $quote->load(['customer.addresses', 'user', 'items.product', 'paymentMethod']);
     }
 
     public function show(Quote $quote)

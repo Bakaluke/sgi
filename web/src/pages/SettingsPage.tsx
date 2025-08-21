@@ -334,7 +334,7 @@ function SettingsPage() {
                 <Tabs.List>
                     <Tabs.Tab value="company">Dados da Empresa</Tabs.Tab>
                     <Tabs.Tab value="roles">Funções & Permissões</Tabs.Tab>
-                    <Tabs.Tab value="quote_data">Ajustes do Orçamento</Tabs.Tab>
+                    <Tabs.Tab value="quotes">Ajustes de Orçamento</Tabs.Tab>
                     <Tabs.Tab value="productions">Ajustes da Produção</Tabs.Tab>
                 </Tabs.List>
 
@@ -406,13 +406,17 @@ function SettingsPage() {
                     </Table>
                 </Tabs.Panel>
 
-                <Tabs.Panel value="quote_data" pt="md">
+                <Tabs.Panel value="quotes" pt="md">
                     <Modal opened={pmModalOpened} onClose={closePmModal} title={editingPm ? 'Editar Forma de Pagamento' : 'Nova Forma de Pagamento'}>
                         <form onSubmit={pmForm.onSubmit(handlePmSubmit)}>
                             <TextInput label="Nome" required {...pmForm.getInputProps('name')} />
                             <Group justify="flex-end" mt="lg"><Button type="submit">Salvar</Button></Group>
                         </form>
                     </Modal>
+
+                    <Group justify="flex-start" mb="md">
+                        <Title>Formas de Pagamento</Title>
+                    </Group>
 
                     <Group justify="flex-end" mb="md">
                         <Button onClick={handleOpenCreatePmModal} leftSection={<IconPlus size={16}/>}>Adicionar</Button>

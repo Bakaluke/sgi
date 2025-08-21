@@ -6,12 +6,23 @@ import { IconPencil, IconTrash, IconPlus } from '@tabler/icons-react';
 import api from '../api/axios';
 import { notifications } from '@mantine/notifications';
 
+interface Role {
+    id: number;
+    name: string;
+    display_name: string;
+}
+
 interface User {
     id: number;
     name: string;
     email: string;
-    phone: string;
-    role: 'vendedor' | 'producao' | 'admin';
+    phone: string | null;
+    roles: Role[];
+}
+
+interface SelectOption {
+    value: string;
+    label: string;
 }
 
 const formatPhone = (phone: string = '') => {
@@ -23,28 +34,13 @@ const formatPhone = (phone: string = '') => {
   return `(${cleaned.substring(0, 2)}) ${cleaned.substring(2, 7)}-${cleaned.substring(7)}`;
 };
 
-const formatRole = (role: string | undefined): string => {
-    if (!role) return 'N/A';
-    const roles: { [key: string]: string } = {
-        admin: 'Administrador',
-        vendedor: 'Vendedor',
-        producao: 'Produção',
-    };
-    return roles[role] || role;
-};
-
-const roleOptions = [
-    { value: 'vendedor', label: 'Vendedor' },
-    { value: 'producao', label: 'Produção' },
-];
-
 function UsersPage() {
     const [users, setUsers] = useState<User[]>([]);
     const [modalOpened, { open: openModal, close: closeModal }] = useDisclosure(false);
-    const [editingUser, setEditingUser] = useState<User | null>(null);
-    
+    const [editingUser, setEditingUser] = useState<User | null>(null);    
     const [activePage, setActivePage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
+    const [roleOptions, setRoleOptions] = useState<SelectOption[]>([]);
     
     const fetchUsers = useCallback((page: number) => {
         api.get('/users', { params: { page } }).then(response => {
@@ -55,10 +51,20 @@ function UsersPage() {
 
     useEffect(() => {
         fetchUsers(activePage);
+        api.get('/roles').then(res => {
+            const rolesFromApi: Role[] = res.data;
+            const filteredRoles = rolesFromApi.filter(role => role.name !== 'admin');
+            setRoleOptions(
+                filteredRoles.map(role => ({
+                    value: role.name,
+                    label: role.display_name
+                }))
+            );
+        });
     }, [activePage, fetchUsers]);
 
     const form = useForm({
-        initialValues: { name: '', email: '', phone: '', password: '', password_confirmation: '', role: 'vendedor' as User['role'] },
+        initialValues: { name: '', email: '', phone: '', password: '', password_confirmation: '', role: '' },
         validate: {
             name: (value) => (value.trim().length < 2 ? 'O nome deve ter pelo menos 2 caracteres' : null),
             email: (value) => (/^\S+@\S+$/.test(value) ? null : 'E-mail inválido'),
@@ -89,8 +95,12 @@ function UsersPage() {
     const handleOpenEditModal = (user: User) => {
         setEditingUser(user);
         form.setValues({
-            name: user.name, email: user.email, phone: user.phone || '',
-            password: '', password_confirmation: '', role: user.role
+            name: user.name,
+            email: user.email,
+            phone: user.phone || '',
+            password: '', 
+            password_confirmation: '',
+            role: user.roles[0]?.name || '' 
         });
         openModal();
     };
@@ -134,7 +144,7 @@ function UsersPage() {
             <Table.Td>{userInList.name}</Table.Td>
             <Table.Td>{userInList.email}</Table.Td>
             <Table.Td>{userInList.phone ? formatPhone(userInList.phone) : 'N/A'}</Table.Td>
-            <Table.Td>{formatRole(userInList.role)}</Table.Td>
+            <Table.Td>{userInList.roles[0]?.display_name || 'N/A'}</Table.Td>
             <Table.Td>
                 <Group gap="xs">
                     <Tooltip label="Editar Usuário"><ActionIcon variant="light" color="blue" onClick={() => handleOpenEditModal(userInList)}><IconPencil size={16} /></ActionIcon></Tooltip>
