@@ -19,7 +19,7 @@ return new class extends Migration
             $table->string('salesperson_name');
 
             $table->dateTime('delivery_datetime')->nullable();
-            $table->string('delivery_method')->nullable();
+            $table->foreignId('delivery_method_id')->nullable()->constrained()->onDelete('set null');
             $table->foreignId('payment_method_id')->nullable()->constrained()->onDelete('set null');
 
             $table->decimal('subtotal', 10, 2)->default(0);

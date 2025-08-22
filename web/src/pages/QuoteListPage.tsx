@@ -44,6 +44,7 @@ interface Quote {
   user: { name: string };
   status: string;
   payment_method_id: number | null;
+  delivery_method_id: number | null;
   total_amount: number;
   created_at: string;
   items: QuoteItem[];
@@ -60,6 +61,7 @@ const initialFormData = {
   customer_email: '',
   customer_address: '',
   payment_method_id: null as number | null,
+  delivery_method_id: null as number | null,
   delivery_method: '',
   delivery_datetime: '',
   notes: '',
@@ -90,6 +92,7 @@ function QuoteListPage() {
   const [customerSearch, setCustomerSearch] = useState('');
   const [isSearchingCustomers, setIsSearchingCustomers] = useState(false);
   const [paymentMethods, setPaymentMethods] = useState<SelectOption[]>([]);
+  const [deliveryMethods, setDeliveryMethods] = useState<SelectOption[]>([]);
   
   const fetchQuotes = useCallback((page: number, search: string) => {
     api.get('/quotes', {
@@ -126,12 +129,16 @@ function QuoteListPage() {
   }, [customerSearch]);
 
   useEffect(() => {
-    api.get('/payment-methods').then(res => {
-      setPaymentMethods(res.data.map((pm: {id: number, name: string}) => ({
-        value: String(pm.id),
-        label: pm.name
-      })));
-    });
+    api.get('/payment-methods').then(res =>
+      setPaymentMethods(res.data.map((pm: any) => ({
+        value: String(pm.id), label: pm.name
+      })
+    )));
+    api.get('/delivery-methods').then(res =>
+      setDeliveryMethods(res.data.map((dm: any) => ({
+        value: String(dm.id), label: dm.name
+      })
+    )));
   }, []);
   
   const handleCustomerSelect = (customerId: string | null) => {
@@ -163,7 +170,7 @@ function QuoteListPage() {
     const payload = {
       customer_id: formData.customer_id,
       payment_method_id: formData.payment_method_id,
-      delivery_method: formData.delivery_method,
+      delivery_method_id: formData.delivery_method_id,
       notes: formData.notes,
       delivery_datetime: formData.delivery_datetime,
     };
@@ -313,7 +320,7 @@ function QuoteListPage() {
         <Fieldset legend="Dados do Orçamento" mt="md">
           <Grid>
             <Grid.Col span={{ base: 12, md: 4 }}><Select label="Forma de Pagamento" placeholder="Selecione..." data={paymentMethods} value={String(formData.payment_method_id || '')} onChange={(value) => setFormData(p => ({ ...p, payment_method_id: value ? Number(value) : null }))} /></Grid.Col>
-            <Grid.Col span={{ base: 12, md: 4 }}><Select label="Opção de Entrega" data={['Retirada na Loja', 'Correios', 'Transportadora', 'Delivery']} onChange={(value) => setFormData(p => ({ ...p, delivery_method: value || '' }))} /></Grid.Col>
+            <Grid.Col span={{ base: 12, md: 4 }}><Select label="Opção de Entrega" placeholder="Selecione..." data={deliveryMethods} value={String(formData.delivery_method_id || '')} onChange={(value) => setFormData(p => ({ ...p, delivery_method_id: value ? Number(value) : null }))} /></Grid.Col>
             <Grid.Col span={{ base: 12, md: 4 }}><DateTimePicker label="Data/Hora da Entrega" value={formData.delivery_datetime ? new Date(formData.delivery_datetime) : null} onChange={(value) => setFormData(p => ({ ...p, delivery_datetime: value || '' }))} placeholder="Selecione a data e hora" clearable minDate={new Date()} /></Grid.Col>
             <Grid.Col span={12}><Textarea label="Observações" onChange={(e) => setFormData(p => ({ ...p, notes: e.target.value }))} /></Grid.Col>
           </Grid>
