@@ -16,6 +16,7 @@ use App\Http\Controllers\Api\ProfileController;
 use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\RoleController;
 use App\Http\Controllers\Api\PaymentMethodController;
+use App\Http\Controllers\Api\DeliveryMethodController;
 
 Route::post('/login', [LoginController::class, 'login']);
 
@@ -62,4 +63,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/permissions', [RoleController::class, 'getPermissions']);
 
     Route::apiResource('payment-methods', PaymentMethodController::class);
+
+    Route::apiResource('delivery-methods', DeliveryMethodController::class);
 });

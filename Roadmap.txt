@@ -1,10 +1,10 @@
 Módulo de Configurações (Refatorado):
 
-Criação/Edição de Formas de Entrega (trazer mais personalizações nos Orçamentos);
-
 Criação/Edição de Status do Orçamento (trazer mais personalizações nos Orçamentos);
 
 Criação/Edição de Origem da Negociação (uma opção a mais para ser inserida nos Orçamentos);
+
+Adicionar um botão no forms de criação de Orçamento para cadastro de um novo cliente;
 
 Criação/Edição de Status da Produção (trazer mais personalizações nas Ordens de Produção);
 

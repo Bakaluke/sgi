@@ -34,7 +34,17 @@ class PaymentMethodController extends Controller
     public function destroy(PaymentMethod $paymentMethod)
     {
         $this->authorize('delete', $paymentMethod);
-        $paymentMethod->delete();
-        return response()->noContent();
+        try {
+            $paymentMethod->delete();
+            return response()->noContent();
+        } catch (\Illuminate\Database\QueryException $e) {
+            if ($e->errorInfo[1] == 1451) {
+                return response()->json(
+                    ['message' => 'Não é possível excluir. Esta forma de pagamento está em uso em um ou mais orçamentos.'], 
+                    409
+                );
+            }
+            return response()->json(['message' => 'Ocorreu um erro no banco de dados.'], 500);
+        }
     }
 }

@@ -66,9 +66,10 @@ interface Quote {
   created_at: string;
   items: QuoteItem[];
   discount_percentage: number;
-  payment_method_id: string | null;
+  payment_method_id: number | null;
   payment_method: { id: number; name: string } | null;
-  delivery_method: string | null;
+  delivery_method_id: string | null;
+  delivery_method: { id: number; name: string } | null;
   delivery_datetime: string | null;
   notes: string | null;
   customer_data: CustomerDataSnapshot;
@@ -115,6 +116,7 @@ function QuoteFormPage() {
   const [quantity, setQuantity] = useState<number | string>(1);
   const debounceTimers = useRef<{ [itemId: number]: number }>({});
   const [paymentMethods, setPaymentMethods] = useState<SelectOption[]>([]);
+  const [deliveryMethods, setDeliveryMethods] = useState<SelectOption[]>([]);
   const isLocked = initialStatus === 'Aprovado' || initialStatus === 'Cancelado';
 
   useEffect(() => {
@@ -143,6 +145,7 @@ function QuoteFormPage() {
         label: pm.name
       })));
     });
+    api.get('/delivery-methods').then(res => setDeliveryMethods(res.data.map((dm: any) => ({ value: String(dm.id), label: dm.name }))));
   }, []);
 
   const updateQuoteField = (field: keyof Quote, value: any) => {
@@ -168,7 +171,7 @@ function QuoteFormPage() {
     setIsSavingHeader(true);
     api.put(`/quotes/${quoteId}`, {
       payment_method_id: quote.payment_method_id,
-      delivery_method: quote.delivery_method,
+      delivery_method_id: quote.delivery_method_id,
       delivery_datetime: quote.delivery_datetime,
       discount_percentage: quote.discount_percentage,
       status: quote.status,
@@ -303,7 +306,7 @@ function QuoteFormPage() {
             <Grid.Col span={{ base: 12, md: 6 }}><Select label="Status" value={quote.status} onChange={(value) => updateQuoteField('status', value || 'Aberto')} data={['Aberto', 'Negociação', 'Aprovado', 'Cancelado']} disabled={isLocked} required /></Grid.Col>
             <Grid.Col span={{ base: 12, md: 6 }}><Select label="Forma de Pagamento" value={String(quote.payment_method_id || '')} onChange={(value) => updateQuoteField('payment_method_id', value ? Number(value) : null)} data={paymentMethods} disabled={isLocked} required /></Grid.Col>
             <Grid.Col span={{ base: 12, md: 4 }}><NumberInput label="Desconto Geral (%)" value={quote.discount_percentage || 0} onChange={(value) => updateQuoteField('discount_percentage', Number(value) || 0)} min={0} max={99} allowDecimal={false} rightSection="%" disabled={isLocked} /></Grid.Col>
-            <Grid.Col span={{ base: 12, md: 4 }}><Select label="Opção de Entrega" value={quote.delivery_method} onChange={(value) => updateQuoteField('delivery_method', value)} data={['Retirada na Loja', 'Correios', 'Transportadora', 'Delivery']} disabled={isLocked} required /></Grid.Col>
+            <Grid.Col span={{ base: 12, md: 4 }}><Select label="Opção de Entrega" value={String(quote.delivery_method_id || '')} onChange={(value) => updateQuoteField('delivery_method_id', value ? Number(value) : null)} data={deliveryMethods} disabled={isLocked} required /></Grid.Col>
             <Grid.Col span={{ base: 12, md: 4 }}><DateTimePicker label="Data/Hora da Entrega" placeholder="Selecione data e hora" value={quote.delivery_datetime ? new Date(quote.delivery_datetime) : null} onChange={(date) => updateQuoteField('delivery_datetime', date?.toString() || null)} disabled={isLocked} clearable required minDate={new Date()} /></Grid.Col>
             <Grid.Col span={12}><Textarea label="Observações" placeholder="Adicione observações sobre o pedido..." value={quote.notes || ''} onChange={(event) => updateQuoteField('notes', event.currentTarget.value)} disabled={isLocked} autosize minRows={2} /></Grid.Col>
           </Grid>

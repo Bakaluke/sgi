@@ -53,8 +53,8 @@
         <div class="quote-info">
             <h3>Detalhes do Orçamento</h3>
             <p><strong>Consultor:</strong> {{ $quote->salesperson_name }}</p>
-            <p><strong>Forma de Pagamento:</strong> {{ $quote->payment_method ?? 'N/A' }}</p>
-            <p><strong>Opção de Entrega:</strong> {{ $quote->delivery_method ?? 'N/A' }}</p>
+            <p><strong>Forma de Pagamento:</strong> {{ $quote->paymentMethod?->name ?? 'N/A' }}</p>
+            <p><strong>Forma de Entrega:</strong> {{ $quote->deliveryMethod?->name ?? 'N/A' }}</p>
         </div>
 
         <div class="quote-table">

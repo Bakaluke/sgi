@@ -87,14 +87,14 @@ class QuoteController extends Controller
             'payment_method_id' => $validated['payment_method_id'],
         ]);
         
-        return $quote->load(['customer.addresses', 'user', 'items.product', 'paymentMethod']);
+        return $quote->load(['customer.addresses', 'user', 'items.product', 'paymentMethod', 'deliveryMethod']);
     }
 
     public function show(Quote $quote)
     {
         $this->authorize('view', $quote);
 
-        return $quote->load(['customer.addresses', 'user', 'items.product']);
+        return $quote->load(['customer.addresses', 'user', 'items.product', 'paymentMethod', 'deliveryMethod']);
     }
 
     public function update(Request $request, Quote $quote)
@@ -125,7 +125,7 @@ class QuoteController extends Controller
             QuoteApproved::dispatch($quote);
         }
 
-        return $quote->load(['customer.addresses', 'user', 'items.product']);
+        return $quote->load(['customer.addresses', 'user', 'items.product', 'paymentMethod', 'deliveryMethod']);
     }
 
     public function destroy(Quote $quote)
@@ -139,7 +139,7 @@ class QuoteController extends Controller
 
     public function generatePdf(Quote $quote)
     {
-        $quote->load(['customer.addresses', 'user', 'items.product']);
+        $quote->load(['customer.addresses', 'user', 'items.product', 'paymentMethod', 'deliveryMethod']);
 
         $settings = Setting::first();
 

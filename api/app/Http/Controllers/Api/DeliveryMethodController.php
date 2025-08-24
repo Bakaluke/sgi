@@ -34,7 +34,17 @@ class DeliveryMethodController extends Controller
     public function destroy(DeliveryMethod $deliveryMethod)
     {
         $this->authorize('delete', $deliveryMethod);
-        $deliveryMethod->delete();
-        return response()->noContent();
+        try {
+            $deliveryMethod->delete();
+            return response()->noContent();
+        } catch (\Illuminate\Database\QueryException $e) {
+            if ($e->errorInfo[1] == 1451) {
+                return response()->json(
+                    ['message' => 'Não é possível excluir. Esta opção de entrega está em uso em um ou mais orçamentos.'], 
+                    409
+                );
+            }
+            return response()->json(['message' => 'Ocorreu um erro no banco de dados.'], 500);
+        }
     }
 }

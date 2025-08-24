@@ -62,7 +62,6 @@ const initialFormData = {
   customer_address: '',
   payment_method_id: null as number | null,
   delivery_method_id: null as number | null,
-  delivery_method: '',
   delivery_datetime: '',
   notes: '',
 };
@@ -129,16 +128,8 @@ function QuoteListPage() {
   }, [customerSearch]);
 
   useEffect(() => {
-    api.get('/payment-methods').then(res =>
-      setPaymentMethods(res.data.map((pm: any) => ({
-        value: String(pm.id), label: pm.name
-      })
-    )));
-    api.get('/delivery-methods').then(res =>
-      setDeliveryMethods(res.data.map((dm: any) => ({
-        value: String(dm.id), label: dm.name
-      })
-    )));
+    api.get('/payment-methods').then(res => setPaymentMethods(res.data.map((pm: any) => ({ value: String(pm.id), label: pm.name }))));
+    api.get('/delivery-methods').then(res => setDeliveryMethods(res.data.map((dm: any) => ({ value: String(dm.id), label: dm.name }))));
   }, []);
   
   const handleCustomerSelect = (customerId: string | null) => {
@@ -309,8 +300,6 @@ function QuoteListPage() {
         <Fieldset legend="Dados do Cliente" mt="md">
           <Grid>
             <Grid.Col span={12}><Select label="Selecione o Cliente" placeholder="Digite para buscar..." data={customerOptions} searchable required clearable value={formData.customer_id} onChange={handleCustomerSelect} onSearchChange={setCustomerSearch} searchValue={customerSearch} rightSection={isSearchingCustomers ? <Loader size="xs" /> : null} /></Grid.Col>
-            {/*<Grid.Col span={{ base: 12, md: 11 }}><Select label="Selecione o Cliente" placeholder="Digite para buscar..." data={customerOptions} searchable required clearable value={formData.customer_id} onChange={handleCustomerSelect} onSearchChange={setCustomerSearch} searchValue={customerSearch} rightSection={isSearchingCustomers ? <Loader size="xs" /> : null} /></Grid.Col>*/}
-            {/*<Grid.Col span={{ base: 12, md: 1 }}><Tooltip label="Cadastrar Cliente"><Button><IconUsersPlus size={16} /></Button></Tooltip></Grid.Col>*/}
             <Grid.Col span={{ base: 12, md: 6 }}><TextInput label="Email" value={formData.customer_email || ''} readOnly /></Grid.Col>
             <Grid.Col span={{ base: 12, md: 6 }}><TextInput label="Telefone" value={formData.customer_phone ? formatPhone(formData.customer_phone) : ''} readOnly /></Grid.Col>
             <Grid.Col span={12}><TextInput label="Endereço" value={formData.customer_address || ''} readOnly /></Grid.Col>

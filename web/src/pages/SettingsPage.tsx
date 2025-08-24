@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Container, Title, Paper, Grid, TextInput, Button, Group, FileInput, Image, Loader, Tabs, Table, ActionIcon, Tooltip, Modal, Checkbox } from '@mantine/core';
-import { useForm } from '@mantine/form';
-import { useDisclosure } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
+import { useDisclosure } from '@mantine/hooks';
+import { useForm } from '@mantine/form';
 import { IconUpload, IconPencil, IconTrash, IconPlus } from '@tabler/icons-react';
 import api from '../api/axios';
 import axios from 'axios';
@@ -36,17 +36,9 @@ interface PaymentMethod {
     id: number;
     name: string;
 }
-
-interface Permission {
+interface DeliveryMethod {
     id: number;
     name: string;
-}
-
-interface Role {
-    id: number;
-    name: string;
-    display_name: string;
-    permissions: Permission[];
 }
 
 const formatCnpj = (cnpj: string = '') => {
@@ -115,13 +107,14 @@ function SettingsPage() {
     const [modalOpened, { open: openModal, close: closeModal }] = useDisclosure(false);
     const [editingRole, setEditingRole] = useState<Role | null>(null);
     const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
+    const [deliveryMethods, setDeliveryMethods] = useState<DeliveryMethod[]>([]);
     const [pmModalOpened, { open: openPmModal, close: closePmModal }] = useDisclosure(false);
+    const [dmModalOpened, { open: openDmModal, close: closeDmModal }] = useDisclosure(false);
     const [editingPm, setEditingPm] = useState<PaymentMethod | null>(null);
-
-    const pmForm = useForm({
-        initialValues: { name: '' },
-        validate: { name: (value: string) => (value.trim().length < 2 ? 'O nome é obrigatório.' : null) },
-    });
+    const [editingDm, setEditingDm] = useState<DeliveryMethod | null>(null);
+    
+    const pmForm = useForm({ initialValues: { name: '' }, validate: { name: (value: string) => (value.trim().length < 2 ? 'O nome é obrigatório.' : null) } });
+    const dmForm = useForm({ initialValues: { name: '' }, validate: { name: (value: string) => (value.trim().length < 2 ? 'O nome é obrigatório.' : null) } });
 
     const roleForm = useForm({
         initialValues: { display_name: '', permissions: [] as string[] },
@@ -130,9 +123,10 @@ function SettingsPage() {
 
     useEffect(() => {
         api.get('/settings').then(res => setSettings(res.data));
+        api.get('/roles').then(res => setRoles(res.data));
         api.get('/permissions').then(res => setPermissions(res.data));
-        fetchRoles();
         fetchPaymentMethods();
+        fetchDeliveryMethods();
     }, []);
 
     const fetchRoles = () => {
@@ -142,7 +136,11 @@ function SettingsPage() {
     const fetchPaymentMethods = () => {
         api.get('/payment-methods').then(res => setPaymentMethods(res.data));
     };
-
+    
+    const fetchDeliveryMethods = () => {
+        api.get('/delivery-methods').then(res => setDeliveryMethods(res.data));
+    };
+    
     const handleCnpjBlur = () => {
         if (!settings || !settings.cnpj) return;
         
@@ -260,30 +258,70 @@ function SettingsPage() {
     };
 
     const handleOpenCreatePmModal = () => {
-        setEditingPm(null); pmForm.reset(); openPmModal();
+        setEditingPm(null);
+        pmForm.reset();
+        openPmModal();
     };
 
     const handleOpenEditPmModal = (pm: PaymentMethod) => {
-        setEditingPm(pm); pmForm.setValues({ name: pm.name }); openPmModal();
+        setEditingPm(pm);
+        pmForm.setValues({ name: pm.name });
+        openPmModal();
     };
 
-    const handlePmSubmit = (values: typeof pmForm.values) => {
-        const promise = editingPm
-            ? api.put(`/payment-methods/${editingPm.id}`, values)
-            : api.post('/payment-methods', values);
+    const handlePmSubmit = (values: { name: string }) => {
+        const promise = editingPm ? api.put(`/payment-methods/${editingPm.id}`, values) : api.post('/payment-methods', values);
         promise.then(() => {
             closePmModal();
             notifications.show({ title: 'Sucesso!', message: `Forma de pagamento salva.`, color: 'green' });
             fetchPaymentMethods();
         });
     };
+
     const handlePmDelete = (id: number) => {
-        if (window.confirm('Tem certeza?')) {
-            api.delete(`/payment-methods/${id}`).then(() => {
-                notifications.show({ title: 'Sucesso', message: 'Forma de pagamento excluída.', color: 'green' });
-                fetchPaymentMethods();
-            });
-        }
+        if (window.confirm('Tem certeza?'))
+            api.delete(`/payment-methods/${id}`)
+        .then(() => {
+            notifications.show({ title: 'Sucesso', message: 'Excluído.', color: 'green' });
+            fetchPaymentMethods();
+        })
+        .catch(error => {
+            const message = error.response?.data?.message || 'Não foi possível excluir.';
+            notifications.show({ title: 'Ação Bloqueada', message: message, color: 'red' });
+        })
+    };
+
+    const handleOpenCreateDmModal = () => {
+        setEditingDm(null); dmForm.reset();
+        openDmModal();
+    };
+
+    const handleOpenEditDmModal = (dm: DeliveryMethod) => {
+        setEditingDm(dm);
+        dmForm.setValues({ name: dm.name });
+        openDmModal();
+    };
+
+    const handleDmSubmit = (values: { name: string }) => {
+        const promise = editingDm ? api.put(`/delivery-methods/${editingDm.id}`, values) : api.post('/delivery-methods', values);
+        promise.then(() => {
+            closeDmModal();
+            notifications.show({ title: 'Sucesso!', message: `Forma de entrega salva.`, color: 'green' });
+            fetchDeliveryMethods();
+        });
+    };
+
+    const handleDmDelete = (id: number) => {
+        if (window.confirm('Tem certeza?'))
+            api.delete(`/delivery-methods/${id}`)
+        .then(() => {
+            notifications.show({ title: 'Sucesso', message: 'Excluído.', color: 'green' });
+            fetchDeliveryMethods();
+        })
+        .catch(error => {
+            const message = error.response?.data?.message || 'Não foi possível excluir.';
+            notifications.show({ title: 'Ação Bloqueada', message: message, color: 'red' });
+        })
     };
     
     const roleRows = roles.map((role) => (
@@ -300,19 +338,7 @@ function SettingsPage() {
             </Table.Td>
         </Table.Tr>
     ));
-
-    const pmRows = paymentMethods.map((pm) => (
-        <Table.Tr key={pm.id}>
-            <Table.Td>{pm.name}</Table.Td>
-            <Table.Td>
-                <Group gap="xs">
-                    <ActionIcon variant="light" color="blue" onClick={() => handleOpenEditPmModal(pm)}><IconPencil size={16} /></ActionIcon>
-                    <ActionIcon variant="light" color="red" onClick={() => handlePmDelete(pm.id)}><IconTrash size={16} /></ActionIcon>
-                </Group>
-            </Table.Td>
-        </Table.Tr>
-    ));
-
+    
     const groupedPermissions = permissions.reduce((acc, p) => {
         const [group] = p.name.split('.');
         if (!acc[group]) acc[group] = [];
@@ -334,7 +360,7 @@ function SettingsPage() {
                 <Tabs.List>
                     <Tabs.Tab value="company">Dados da Empresa</Tabs.Tab>
                     <Tabs.Tab value="roles">Funções & Permissões</Tabs.Tab>
-                    <Tabs.Tab value="quotes">Ajustes de Orçamento</Tabs.Tab>
+                    <Tabs.Tab value="quote_data">Ajustes de Orçamento</Tabs.Tab>
                     <Tabs.Tab value="productions">Ajustes da Produção</Tabs.Tab>
                 </Tabs.List>
 
@@ -406,33 +432,71 @@ function SettingsPage() {
                     </Table>
                 </Tabs.Panel>
 
-                <Tabs.Panel value="quotes" pt="md">
-                    <Modal opened={pmModalOpened} onClose={closePmModal} title={editingPm ? 'Editar Forma de Pagamento' : 'Nova Forma de Pagamento'}>
-                        <form onSubmit={pmForm.onSubmit(handlePmSubmit)}>
-                            <TextInput label="Nome" required {...pmForm.getInputProps('name')} />
-                            <Group justify="flex-end" mt="lg"><Button type="submit">Salvar</Button></Group>
-                        </form>
-                    </Modal>
+                <Tabs.Panel value="quote_data" pt="md">
+                    <Tabs defaultValue="payment">
+                        <Tabs.List>
+                            <Tabs.Tab value="payment">Formas de Pagamento</Tabs.Tab>
+                            <Tabs.Tab value="delivery">Formas de Entrega</Tabs.Tab>
+                        </Tabs.List>
 
-                    <Group justify="flex-start" mb="md">
-                        <Title>Formas de Pagamento</Title>
-                    </Group>
+                        <Tabs.Panel value="payment" pt="md">
+                            <Modal opened={pmModalOpened} onClose={closePmModal} title={editingPm ? 'Editar Forma de Pagamento' : 'Nova Forma de Pagamento'}>
+                                <form onSubmit={pmForm.onSubmit(handlePmSubmit)}>
+                                    <TextInput label="Nome" required {...pmForm.getInputProps('name')} />
+                                    <Group justify="flex-end" mt="lg"><Button type="submit">Salvar</Button></Group>
+                                </form>
+                            </Modal>
+                            <Group justify="flex-end" mb="md"><Button onClick={handleOpenCreatePmModal} leftSection={<IconPlus size={16}/>}>Adicionar</Button></Group>
+                            <Table>
+                                <Table.Thead>
+                                    <Table.Tr>
+                                        <Table.Th>Nome</Table.Th>
+                                        <Table.Th w={120}>Ações</Table.Th>
+                                    </Table.Tr>
+                                </Table.Thead>
+                                <Table.Tbody>{paymentMethods.map(pm => (
+                                    <Table.Tr key={pm.id}>
+                                        <Table.Td>{pm.name}</Table.Td>
+                                        <Table.Td>
+                                            <Group gap="xs">
+                                                <ActionIcon onClick={() => handleOpenEditPmModal(pm)}><IconPencil size={16}/></ActionIcon>
+                                                <ActionIcon color="red" onClick={() => handlePmDelete(pm.id)}><IconTrash size={16}/></ActionIcon>
+                                            </Group>
+                                        </Table.Td>
+                                    </Table.Tr>))}
+                                </Table.Tbody>
+                            </Table>
+                        </Tabs.Panel>
 
-                    <Group justify="flex-end" mb="md">
-                        <Button onClick={handleOpenCreatePmModal} leftSection={<IconPlus size={16}/>}>Adicionar</Button>
-                    </Group>
-                    
-                    <Table>
-                        <Table.Thead>
-                            <Table.Tr>
-                                <Table.Th>Nome</Table.Th>
-                                <Table.Th w={120}>Ações</Table.Th>
-                            </Table.Tr>
-                        </Table.Thead>
-                        <Table.Tbody>
-                            {pmRows}
-                        </Table.Tbody>
-                    </Table>
+                        <Tabs.Panel value="delivery" pt="md">
+                             <Modal opened={dmModalOpened} onClose={closeDmModal} title={editingDm ? 'Editar Forma de Entrega' : 'Nova Forma de Entrega'}>
+                                <form onSubmit={dmForm.onSubmit(handleDmSubmit)}>
+                                    <TextInput label="Nome" required {...dmForm.getInputProps('name')} />
+                                    <Group justify="flex-end" mt="lg"><Button type="submit">Salvar</Button></Group>
+                                </form>
+                            </Modal>
+                            <Group justify="flex-end" mb="md"><Button onClick={handleOpenCreateDmModal} leftSection={<IconPlus size={16}/>}>Adicionar</Button></Group>
+                            <Table>
+                                <Table.Thead>
+                                    <Table.Tr>
+                                        <Table.Th>Nome</Table.Th>
+                                        <Table.Th w={120}>Ações</Table.Th>
+                                    </Table.Tr>
+                                </Table.Thead>
+                                <Table.Tbody>{deliveryMethods.map(dm => (
+                                    <Table.Tr key={dm.id}>
+                                        <Table.Td>{dm.name}</Table.Td>
+                                        <Table.Td>
+                                            <Group gap="xs">
+                                                <ActionIcon onClick={() => handleOpenEditDmModal(dm)}><IconPencil size={16}/></ActionIcon>
+                                                <ActionIcon color="red" onClick={() => handleDmDelete(dm.id)}><IconTrash size={16}/></ActionIcon>
+                                            </Group>
+                                        </Table.Td>
+                                    </Table.Tr>))}
+                                </Table.Tbody>
+                            </Table>
+                        </Tabs.Panel>
+                    </Tabs>
                 </Tabs.Panel>
 
                 <Tabs.Panel value="productions" pt="md">
