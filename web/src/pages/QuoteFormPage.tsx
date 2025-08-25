@@ -52,16 +52,22 @@ interface User {
   role: string;
 }
 interface CustomerDataSnapshot {
-    name: string;
-    email: string | null;
-    phone: string | null;
-    address: string | null;
+  name: string;
+  email: string | null;
+  phone: string | null;
+  address: string | null;
+}
+interface Status {
+  id: number;
+  name: string;
+  color: string;
 }
 interface Quote {
   id: number;
   customer: Customer;
   user: User;
-  status: string;
+  status_id: number | null;
+  status: Status | null;
   total_amount: number;
   created_at: string;
   items: QuoteItem[];
@@ -117,6 +123,7 @@ function QuoteFormPage() {
   const debounceTimers = useRef<{ [itemId: number]: number }>({});
   const [paymentMethods, setPaymentMethods] = useState<SelectOption[]>([]);
   const [deliveryMethods, setDeliveryMethods] = useState<SelectOption[]>([]);
+  const [quoteStatuses, setQuoteStatuses] = useState<SelectOption[]>([]);
   const isLocked = initialStatus === 'Aprovado' || initialStatus === 'Cancelado';
 
   useEffect(() => {
@@ -145,7 +152,18 @@ function QuoteFormPage() {
         label: pm.name
       })));
     });
-    api.get('/delivery-methods').then(res => setDeliveryMethods(res.data.map((dm: any) => ({ value: String(dm.id), label: dm.name }))));
+    api.get('/delivery-methods').then(res => {
+      setDeliveryMethods(res.data.map((dm: {id: number, name: string}) => ({
+        value: String(dm.id),
+        label: dm.name
+      })));
+    });
+    api.get('/quote-statuses').then(res => {
+      setQuoteStatuses(res.data.map((qs: Status) => ({
+        value: String(qs.id),
+        label: qs.name
+      })));
+    });
   }, []);
 
   const updateQuoteField = (field: keyof Quote, value: any) => {
@@ -172,6 +190,7 @@ function QuoteFormPage() {
     api.put(`/quotes/${quoteId}`, {
       payment_method_id: quote.payment_method_id,
       delivery_method_id: quote.delivery_method_id,
+      status_id: quote.status_id,
       delivery_datetime: quote.delivery_datetime,
       discount_percentage: quote.discount_percentage,
       status: quote.status,
@@ -303,7 +322,7 @@ function QuoteFormPage() {
 
         <Fieldset legend="Dados Gerais do Orçamento" mt="md">
           <Grid>
-            <Grid.Col span={{ base: 12, md: 6 }}><Select label="Status" value={quote.status} onChange={(value) => updateQuoteField('status', value || 'Aberto')} data={['Aberto', 'Negociação', 'Aprovado', 'Cancelado']} disabled={isLocked} required /></Grid.Col>
+            <Grid.Col span={{ base: 12, md: 6 }}><Select label="Status" value={String(quote.status_id || '')} onChange={(value) => updateQuoteField('status_id', value ? Number(value) : null)} data={quoteStatuses} disabled={isLocked} required /></Grid.Col>
             <Grid.Col span={{ base: 12, md: 6 }}><Select label="Forma de Pagamento" value={String(quote.payment_method_id || '')} onChange={(value) => updateQuoteField('payment_method_id', value ? Number(value) : null)} data={paymentMethods} disabled={isLocked} required /></Grid.Col>
             <Grid.Col span={{ base: 12, md: 4 }}><NumberInput label="Desconto Geral (%)" value={quote.discount_percentage || 0} onChange={(value) => updateQuoteField('discount_percentage', Number(value) || 0)} min={0} max={99} allowDecimal={false} rightSection="%" disabled={isLocked} /></Grid.Col>
             <Grid.Col span={{ base: 12, md: 4 }}><Select label="Opção de Entrega" value={String(quote.delivery_method_id || '')} onChange={(value) => updateQuoteField('delivery_method_id', value ? Number(value) : null)} data={deliveryMethods} disabled={isLocked} required /></Grid.Col>

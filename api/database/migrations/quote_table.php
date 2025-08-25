@@ -10,17 +10,16 @@ return new class extends Migration
     {
         Schema::create('quotes', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('customer_id')->constrained()->onDelete('restrict');
-            $table->foreignId('user_id')->constrained()->onDelete('restrict');
-
-            $table->enum('status', ['Aberto', 'Negociação', 'Aprovado', 'Cancelado'])->default('Aberto');
+            $table->foreignId('customer_id')->constrained('customers')->onDelete('restrict');
+            $table->foreignId('user_id')->constrained('users')->onDelete('restrict');
+            $table->foreignId('status_id')->nullable()->constrained('quote_statuses')->onDelete('restrict');
 
             $table->json('customer_data');
             $table->string('salesperson_name');
 
             $table->dateTime('delivery_datetime')->nullable();
-            $table->foreignId('delivery_method_id')->nullable()->constrained()->onDelete('restrict');
-            $table->foreignId('payment_method_id')->nullable()->constrained()->onDelete('restrict');
+            $table->foreignId('delivery_method_id')->nullable()->constrained('delivery_methods')->onDelete('restrict');
+            $table->foreignId('payment_method_id')->nullable()->constrained('payment_methods')->onDelete('restrict');
 
             $table->decimal('subtotal', 10, 2)->default(0);
             $table->decimal('discount_percentage', 5, 2)->default(0);

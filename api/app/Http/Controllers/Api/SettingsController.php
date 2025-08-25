@@ -34,6 +34,7 @@ class SettingsController extends Controller
             'city' => 'nullable|string|max:255',
             'state' => 'nullable|string|max:2',
             'logo' => 'nullable|image|max:10240',
+            'website' => 'nullable|url|max:255',
         ]);
 
         if ($request->hasFile('logo')) {

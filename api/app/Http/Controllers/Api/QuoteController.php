@@ -27,7 +27,7 @@ class QuoteController extends Controller
             return response()->json(['data' => []]);
         }
 
-        $query->with(['customer', 'user', 'items.product']);
+        $query->with(['customer', 'user', 'items.product', 'paymentMethod', 'deliveryMethod', 'status']);
 
         if ($request->has('search') && $request->input('search') != '') {
             $searchTerm = $request->input('search');
@@ -87,14 +87,14 @@ class QuoteController extends Controller
             'payment_method_id' => $validated['payment_method_id'],
         ]);
         
-        return $quote->load(['customer.addresses', 'user', 'items.product', 'paymentMethod', 'deliveryMethod']);
+        return $quote->load(['customer.addresses', 'user', 'items.product', 'paymentMethod', 'deliveryMethod', 'status']);
     }
 
     public function show(Quote $quote)
     {
         $this->authorize('view', $quote);
 
-        return $quote->load(['customer.addresses', 'user', 'items.product', 'paymentMethod', 'deliveryMethod']);
+        return $quote->load(['customer.addresses', 'user', 'items.product', 'paymentMethod', 'deliveryMethod', 'status']);
     }
 
     public function update(Request $request, Quote $quote)
@@ -125,7 +125,7 @@ class QuoteController extends Controller
             QuoteApproved::dispatch($quote);
         }
 
-        return $quote->load(['customer.addresses', 'user', 'items.product', 'paymentMethod', 'deliveryMethod']);
+        return $quote->load(['customer.addresses', 'user', 'items.product', 'paymentMethod', 'deliveryMethod', 'status']);
     }
 
     public function destroy(Quote $quote)
@@ -139,7 +139,7 @@ class QuoteController extends Controller
 
     public function generatePdf(Quote $quote)
     {
-        $quote->load(['customer.addresses', 'user', 'items.product', 'paymentMethod', 'deliveryMethod']);
+        $quote->load(['customer.addresses', 'user', 'items.product', 'paymentMethod', 'deliveryMethod', 'status']);
 
         $settings = Setting::first();
 

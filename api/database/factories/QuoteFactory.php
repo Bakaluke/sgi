@@ -8,6 +8,7 @@ use App\Models\QuoteItem;
 use App\Models\User;
 use App\Models\PaymentMethod;
 use App\Models\DeliveryMethod;
+use App\Models\QuoteStatus;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class QuoteFactory extends Factory
@@ -39,7 +40,7 @@ class QuoteFactory extends Factory
         return [
             'customer_id' => $customer->id,
             'user_id' => $user->id,
-            'status' => fake()->randomElement(['Aberto', 'Negociação']),
+            'status_id' => fake()->randomElement(['1', '2']),
             'customer_data' => $customerSnapshot,
             'salesperson_name' => $user->name,
             'delivery_method_id' => $deliveryMethod->id,

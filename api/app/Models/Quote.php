@@ -15,7 +15,7 @@ class Quote extends Model
     protected $fillable = [
         'customer_id',
         'user_id',
-        'status',
+        'status_id',
         'customer_data',
         'salesperson_name',
         'delivery_datetime',
@@ -53,6 +53,11 @@ class Quote extends Model
     public function paymentMethod(): BelongsTo
     {
         return $this->belongsTo(PaymentMethod::class);
+    }
+
+    public function status(): BelongsTo
+    {
+        return $this->belongsTo(QuoteStatus::class);
     }
 
     public function items(): HasMany

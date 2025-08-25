@@ -42,12 +42,17 @@ interface Quote {
   id: number;
   customer: Customer;
   user: { name: string };
-  status: string;
+  status: Status | null;
   payment_method_id: number | null;
   delivery_method_id: number | null;
   total_amount: number;
   created_at: string;
   items: QuoteItem[];
+}
+interface Status {
+  id: number;
+  name: string;
+  color: string;
 }
 interface SelectOption {
   value: string;
@@ -219,15 +224,6 @@ function QuoteListPage() {
       });
     }
   };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'Aprovado': return 'green';
-      case 'Cancelado': return 'red';
-      case 'Negociação': return 'blue';
-      default: return 'yellow';
-    }
-  };
   
   const rows = quotes.map((quote) => {
     const isExpanded = expandedQuoteIds.includes(quote.id);
@@ -243,7 +239,7 @@ function QuoteListPage() {
           <Table.Td>{quote.id}</Table.Td>
           <Table.Td>{quote.customer.name}</Table.Td>
           {can('quotes.view_all') && <Table.Td>{quote.user.name}</Table.Td>}
-          <Table.Td><Badge color={getStatusColor(quote.status)}>{quote.status}</Badge></Table.Td>
+          <Table.Td><Badge color={quote.status?.color || 'gray'}>{quote.status?.name || 'N/A'}</Badge></Table.Td>
           <Table.Td>{new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(quote.total_amount)}</Table.Td>
           <Table.Td>{quote.created_at ? new Date(quote.created_at).toLocaleDateString('pt-BR') : ''}</Table.Td>
           <Table.Td onClick={(e) => e.stopPropagation()}>

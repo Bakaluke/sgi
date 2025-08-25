@@ -14,6 +14,7 @@ class DatabaseSeeder extends Seeder
             CustomerSeeder::class,
             DeliveryMethodSeeder::class,
             PaymentMethodSeeder::class,
+            QuoteStatusSeeder::class,
             QuoteSeeder::class,
             SettingsSeeder::class,
         ]);

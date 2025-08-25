@@ -15,6 +15,7 @@ return new class extends Migration
             $table->string('cnpj', 18)->nullable();
             $table->string('email')->nullable();
             $table->string('phone', 20)->nullable();
+            $table->string('website')->nullable();
             $table->string('cep', 9)->nullable();
             $table->string('street')->nullable();
             $table->string('number', 20)->nullable();

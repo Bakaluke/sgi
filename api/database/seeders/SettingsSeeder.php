@@ -12,7 +12,7 @@ class SettingsSeeder extends Seeder
             'legal_name' => 'Cake Web Desenvolvimento de Sistemas Ltda',
             'company_fantasy_name' => 'Cake Web Dev',
             'cnpj' => '12345678000199',
-            'email' => 'contato@cakewebdev.com',
+            'email' => 'contato@cakewebdev.com.br',
             'phone' => '86999998888',
             'cep' => '64000000',
             'street' => 'Rua dos Programadores',
@@ -20,6 +20,7 @@ class SettingsSeeder extends Seeder
             'neighborhood' => 'Centro',
             'city' => 'Teresina',
             'state' => 'PI',
+            'website' => 'https://cakewebdev.com.br',
         ]);
     }
 }

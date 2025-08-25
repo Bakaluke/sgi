@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Container, Title, Paper, Grid, TextInput, Button, Group, FileInput, Image, Loader, Tabs, Table, ActionIcon, Tooltip, Modal, Checkbox } from '@mantine/core';
+import { Container, Title, Paper, Grid, TextInput, Button, Group, FileInput, Image, Loader, Tabs, Table, ActionIcon, Tooltip, Modal, Checkbox, ColorInput, Badge } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
 import { useDisclosure } from '@mantine/hooks';
 import { useForm } from '@mantine/form';
@@ -21,6 +21,7 @@ interface SettingsData {
     city: string;
     state: string;
     logo_path: string | null;
+    website: string | null;
 }
 interface Permission {
     id: number;
@@ -39,6 +40,11 @@ interface PaymentMethod {
 interface DeliveryMethod {
     id: number;
     name: string;
+}
+interface QuoteStatus {
+    id: number;
+    name: string;
+    color: string;
 }
 
 const formatCnpj = (cnpj: string = '') => {
@@ -112,9 +118,13 @@ function SettingsPage() {
     const [dmModalOpened, { open: openDmModal, close: closeDmModal }] = useDisclosure(false);
     const [editingPm, setEditingPm] = useState<PaymentMethod | null>(null);
     const [editingDm, setEditingDm] = useState<DeliveryMethod | null>(null);
+    const [quoteStatuses, setQuoteStatuses] = useState<QuoteStatus[]>([]);
+    const [qsModalOpened, { open: openQsModal, close: closeQsModal }] = useDisclosure(false);
+    const [editingQs, setEditingQs] = useState<QuoteStatus | null>(null);
     
     const pmForm = useForm({ initialValues: { name: '' }, validate: { name: (value: string) => (value.trim().length < 2 ? 'O nome é obrigatório.' : null) } });
     const dmForm = useForm({ initialValues: { name: '' }, validate: { name: (value: string) => (value.trim().length < 2 ? 'O nome é obrigatório.' : null) } });
+    const qsForm = useForm({ initialValues: { name: '', color: '#868e96' }, validate: { name: (value: string) => (value.trim().length < 2 ? 'O nome é obrigatório.' : null) }, });
 
     const roleForm = useForm({
         initialValues: { display_name: '', permissions: [] as string[] },
@@ -127,6 +137,7 @@ function SettingsPage() {
         api.get('/permissions').then(res => setPermissions(res.data));
         fetchPaymentMethods();
         fetchDeliveryMethods();
+        fetchQuoteStatuses();
     }, []);
 
     const fetchRoles = () => {
@@ -139,6 +150,10 @@ function SettingsPage() {
     
     const fetchDeliveryMethods = () => {
         api.get('/delivery-methods').then(res => setDeliveryMethods(res.data));
+    };
+
+    const fetchQuoteStatuses = () => {
+        api.get('/quote-statuses').then(res => setQuoteStatuses(res.data));
     };
     
     const handleCnpjBlur = () => {
@@ -323,6 +338,39 @@ function SettingsPage() {
             notifications.show({ title: 'Ação Bloqueada', message: message, color: 'red' });
         })
     };
+
+    const handleOpenCreateQsModal = () => {
+        setEditingQs(null); qsForm.reset();
+        openQsModal();
+    };
+
+    const handleOpenEditQsModal = (qs: QuoteStatus) => {
+        setEditingQs(qs);
+        qsForm.setValues({ name: qs.name, color: qs.color });
+        openQsModal();
+    };
+
+    const handleQsSubmit = (values: {name: string, color: string }) => {
+        const promise = editingQs ? api.put(`/quote-statuses/${editingQs.id}`, values) : api.post('/quote-statuses', values);
+        promise.then(() => {
+            closeQsModal();
+            notifications.show({ title: 'Sucesso!', message: 'Status salvo.', color: 'green' });
+            fetchQuoteStatuses();
+        });
+    };
+
+    const handleQsDelete = (id: number) => {
+        if (window.confirm('Tem certeza?'))
+            api.delete(`/quote-statuses/${id}`)
+        .then(() => {
+            notifications.show({ title: 'Sucesso', message: 'Excluído.', color: 'green' });
+            fetchQuoteStatuses();
+        })
+        .catch(error => {
+            const message = error.response?.data?.message || 'Não foi possível excluir.';
+            notifications.show({ title: 'Ação Bloqueada', message: message, color: 'red' });
+        })
+    };
     
     const roleRows = roles.map((role) => (
         <Table.Tr key={role.id}>
@@ -374,7 +422,7 @@ function SettingsPage() {
                                     <Grid.Col span={12}><TextInput label="Razão Social" value={settings.legal_name} onChange={(e) => setSettings({...settings, legal_name: e.currentTarget.value})} /></Grid.Col>
                                     <Grid.Col span={{ base: 12, md: 6 }}><TextInput label="Telefone" value={formatPhone(settings.phone)} onChange={(e) => setSettings({...settings, phone: e.currentTarget.value})} /></Grid.Col>
                                     <Grid.Col span={{ base: 12, md: 6 }}><TextInput label="E-mail de Contato" value={settings.email} onChange={(e) => setSettings({...settings, email: e.currentTarget.value})} /></Grid.Col>
-                                    
+                                    <Grid.Col span={{ base: 12, md: 6 }}><TextInput label="Website" placeholder="https://www.suaempresa.com" value={settings.website || ''} onChange={(e) => setSettings({...settings, website: e.currentTarget.value})} /></Grid.Col>
                                     <Grid.Col span={12}><Title order={5} mt="sm">Endereço</Title></Grid.Col>
                                     <Grid.Col span={{ base: 12, md: 4 }}><TextInput label="CEP" value={settings.cep} onChange={(e) => setSettings({...settings, cep: e.currentTarget.value})} onBlur={handleCepBlur} rightSection={isCepLoading ? <Loader size="xs" /> : null} /></Grid.Col>
                                     <Grid.Col span={{ base: 12, md: 8 }}><TextInput label="Rua / Logradouro" value={settings.street} onChange={(e) => setSettings({...settings, street: e.currentTarget.value})} /></Grid.Col>
@@ -437,6 +485,8 @@ function SettingsPage() {
                         <Tabs.List>
                             <Tabs.Tab value="payment">Formas de Pagamento</Tabs.Tab>
                             <Tabs.Tab value="delivery">Formas de Entrega</Tabs.Tab>
+                            <Tabs.Tab value="statuses">Status do Orçamento</Tabs.Tab>
+                            <Tabs.Tab value="origins">Origens da Negociação</Tabs.Tab>
                         </Tabs.List>
 
                         <Tabs.Panel value="payment" pt="md">
@@ -495,6 +545,35 @@ function SettingsPage() {
                                     </Table.Tr>))}
                                 </Table.Tbody>
                             </Table>
+                        </Tabs.Panel>
+                        <Tabs.Panel value="statuses" pt="md">
+                            <Modal opened={qsModalOpened} onClose={closeQsModal} title={editingQs ? 'Editar Status' : 'Novo Status'}>
+                                <form onSubmit={qsForm.onSubmit(handleQsSubmit)}>
+                                    <TextInput label="Nome do Status" required {...qsForm.getInputProps('name')} />
+                                    <ColorInput label="Cor do Status" placeholder="Escolha uma cor" mt="md" {...qsForm.getInputProps('color')} />
+                                    <Group justify="flex-end" mt="lg"><Button type="submit">Salvar</Button></Group>
+                                </form>
+                            </Modal>
+                            <Group justify="flex-end" mb="md"><Button onClick={handleOpenCreateQsModal} leftSection={<IconPlus size={16}/>}>Adicionar Status</Button></Group>
+                            <Table>
+                                <Table.Thead><Table.Tr><Table.Th>Nome</Table.Th><Table.Th>Cor</Table.Th><Table.Th w={120}>Ações</Table.Th></Table.Tr></Table.Thead>
+                                <Table.Tbody>{quoteStatuses.map(qs => (
+                                    <Table.Tr key={qs.id}>
+                                        <Table.Td>{qs.name}</Table.Td>
+                                        <Table.Td><Badge color={qs.color} size="lg" /></Table.Td>
+                                        <Table.Td>
+                                            <Group gap="xs">
+                                                <ActionIcon onClick={() => handleOpenEditQsModal(qs)}><IconPencil size={16}/></ActionIcon>
+                                                <ActionIcon color="red" onClick={() => handleQsDelete(qs.id)}><IconTrash size={16}/></ActionIcon>
+                                            </Group>
+                                        </Table.Td>
+                                    </Table.Tr>
+                                ))}
+                                </Table.Tbody>
+                            </Table>
+                        </Tabs.Panel>
+                        <Tabs.Panel value="origins" pt="md">
+                            <Group justify="flex-end" mb="md"><Button onClick={handleOpenCreateDmModal} leftSection={<IconPlus size={16}/>}>Adicionar</Button></Group>
                         </Tabs.Panel>
                     </Tabs>
                 </Tabs.Panel>

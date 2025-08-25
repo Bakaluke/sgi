@@ -23,5 +23,6 @@ class Setting extends Model
         'city',
         'state',
         'logo_path',
+        'website',
     ];
 }
