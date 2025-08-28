@@ -112,6 +112,8 @@ const enrichQuoteWithProfitMargin = (quoteData: Quote): Quote => {
   return quoteData;
 };
 
+type QuoteItemField = 'quantity' | 'unit_sale_price' | 'profit_margin' | 'discount_percentage';
+
 function QuoteFormPage() {
   const { quoteId } = useParams();
   const [quote, setQuote] = useState<Quote | null>(null);
@@ -140,7 +142,7 @@ function QuoteFormPage() {
       api.get(`/quotes/${quoteId}`).then(res => {
         const enrichedQuote = enrichQuoteWithProfitMargin(res.data);
         setQuote(enrichedQuote);
-        setInitialStatus(enrichedQuote.status);
+        setInitialStatus(enrichedQuote.status?.name || null);
       });
     }
   }, [quoteId]);
@@ -166,12 +168,12 @@ function QuoteFormPage() {
     });
   }, []);
 
-  const updateQuoteField = (field: keyof Quote, value: any) => {
-        setQuote(currentQuote => {
-            if (!currentQuote) return null;
-            return { ...currentQuote, [field]: value };
-        });
-    };
+  const updateQuoteField = (field: keyof Quote, value: string | number | Date | null) => {
+    setQuote(currentQuote => {
+      if (!currentQuote) return null;
+      return { ...currentQuote, [field]: value };
+    });
+  };
 
   const handleAddItem = () => {
     if (!selectedProduct || !quantity) return;
@@ -199,7 +201,7 @@ function QuoteFormPage() {
     .then(res => {
       const enrichedQuote = enrichQuoteWithProfitMargin(res.data);
       setQuote(enrichedQuote);
-      setInitialStatus(enrichedQuote.status);
+      setInitialStatus(enrichedQuote.status?.name || null);
       notifications.show({ title: 'Sucesso!', message: 'Alterações salvas.', color: 'green' });
     })
     .catch((error) => {
@@ -225,7 +227,7 @@ function QuoteFormPage() {
     });
   };
 
-  const handleItemChange = (itemId: number, field: any, value: any) => {
+  const handleItemChange = (itemId: number, field: QuoteItemField, value: number) => {
     if (!quote) return;
     const updatedItems = quote.items.map(item => {
       if (item.id === itemId) {

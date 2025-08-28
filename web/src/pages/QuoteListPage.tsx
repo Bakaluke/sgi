@@ -49,6 +49,14 @@ interface Quote {
   created_at: string;
   items: QuoteItem[];
 }
+interface PaymentMethod {
+  id: number;
+  name: string;
+}
+interface DeliveryMethod {
+  id: number;
+  name: string;
+}
 interface Status {
   id: number;
   name: string;
@@ -133,8 +141,18 @@ function QuoteListPage() {
   }, [customerSearch]);
 
   useEffect(() => {
-    api.get('/payment-methods').then(res => setPaymentMethods(res.data.map((pm: any) => ({ value: String(pm.id), label: pm.name }))));
-    api.get('/delivery-methods').then(res => setDeliveryMethods(res.data.map((dm: any) => ({ value: String(dm.id), label: dm.name }))));
+    api.get('/payment-methods').then(res => 
+      setPaymentMethods(res.data.map((pm: PaymentMethod) => ({
+        value: String(pm.id),
+        label: pm.name
+      })))
+    );
+    api.get('/delivery-methods').then(res =>
+      setDeliveryMethods(res.data.map((dm: DeliveryMethod) => ({
+        value: String(dm.id),
+        label: dm.name
+      })))
+    );
   }, []);
   
   const handleCustomerSelect = (customerId: string | null) => {

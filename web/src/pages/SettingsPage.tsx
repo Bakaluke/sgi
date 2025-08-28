@@ -496,7 +496,11 @@ function SettingsPage() {
                                     <Group justify="flex-end" mt="lg"><Button type="submit">Salvar</Button></Group>
                                 </form>
                             </Modal>
-                            <Group justify="flex-end" mb="md"><Button onClick={handleOpenCreatePmModal} leftSection={<IconPlus size={16}/>}>Adicionar</Button></Group>
+
+                            <Group justify="flex-end" mb="md">
+                                <Button onClick={handleOpenCreatePmModal} leftSection={<IconPlus size={16}/>}>Adicionar</Button>
+                            </Group>
+
                             <Table>
                                 <Table.Thead>
                                     <Table.Tr>
@@ -556,7 +560,13 @@ function SettingsPage() {
                             </Modal>
                             <Group justify="flex-end" mb="md"><Button onClick={handleOpenCreateQsModal} leftSection={<IconPlus size={16}/>}>Adicionar Status</Button></Group>
                             <Table>
-                                <Table.Thead><Table.Tr><Table.Th>Nome</Table.Th><Table.Th>Cor</Table.Th><Table.Th w={120}>Ações</Table.Th></Table.Tr></Table.Thead>
+                                <Table.Thead>
+                                    <Table.Tr>
+                                        <Table.Th>Nome</Table.Th>
+                                        <Table.Th>Cor</Table.Th>
+                                        <Table.Th w={120}>Ações</Table.Th>
+                                    </Table.Tr>
+                                </Table.Thead>
                                 <Table.Tbody>{quoteStatuses.map(qs => (
                                     <Table.Tr key={qs.id}>
                                         <Table.Td>{qs.name}</Table.Td>

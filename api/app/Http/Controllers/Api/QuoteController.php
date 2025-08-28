@@ -6,6 +6,7 @@ use App\Events\QuoteApproved;
 use App\Http\Controllers\Controller;
 use App\Models\Customer;
 use App\Models\Quote;
+use App\Models\QuoteStatus;
 use App\Models\Setting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -27,7 +28,7 @@ class QuoteController extends Controller
             return response()->json(['data' => []]);
         }
 
-        $query->with(['customer', 'user', 'items.product', 'paymentMethod', 'deliveryMethod', 'status']);
+        $query->with(['customer', 'user', 'items.product', 'status']);
 
         if ($request->has('search') && $request->input('search') != '') {
             $searchTerm = $request->input('search');
@@ -57,6 +58,11 @@ class QuoteController extends Controller
             'notes' => 'nullable|string',
         ]);
 
+        $defaultStatus = QuoteStatus::where('name', 'Aberto')->first();
+        if (!$defaultStatus) {
+            abort(500, 'Status padrão "Aberto" não encontrado.');
+        }
+
         $customer = Customer::with('addresses')->findOrFail($validated['customer_id']);
         
         $user = $request->user();
@@ -78,7 +84,7 @@ class QuoteController extends Controller
         $quote = Quote::create([
             'customer_id' => $customer->id,
             'user_id' => $user->id,
-            'status' => 'Aberto',
+            'status_id' => $defaultStatus->id,
             'customer_data' => $customerSnapshot,
             'salesperson_name' => $user->name,
             'notes' => $validated['notes'] ?? null,
@@ -101,29 +107,33 @@ class QuoteController extends Controller
     {
         $this->authorize('update', $quote);
 
+        $oldStatusName = $quote->status?->name;
+
         $validated = $request->validate([
-            'payment_method_id' => 'required|exists:payment_methods,id',
-            'delivery_method_id' => 'required|exists:delivery_methods,id',
-            'delivery_datetime' => 'required|date',
+            'payment_method_id' => 'nullable|exists:payment_methods,id',
+            'delivery_method_id' => 'nullable|exists:delivery_methods,id',
+            'status_id' => 'required|exists:quote_statuses,id',
+            'delivery_datetime' => 'nullable|date',
             'discount_percentage' => 'nullable|numeric|min:0|max:100',
-            'status' => 'nullable|string',
             'notes' => 'nullable|string',
         ]);
-
-        $subtotal = $quote->items()->sum('total_price');
-        $discountValue = $subtotal * (($validated['discount_percentage'] ?? $quote->discount_percentage) / 100);
-        $totalAmount = $subtotal - $discountValue;
-
-        $validated['subtotal'] = $subtotal;
-        $validated['total_amount'] = $totalAmount;
-
-        $oldStatus = $quote->status;
-
+        
         $quote->update($validated);
+        
+        $quote->refresh();
+        $newStatusName = $quote->status?->name;
 
-        if ($oldStatus !== 'Aprovado' && $quote->status === 'Aprovado') {
+        if ($oldStatusName !== 'Aprovado' && $newStatusName === 'Aprovado') {
             QuoteApproved::dispatch($quote);
         }
+
+        $subtotal = $quote->items()->sum(DB::raw('unit_sale_price * quantity * (1 - discount_percentage / 100)'));
+        $discountValue = $subtotal * ($quote->discount_percentage / 100);
+        $totalAmount = $subtotal - $discountValue;
+
+        $quote->subtotal = $subtotal;
+        $quote->total_amount = $totalAmount;
+        $quote->save();
 
         return $quote->load(['customer.addresses', 'user', 'items.product', 'paymentMethod', 'deliveryMethod', 'status']);
     }
