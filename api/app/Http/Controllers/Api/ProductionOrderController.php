@@ -53,16 +53,16 @@ class ProductionOrderController extends Controller
         $this->authorize('update', $productionOrder);
 
         $validated = $request->validate([
-            'status' => ['required', Rule::in(['Pendente', 'Em Produção', 'Concluído'])],
+            'status_id' => 'required|exists:production_statuses,id',
         ]);
 
         $productionOrder->update($validated);
 
-        if ($validated['status'] === 'Concluído' && is_null($productionOrder->completed_at)) {
+        if ($productionOrder->status->name === 'Concluído' && is_null($productionOrder->completed_at)) {
             $productionOrder->completed_at = now();
             $productionOrder->save();
         }
-        
+
         return $productionOrder->load(['customer', 'user', 'quote.items.product', 'status']);
     }
 

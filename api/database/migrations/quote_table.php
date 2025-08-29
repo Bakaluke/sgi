@@ -18,8 +18,9 @@ return new class extends Migration
             $table->string('salesperson_name');
 
             $table->dateTime('delivery_datetime')->nullable();
-            $table->foreignId('delivery_method_id')->nullable()->constrained('delivery_methods')->onDelete('restrict');
             $table->foreignId('payment_method_id')->nullable()->constrained('payment_methods')->onDelete('restrict');
+            $table->foreignId('delivery_method_id')->nullable()->constrained('delivery_methods')->onDelete('restrict');
+            $table->foreignId('negotiation_source_id')->nullable()->constrained('negotiation_sources')->onDelete('restrict');
 
             $table->decimal('subtotal', 10, 2)->default(0);
             $table->decimal('discount_percentage', 5, 2)->default(0);

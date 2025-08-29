@@ -17,10 +17,15 @@ class ProductionOrder extends Model
         'quote_id',
         'user_id',
         'customer_id',
-        'status',
+        'status_id',
         'completed_at',
         'notes',
     ];
+
+    public function status(): BelongsTo
+    {
+        return $this->belongsTo(ProductionStatus::class);
+    }
 
     public function quote(): BelongsTo
     {
@@ -35,10 +40,5 @@ class ProductionOrder extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
-    }
-
-    public function status(): BelongsTo
-    {
-        return $this->belongsTo(ProductionStatus::class);
     }
 }

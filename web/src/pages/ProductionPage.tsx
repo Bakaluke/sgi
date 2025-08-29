@@ -22,16 +22,14 @@ interface QuoteItem {
   total_price: number;
 }
 interface ProductionOrder {
-  user: any;
+  user: { name: string };
   id: number;
   quote_id: number;
   customer: { name: string };
   status: Status | null;
   status_id: number | null;
   created_at: string;
-  quote: {
-    items: QuoteItem[];
-  };
+  quote: { items: QuoteItem[]; };
 }
 interface SelectOption {
   value: string;
@@ -76,6 +74,8 @@ function ProductionPage() {
 
   const handleStatusChange = (orderId: number, newStatusId: string | null) => {
     if (!newStatusId) return;
+    const statusObj = productionStatuses.find(s => s.value === newStatusId);
+    const newStatusName = statusObj ? statusObj.label : newStatusId;
     api.put(`/production-orders/${orderId}`, { status_id: newStatusId })
     .then(response => {
       setOrders(currentOrders => currentOrders.map(order => 
@@ -83,17 +83,11 @@ function ProductionPage() {
       ));
       notifications.show({
         title: 'Sucesso!',
-        message: `Status do Pedido Nº ${orderId} atualizado para "${newStatusId}".`,
+        message: `Status do Pedido Nº ${orderId} atualizado para "${newStatusName}".`,
         color: 'green',
       });
     })
-    .catch(() => {
-      notifications.show({
-        title: 'Erro!',
-        message: 'Não foi possível atualizar o status do pedido.',
-        color: 'red',
-      });
-    });
+    .catch(() => notifications.show({ title: 'Erro!', message: 'Não foi possível atualizar o status.', color: 'red' }));
   };
 
   const handleDelete = (orderId: number) => {
@@ -128,8 +122,8 @@ function ProductionPage() {
         <Table.Td>{order.quote_id}</Table.Td>
         <Table.Td>{order.customer.name}</Table.Td>
         {can('production_orders.view_all') && <Table.Td>{order.user?.name || 'N/A'}</Table.Td>}
-        <Table.Td style={{ width: 200 }}><Select value={String(order.status_id || '')} onChange={(value) => handleStatusChange(order.id, value)} data={productionStatuses} variant="unstyled" styles={(theme, { value }) => { const selectedStatus = productionStatuses.find(s => s.value === value); const colorName = order.status?.color || 'gray'; return { input: { backgroundColor: colorName, color: 'white', fontWeight: 700, textAlign: 'center', border: `1px solid ${order.status?.color || 'gray'}`, paddingRight: '1.75rem' } }; }} /></Table.Td>
-        <Table.Td>{new Date(order.created_at).toLocaleDateString('pt-BR')}</Table.Td>
+        <Table.Td style={{ width: 200 }}><Select value={String(order.status_id || '')} onChange={(value) => handleStatusChange(order.id, value)} data={productionStatuses} variant="unstyled" styles={(theme) => { const color = order.status?.color || 'gray'; if (!theme.colors[color]) return {}; return { input: { backgroundColor: theme.colors[color][1], color: theme.colors[color][9], fontWeight: 700, textAlign: 'center', border: `1px solid ${theme.colors[color][2]}`, paddingRight: '1.75rem', }, }; }} /></Table.Td>
+        <Table.Td>{order.created_at ? new Date(order.created_at).toLocaleDateString('pt-BR') : 'N/A'}</Table.Td>
         <Table.Td>
             <Menu shadow="md" width={250}>
                 <Menu.Target><ActionIcon variant="subtle" color="gray"><IconDotsVertical size={16} /></ActionIcon></Menu.Target>

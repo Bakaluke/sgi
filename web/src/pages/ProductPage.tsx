@@ -273,14 +273,14 @@ function ProductPage() {
                 </Group>
             </Group>
 
-            <TextInput label="Buscar Produto" placeholder="Digite o nome, SKU ou categoria..." value={searchTerm} onChange={(event) => setSearchTerm(event.currentTarget.value)} leftSection={<IconSearch size={16} />} mb="md" />
+            <TextInput label="Buscar Produto" placeholder="Digite o nome, código ou categoria..." value={searchTerm} onChange={(event) => setSearchTerm(event.currentTarget.value)} leftSection={<IconSearch size={16} />} mb="md" />
             
             <Table>
                 <Table.Thead>
                     <Table.Tr>
                         <Table.Th>ID</Table.Th>
                         <Table.Th>Produto</Table.Th>
-                        <Table.Th>SKU</Table.Th>
+                        <Table.Th>Código</Table.Th>
                         <Table.Th>Categoria</Table.Th>
                         <Table.Th>Preço de Venda</Table.Th>
                         <Table.Th>Estoque</Table.Th>

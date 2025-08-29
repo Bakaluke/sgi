@@ -14,6 +14,7 @@ use App\Models\PaymentMethod;
 use App\Models\DeliveryMethod;
 use App\Models\QuoteStatus;
 use App\Models\ProductionStatus;
+use App\Models\NegotiationSource;
 use App\Policies\ProductPolicy;
 use App\Policies\CustomerPolicy;
 use App\Policies\QuotePolicy;
@@ -26,6 +27,7 @@ use App\Policies\PaymentMethodPolicy;
 use App\Policies\DeliveryMethodPolicy;
 use App\Policies\QuoteStatusPolicy;
 use App\Policies\ProductionStatusPolicy;
+use App\Policies\NegotiationSourcePolicy;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 
 class AuthServiceProvider extends ServiceProvider
@@ -42,6 +44,8 @@ class AuthServiceProvider extends ServiceProvider
         PaymentMethod::class => PaymentMethodPolicy::class,
         DeliveryMethod::class => DeliveryMethodPolicy::class,
         QuoteStatus::class => QuoteStatusPolicy::class,
+        ProductionStatus::class => ProductionStatusPolicy::class,
+        NegotiationSource::class => NegotiationSourcePolicy::class,
     ];
 
     public function boot(): void

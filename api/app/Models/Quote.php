@@ -19,8 +19,9 @@ class Quote extends Model
         'customer_data',
         'salesperson_name',
         'delivery_datetime',
-        'delivery_method_id',
         'payment_method_id',
+        'delivery_method_id',
+        'negotiation_source_id',
         'subtotal',
         'discount_percentage',
         'total_amount',
@@ -63,5 +64,10 @@ class Quote extends Model
     public function items(): HasMany
     {
         return $this->hasMany(QuoteItem::class);
+    }
+
+    public function negotiationSource(): BelongsTo
+    {
+        return $this->belongsTo(NegotiationSource::class);
     }
 }

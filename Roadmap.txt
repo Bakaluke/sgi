@@ -4,6 +4,4 @@ Criação/Edição de Origem da Negociação (uma opção a mais para ser inseri
 
 Adicionar um botão no forms de criação de Orçamento para cadastro de um novo cliente;
 
-Criação/Edição de Status da Produção (trazer mais personalizações nas Ordens de Produção);
-
 Condições de Pagamento detalhadas para o Módulo Financeiro;
