@@ -13,8 +13,7 @@ return new class extends Migration
             $table->foreignId('quote_id')->unique()->constrained()->onDelete('cascade');
             $table->foreignId('user_id')->constrained()->onDelete('restrict');
             $table->foreignId('customer_id')->constrained()->onDelete('restrict');
-
-            $table->string('status')->default('Pendente');
+            $table->foreignId('status_id')->nullable()->constrained('production_statuses')->onDelete('set null');
 
             $table->timestamp('completed_at')->nullable();
             $table->text('notes')->nullable();

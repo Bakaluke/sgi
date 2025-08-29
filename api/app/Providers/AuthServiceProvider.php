@@ -13,6 +13,7 @@ use App\Models\Category;
 use App\Models\PaymentMethod;
 use App\Models\DeliveryMethod;
 use App\Models\QuoteStatus;
+use App\Models\ProductionStatus;
 use App\Policies\ProductPolicy;
 use App\Policies\CustomerPolicy;
 use App\Policies\QuotePolicy;
@@ -24,6 +25,7 @@ use App\Policies\CategoryPolicy;
 use App\Policies\PaymentMethodPolicy;
 use App\Policies\DeliveryMethodPolicy;
 use App\Policies\QuoteStatusPolicy;
+use App\Policies\ProductionStatusPolicy;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 
 class AuthServiceProvider extends ServiceProvider

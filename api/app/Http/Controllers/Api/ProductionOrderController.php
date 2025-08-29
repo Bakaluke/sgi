@@ -15,8 +15,8 @@ class ProductionOrderController extends Controller
         $this->authorize('viewAny', ProductionOrder::class);
 
         $user = $request->user();
-
-        $query = ProductionOrder::with(['customer', 'user', 'quote.items.product']);
+        
+        $query = ProductionOrder::with(['customer', 'user', 'quote.items.product', 'status']);
 
         if ($user->role === 'vendedor') {
             $query->where('user_id', $user->id);
@@ -62,8 +62,8 @@ class ProductionOrderController extends Controller
             $productionOrder->completed_at = now();
             $productionOrder->save();
         }
-
-        return $productionOrder->load(['customer', 'user', 'quote.items.product']);
+        
+        return $productionOrder->load(['customer', 'user', 'quote.items.product', 'status']);
     }
 
     public function destroy(ProductionOrder $productionOrder)

@@ -9,6 +9,11 @@ interface Product {
   id: number;
   name: string;
 }
+interface Status {
+  id: number;
+  name: string;
+  color: string;
+}
 interface QuoteItem {
   id: number;
   product: Product;
@@ -21,11 +26,16 @@ interface ProductionOrder {
   id: number;
   quote_id: number;
   customer: { name: string };
-  status: string;
+  status: Status | null;
+  status_id: number | null;
   created_at: string;
   quote: {
     items: QuoteItem[];
   };
+}
+interface SelectOption {
+  value: string;
+  label: string;
 }
 
 function ProductionPage() {
@@ -36,6 +46,7 @@ function ProductionPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [expandedOrderIds, setExpandedOrderIds] = useState<number[]>([]);
+  const [productionStatuses, setProductionStatuses] = useState<SelectOption[]>([]);
   
   const fetchOrders = useCallback((page: number, search: string) => {
     api.get('/production-orders', { params: { page, search } })
@@ -57,16 +68,22 @@ function ProductionPage() {
     return () => clearTimeout(debounceTimer);
   }, [searchTerm]);
 
-  const handleStatusChange = (orderId: number, newStatus: string | null) => {
-    if (!newStatus) return;
-    api.put(`/production-orders/${orderId}`, { status: newStatus })
+  useEffect(() => {
+    api.get('/production-statuses').then(res => {
+      setProductionStatuses(res.data.map((ps: Status) => ({ value: String(ps.id), label: ps.name })));
+    });
+  }, []);
+
+  const handleStatusChange = (orderId: number, newStatusId: string | null) => {
+    if (!newStatusId) return;
+    api.put(`/production-orders/${orderId}`, { status_id: newStatusId })
     .then(response => {
       setOrders(currentOrders => currentOrders.map(order => 
         order.id === orderId ? response.data : order
       ));
       notifications.show({
         title: 'Sucesso!',
-        message: `Status do Pedido Nº ${orderId} atualizado para "${newStatus}".`,
+        message: `Status do Pedido Nº ${orderId} atualizado para "${newStatusId}".`,
         color: 'green',
       });
     })
@@ -77,14 +94,6 @@ function ProductionPage() {
         color: 'red',
       });
     });
-  };
-  
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'Concluído': return 'green';
-      case 'Em Produção': return 'yellow';
-      default: return 'blue';
-    }
   };
 
   const handleDelete = (orderId: number) => {
@@ -119,7 +128,7 @@ function ProductionPage() {
         <Table.Td>{order.quote_id}</Table.Td>
         <Table.Td>{order.customer.name}</Table.Td>
         {can('production_orders.view_all') && <Table.Td>{order.user?.name || 'N/A'}</Table.Td>}
-        <Table.Td style={{ width: 200 }}><Select value={order.status} onChange={(value) => handleStatusChange(order.id, value)} data={['Pendente', 'Em Produção', 'Concluído']} variant="unstyled" styles={(theme, { value }) => { const color = getStatusColor(value || 'Pendente'); return { input: { backgroundColor: theme.colors[color][1], color: theme.colors[color][9], fontWeight: 700, textAlign: 'center', border: `1px solid ${theme.colors[color][2]}`, paddingRight: '1.75rem', }, }; }} /></Table.Td>
+        <Table.Td style={{ width: 200 }}><Select value={String(order.status_id || '')} onChange={(value) => handleStatusChange(order.id, value)} data={productionStatuses} variant="unstyled" styles={(theme, { value }) => { const selectedStatus = productionStatuses.find(s => s.value === value); const colorName = order.status?.color || 'gray'; return { input: { backgroundColor: colorName, color: 'white', fontWeight: 700, textAlign: 'center', border: `1px solid ${order.status?.color || 'gray'}`, paddingRight: '1.75rem' } }; }} /></Table.Td>
         <Table.Td>{new Date(order.created_at).toLocaleDateString('pt-BR')}</Table.Td>
         <Table.Td>
             <Menu shadow="md" width={250}>

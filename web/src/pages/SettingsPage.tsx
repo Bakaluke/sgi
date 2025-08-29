@@ -46,6 +46,11 @@ interface QuoteStatus {
     name: string;
     color: string;
 }
+interface ProductionStatus {
+    id: number;
+    name: string;
+    color: string;
+}
 
 const formatCnpj = (cnpj: string = '') => {
     return cnpj
@@ -121,10 +126,14 @@ function SettingsPage() {
     const [quoteStatuses, setQuoteStatuses] = useState<QuoteStatus[]>([]);
     const [qsModalOpened, { open: openQsModal, close: closeQsModal }] = useDisclosure(false);
     const [editingQs, setEditingQs] = useState<QuoteStatus | null>(null);
+    const [productionStatuses, setProductionStatuses] = useState<ProductionStatus[]>([]);
+    const [psModalOpened, { open: openPsModal, close: closePsModal }] = useDisclosure(false);
+    const [editingPs, setEditingPs] = useState<ProductionStatus | null>(null);
     
     const pmForm = useForm({ initialValues: { name: '' }, validate: { name: (value: string) => (value.trim().length < 2 ? 'O nome é obrigatório.' : null) } });
     const dmForm = useForm({ initialValues: { name: '' }, validate: { name: (value: string) => (value.trim().length < 2 ? 'O nome é obrigatório.' : null) } });
     const qsForm = useForm({ initialValues: { name: '', color: '#868e96' }, validate: { name: (value: string) => (value.trim().length < 2 ? 'O nome é obrigatório.' : null) }, });
+    const psForm = useForm({ initialValues: { name: '', color: '#868e96' }, validate: { name: (value: string) => (value.trim().length < 2 ? 'O nome é obrigatório.' : null) }, });
 
     const roleForm = useForm({
         initialValues: { display_name: '', permissions: [] as string[] },
@@ -138,6 +147,7 @@ function SettingsPage() {
         fetchPaymentMethods();
         fetchDeliveryMethods();
         fetchQuoteStatuses();
+        fetchProductionStatuses();
     }, []);
 
     const fetchRoles = () => {
@@ -154,6 +164,10 @@ function SettingsPage() {
 
     const fetchQuoteStatuses = () => {
         api.get('/quote-statuses').then(res => setQuoteStatuses(res.data));
+    };
+
+    const fetchProductionStatuses = () => {
+        api.get('/production-statuses').then(res => setProductionStatuses(res.data));
     };
     
     const handleCnpjBlur = () => {
@@ -365,6 +379,40 @@ function SettingsPage() {
         .then(() => {
             notifications.show({ title: 'Sucesso', message: 'Excluído.', color: 'green' });
             fetchQuoteStatuses();
+        })
+        .catch(error => {
+            const message = error.response?.data?.message || 'Não foi possível excluir.';
+            notifications.show({ title: 'Ação Bloqueada', message: message, color: 'red' });
+        })
+    };
+
+    const handleOpenCreatePsModal = () => {
+        setEditingPs(null);
+        psForm.reset();
+        openPsModal();
+    };
+
+    const handleOpenEditPsModal = (ps: ProductionStatus) => {
+        setEditingPs(ps);
+        psForm.setValues({ name: ps.name, color: ps.color });
+        openPsModal();
+    };
+
+    const handlePsSubmit = (values: { name: string, color: string }) => {
+        const promise = editingPs ? api.put(`/production-statuses/${editingPs.id}`, values) : api.post('/production-statuses', values);
+        promise.then(() => {
+            closePsModal();
+            notifications.show({ title: 'Sucesso!', message: 'Status salvo.', color: 'green' });
+            fetchProductionStatuses();
+        });
+    };
+
+    const handlePsDelete = (id: number) => {
+        if (window.confirm('Tem certeza?'))
+            api.delete(`/production-statuses/${id}`)
+        .then(() => {
+            notifications.show({ title: 'Sucesso', message: 'Excluído.', color: 'green' });
+            fetchProductionStatuses();
         })
         .catch(error => {
             const message = error.response?.data?.message || 'Não foi possível excluir.';
@@ -589,7 +637,43 @@ function SettingsPage() {
                 </Tabs.Panel>
 
                 <Tabs.Panel value="productions" pt="md">
-                    <Group justify="flex-end" mb="md"></Group>
+                    <Tabs defaultValue="statuses">
+                        <Tabs.List>
+                            <Tabs.Tab value="statuses">Status da Produção</Tabs.Tab>
+                        </Tabs.List>
+
+                        <Tabs.Panel value="statuses" pt="md">
+                            <Modal opened={psModalOpened} onClose={closePsModal} title={editingPs ? 'Editar Status' : 'Novo Status'}>
+                                <form onSubmit={psForm.onSubmit(handlePsSubmit)}>
+                                    <TextInput label="Nome do Status" required {...psForm.getInputProps('name')} />
+                                    <ColorInput label="Cor do Status" placeholder="Escolha uma cor" mt="md" {...psForm.getInputProps('color')} />
+                                    <Group justify="flex-end" mt="lg"><Button type="submit">Salvar</Button></Group>
+                                </form>
+                            </Modal>
+                            <Group justify="flex-end" mb="md"><Button onClick={handleOpenCreatePsModal} leftSection={<IconPlus size={16}/>}>Adicionar Status</Button></Group>
+                            <Table>
+                                <Table.Thead>
+                                    <Table.Tr>
+                                        <Table.Th>Nome</Table.Th>
+                                        <Table.Th>Cor</Table.Th>
+                                        <Table.Th w={120}>Ações</Table.Th>
+                                    </Table.Tr>
+                                </Table.Thead>
+                                <Table.Tbody>{productionStatuses.map(ps => (
+                                    <Table.Tr key={ps.id}>
+                                        <Table.Td>{ps.name}</Table.Td>
+                                        <Table.Td><Badge color={ps.color} size="lg" /></Table.Td>
+                                        <Table.Td>
+                                            <Group gap="xs">
+                                                <ActionIcon onClick={() => handleOpenEditPsModal(ps)}><IconPencil size={16}/></ActionIcon>
+                                                <ActionIcon color="red" onClick={() => handlePsDelete(ps.id)}><IconTrash size={16}/></ActionIcon>
+                                            </Group>
+                                        </Table.Td>
+                                    </Table.Tr>
+                                ))}</Table.Tbody>
+                            </Table>
+                        </Tabs.Panel>
+                    </Tabs>
                 </Tabs.Panel>
             </Tabs>
         </Container>
