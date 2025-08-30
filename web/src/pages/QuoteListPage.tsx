@@ -75,6 +75,7 @@ const initialFormData = {
   customer_address: '',
   payment_method_id: null as number | null,
   delivery_method_id: null as number | null,
+  negotiation_source_id: null as number | null,
   delivery_datetime: '',
   notes: '',
 };
@@ -105,6 +106,7 @@ function QuoteListPage() {
   const [isSearchingCustomers, setIsSearchingCustomers] = useState(false);
   const [paymentMethods, setPaymentMethods] = useState<SelectOption[]>([]);
   const [deliveryMethods, setDeliveryMethods] = useState<SelectOption[]>([]);
+  const [negotiationSources, setNegotiationSources] = useState<SelectOption[]>([]);
   
   const fetchQuotes = useCallback((page: number, search: string) => {
     api.get('/quotes', {
@@ -122,7 +124,7 @@ function QuoteListPage() {
   useEffect(() => {
     fetchQuotes(activePage, searchQuery);
   }, [activePage, searchQuery, fetchQuotes]);
-  
+
   useEffect(() => {
     setIsSearchingCustomers(true);
     const searchTimer = setTimeout(() => {
@@ -151,6 +153,12 @@ function QuoteListPage() {
       setDeliveryMethods(res.data.map((dm: DeliveryMethod) => ({
         value: String(dm.id),
         label: dm.name
+      })))
+    );
+    api.get('/negotiation-sources').then(res =>
+      setNegotiationSources(res.data.map((ns: any) => ({
+        value: String(ns.id),
+        label: ns.name
       })))
     );
   }, []);
@@ -185,6 +193,7 @@ function QuoteListPage() {
       customer_id: formData.customer_id,
       payment_method_id: formData.payment_method_id,
       delivery_method_id: formData.delivery_method_id,
+      negotiation_source_id: formData.negotiation_source_id,
       notes: formData.notes,
       delivery_datetime: formData.delivery_datetime,
     };
@@ -322,9 +331,19 @@ function QuoteListPage() {
         
         <Fieldset legend="Dados do Orçamento" mt="md">
           <Grid>
-            <Grid.Col span={{ base: 12, md: 4 }}><Select label="Forma de Pagamento" placeholder="Selecione..." data={paymentMethods} value={String(formData.payment_method_id || '')} onChange={(value) => setFormData(p => ({ ...p, payment_method_id: value ? Number(value) : null }))} /></Grid.Col>
-            <Grid.Col span={{ base: 12, md: 4 }}><Select label="Opção de Entrega" placeholder="Selecione..." data={deliveryMethods} value={String(formData.delivery_method_id || '')} onChange={(value) => setFormData(p => ({ ...p, delivery_method_id: value ? Number(value) : null }))} /></Grid.Col>
-            <Grid.Col span={{ base: 12, md: 4 }}><DateTimePicker label="Data/Hora da Entrega" value={formData.delivery_datetime ? new Date(formData.delivery_datetime) : null} onChange={(value) => setFormData(p => ({ ...p, delivery_datetime: value || '' }))} placeholder="Selecione a data e hora" clearable minDate={new Date()} /></Grid.Col>
+            <Grid.Col span={{ base: 12, md: 6 }}><Select label="Forma de Pagamento" placeholder="Selecione..." data={paymentMethods} value={String(formData.payment_method_id || '')} onChange={(value) => setFormData(p => ({ ...p, payment_method_id: value ? Number(value) : null }))} /></Grid.Col>
+            <Grid.Col span={{ base: 12, md: 6 }}><Select label="Opção de Entrega" placeholder="Selecione..." data={deliveryMethods} value={String(formData.delivery_method_id || '')} onChange={(value) => setFormData(p => ({ ...p, delivery_method_id: value ? Number(value) : null }))} /></Grid.Col>
+            <Grid.Col span={{ base: 12, md: 6 }}><DateTimePicker label="Data/Hora da Entrega" value={formData.delivery_datetime ? new Date(formData.delivery_datetime) : null} onChange={(value) => setFormData(p => ({ ...p, delivery_datetime: value || '' }))} placeholder="Selecione a data e hora" clearable minDate={new Date()} /></Grid.Col>
+            <Grid.Col span={{ base: 12, md: 6 }}>
+                            <Select
+                                label="Origem da Negociação"
+                                placeholder="Selecione..."
+                                data={negotiationSources}
+                                value={String(formData.negotiation_source_id || '')}
+                                onChange={(value) => setFormData(p => ({ ...p, negotiation_source_id: value ? Number(value) : null }))}
+                                clearable
+                            />
+                        </Grid.Col>
             <Grid.Col span={12}><Textarea label="Observações" onChange={(e) => setFormData(p => ({ ...p, notes: e.target.value }))} /></Grid.Col>
           </Grid>
         </Fieldset>

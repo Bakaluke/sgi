@@ -51,6 +51,10 @@ interface ProductionStatus {
     name: string;
     color: string;
 }
+interface NegotiationSource {
+    id: number;
+    name: string;
+}
 
 const formatCnpj = (cnpj: string = '') => {
     return cnpj
@@ -129,11 +133,15 @@ function SettingsPage() {
     const [productionStatuses, setProductionStatuses] = useState<ProductionStatus[]>([]);
     const [psModalOpened, { open: openPsModal, close: closePsModal }] = useDisclosure(false);
     const [editingPs, setEditingPs] = useState<ProductionStatus | null>(null);
+    const [negotiationSources, setNegotiationSources] = useState<NegotiationSource[]>([]);
+    const [nsModalOpened, { open: openNsModal, close: closeNsModal }] = useDisclosure(false);
+    const [editingNs, setEditingNs] = useState<NegotiationSource | null>(null);
     
     const pmForm = useForm({ initialValues: { name: '' }, validate: { name: (value: string) => (value.trim().length < 2 ? 'O nome é obrigatório.' : null) } });
     const dmForm = useForm({ initialValues: { name: '' }, validate: { name: (value: string) => (value.trim().length < 2 ? 'O nome é obrigatório.' : null) } });
     const qsForm = useForm({ initialValues: { name: '', color: '#868e96' }, validate: { name: (value: string) => (value.trim().length < 2 ? 'O nome é obrigatório.' : null) }, });
     const psForm = useForm({ initialValues: { name: '', color: '#868e96' }, validate: { name: (value: string) => (value.trim().length < 2 ? 'O nome é obrigatório.' : null) }, });
+    const nsForm = useForm({ initialValues: { name: '' }, validate: { name: (value: string) => (value.trim().length < 2 ? 'O nome é obrigatório.' : null) } });
 
     const roleForm = useForm({
         initialValues: { display_name: '', permissions: [] as string[] },
@@ -148,6 +156,7 @@ function SettingsPage() {
         fetchDeliveryMethods();
         fetchQuoteStatuses();
         fetchProductionStatuses();
+        fetchNegotiationSources();
     }, []);
 
     const fetchRoles = () => {
@@ -168,6 +177,10 @@ function SettingsPage() {
 
     const fetchProductionStatuses = () => {
         api.get('/production-statuses').then(res => setProductionStatuses(res.data));
+    };
+    
+    const fetchNegotiationSources = () => {
+        api.get('/negotiation-sources').then(res => setNegotiationSources(res.data));
     };
     
     const handleCnpjBlur = () => {
@@ -419,6 +432,39 @@ function SettingsPage() {
             notifications.show({ title: 'Ação Bloqueada', message: message, color: 'red' });
         })
     };
+
+    const handleOpenCreateNsModal = () => {
+        setEditingNs(null);
+        nsForm.reset(); openNsModal();
+    };
+
+    const handleOpenEditNsModal = (ns: NegotiationSource) => {
+        setEditingNs(ns);
+        nsForm.setValues({ name: ns.name });
+        openNsModal();
+    };
+
+    const handleNsSubmit = (values: { name: string }) => {
+        const promise = editingNs ? api.put(`/negotiation-sources/${editingNs.id}`, values) : api.post('/negotiation-sources', values);
+        promise.then(() => {
+            closeNsModal();
+            notifications.show({ title: 'Sucesso!', message: 'Origem salva.', color: 'green' });
+            fetchNegotiationSources();
+        });
+    };
+    
+    const handleNsDelete = (id: number) => {
+        if (window.confirm('Tem certeza?'))
+            api.delete(`/negotiation-sources/${id}`)
+        .then(() => {
+            notifications.show({ title: 'Sucesso', message: 'Excluído.', color: 'green' });
+            fetchNegotiationSources();
+        })
+        .catch(error => {
+            const message = error.response?.data?.message || 'Não foi possível excluir.';
+            notifications.show({ title: 'Ação Bloqueada', message: message, color: 'red' });
+        })
+    };
     
     const roleRows = roles.map((role) => (
         <Table.Tr key={role.id}>
@@ -534,7 +580,7 @@ function SettingsPage() {
                             <Tabs.Tab value="payment">Formas de Pagamento</Tabs.Tab>
                             <Tabs.Tab value="delivery">Formas de Entrega</Tabs.Tab>
                             <Tabs.Tab value="statuses">Status do Orçamento</Tabs.Tab>
-                            <Tabs.Tab value="origins">Origens da Negociação</Tabs.Tab>
+                            <Tabs.Tab value="sources">Origens da Negociação</Tabs.Tab>
                         </Tabs.List>
 
                         <Tabs.Panel value="payment" pt="md">
@@ -598,6 +644,7 @@ function SettingsPage() {
                                 </Table.Tbody>
                             </Table>
                         </Tabs.Panel>
+
                         <Tabs.Panel value="statuses" pt="md">
                             <Modal opened={qsModalOpened} onClose={closeQsModal} title={editingQs ? 'Editar Status' : 'Novo Status'}>
                                 <form onSubmit={qsForm.onSubmit(handleQsSubmit)}>
@@ -630,8 +677,34 @@ function SettingsPage() {
                                 </Table.Tbody>
                             </Table>
                         </Tabs.Panel>
-                        <Tabs.Panel value="origins" pt="md">
-                            <Group justify="flex-end" mb="md"><Button onClick={handleOpenCreateDmModal} leftSection={<IconPlus size={16}/>}>Adicionar</Button></Group>
+
+                        <Tabs.Panel value="sources" pt="md">
+                            <Modal opened={nsModalOpened} onClose={closeNsModal} title={editingNs ? 'Editar Origem' : 'Nova Origem'}>
+                                <form onSubmit={nsForm.onSubmit(handleNsSubmit)}>
+                                    <TextInput label="Nome" required {...nsForm.getInputProps('name')} />
+                                    <Group justify="flex-end" mt="lg"><Button type="submit">Salvar</Button></Group>
+                                </form>
+                            </Modal>
+                            <Group justify="flex-end" mb="md"><Button onClick={handleOpenCreateNsModal} leftSection={<IconPlus size={16}/>}>Adicionar</Button></Group>
+                            <Table>
+                                <Table.Thead>
+                                    <Table.Tr>
+                                        <Table.Th>Nome</Table.Th>
+                                        <Table.Th w={120}>Ações</Table.Th>
+                                    </Table.Tr>
+                                </Table.Thead>
+                                <Table.Tbody>{negotiationSources.map(ns => (
+                                    <Table.Tr key={ns.id}>
+                                        <Table.Td>{ns.name}</Table.Td>
+                                        <Table.Td>
+                                            <Group gap="xs">
+                                                <ActionIcon onClick={() => handleOpenEditNsModal(ns)}><IconPencil size={16}/></ActionIcon>
+                                                <ActionIcon color="red" onClick={() => handleNsDelete(ns.id)}><IconTrash size={16}/></ActionIcon>
+                                            </Group>
+                                        </Table.Td>
+                                    </Table.Tr>))}
+                                </Table.Tbody>
+                            </Table>
                         </Tabs.Panel>
                     </Tabs>
                 </Tabs.Panel>

@@ -28,7 +28,7 @@ class QuoteController extends Controller
             return response()->json(['data' => []]);
         }
 
-        $query->with(['customer', 'user', 'items.product', 'status']);
+        $query->with(['customer', 'user', 'items.product', 'status', 'paymentMethod', 'deliveryMethod', 'negotiationSource']);
 
         if ($request->has('search') && $request->input('search') != '') {
             $searchTerm = $request->input('search');
@@ -54,6 +54,7 @@ class QuoteController extends Controller
             'customer_id' => 'required|exists:customers,id',
             'payment_method_id' => 'nullable|exists:payment_methods,id',
             'delivery_method_id' => 'nullable|exists:delivery_methods,id',
+            'negotiation_source_id' => 'nullable|exists:negotiation_sources,id',
             'delivery_datetime' => 'nullable|date',
             'notes' => 'nullable|string',
         ]);
@@ -91,16 +92,17 @@ class QuoteController extends Controller
             'delivery_datetime' => $validated['delivery_datetime'] ?? null,
             'delivery_method_id' => $validated['delivery_method_id'],
             'payment_method_id' => $validated['payment_method_id'],
+            'negotiation_source_id' => $validated['negotiation_source_id'] ?? null,
         ]);
         
-        return $quote->load(['customer.addresses', 'user', 'items.product', 'paymentMethod', 'deliveryMethod', 'status']);
+        return $quote->load(['customer.addresses', 'user', 'items.product', 'status', 'paymentMethod', 'deliveryMethod', 'negotiationSource']);
     }
 
     public function show(Quote $quote)
     {
         $this->authorize('view', $quote);
 
-        return $quote->load(['customer.addresses', 'user', 'items.product', 'paymentMethod', 'deliveryMethod', 'status']);
+        return $quote->load(['customer.addresses', 'user', 'items.product', 'status', 'paymentMethod', 'deliveryMethod', 'negotiationSource']);
     }
 
     public function update(Request $request, Quote $quote)
@@ -110,10 +112,11 @@ class QuoteController extends Controller
         $oldStatusName = $quote->status?->name;
 
         $validated = $request->validate([
-            'payment_method_id' => 'nullable|exists:payment_methods,id',
-            'delivery_method_id' => 'nullable|exists:delivery_methods,id',
+            'payment_method_id' => 'required|exists:payment_methods,id',
+            'delivery_method_id' => 'required|exists:delivery_methods,id',
             'status_id' => 'required|exists:quote_statuses,id',
-            'delivery_datetime' => 'nullable|date',
+            'negotiation_source_id' => 'required|exists:negotiation_sources,id',
+            'delivery_datetime' => 'required|date',
             'discount_percentage' => 'nullable|numeric|min:0|max:100',
             'notes' => 'nullable|string',
         ]);
@@ -135,7 +138,7 @@ class QuoteController extends Controller
         $quote->total_amount = $totalAmount;
         $quote->save();
 
-        return $quote->load(['customer.addresses', 'user', 'items.product', 'paymentMethod', 'deliveryMethod', 'status']);
+        return $quote->load(['customer.addresses', 'user', 'items.product', 'status', 'paymentMethod', 'deliveryMethod', 'negotiationSource']);
     }
 
     public function destroy(Quote $quote)
@@ -149,7 +152,7 @@ class QuoteController extends Controller
 
     public function generatePdf(Quote $quote)
     {
-        $quote->load(['customer.addresses', 'user', 'items.product', 'paymentMethod', 'deliveryMethod', 'status']);
+        $quote->load(['customer.addresses', 'user', 'items.product', 'status', 'paymentMethod', 'deliveryMethod', 'negotiationSource']);
 
         $settings = Setting::first();
 

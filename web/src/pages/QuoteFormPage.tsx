@@ -66,16 +66,18 @@ interface Quote {
   id: number;
   customer: Customer;
   user: User;
-  status_id: number | null;
-  status: Status | null;
   total_amount: number;
   created_at: string;
   items: QuoteItem[];
   discount_percentage: number;
+  status_id: number | null;
+  status: Status | null;
   payment_method_id: number | null;
   payment_method: { id: number; name: string } | null;
   delivery_method_id: string | null;
   delivery_method: { id: number; name: string } | null;
+  negotiation_source_id: number | null;
+  negotiation_source: { id: number; name: string } | null;
   delivery_datetime: string | null;
   notes: string | null;
   customer_data: CustomerDataSnapshot;
@@ -126,13 +128,14 @@ function QuoteFormPage() {
   const [paymentMethods, setPaymentMethods] = useState<SelectOption[]>([]);
   const [deliveryMethods, setDeliveryMethods] = useState<SelectOption[]>([]);
   const [quoteStatuses, setQuoteStatuses] = useState<SelectOption[]>([]);
+  const [negotiationSources, setNegotiationSources] = useState<SelectOption[]>([]);
   const isLocked = initialStatus === 'Aprovado' || initialStatus === 'Cancelado';
 
   useEffect(() => {
     api.get('/products').then(res => {
       setProducts(res.data.data.map((p: Product) => ({ 
         value: String(p.id), 
-        label: `${p.name} (SKU: ${p.sku})` 
+        label: `${p.name} (Código: ${p.sku})` 
       })));
     }).catch(err => console.error("Falha ao buscar produtos", err));
   }, []);
@@ -166,6 +169,12 @@ function QuoteFormPage() {
         label: qs.name
       })));
     });
+    api.get('/negotiation-sources').then(res => {
+      setNegotiationSources(res.data.map((ns: any) => ({
+        value: String(ns.id),
+        label: ns.name
+      })));
+    });
   }, []);
 
   const updateQuoteField = (field: keyof Quote, value: string | number | Date | null) => {
@@ -193,6 +202,7 @@ function QuoteFormPage() {
       payment_method_id: quote.payment_method_id,
       delivery_method_id: quote.delivery_method_id,
       status_id: quote.status_id,
+      negotiation_source_id: quote.negotiation_source_id,
       delivery_datetime: quote.delivery_datetime,
       discount_percentage: quote.discount_percentage,
       status: quote.status,
@@ -326,9 +336,21 @@ function QuoteFormPage() {
           <Grid>
             <Grid.Col span={{ base: 12, md: 6 }}><Select label="Status" value={String(quote.status_id || '')} onChange={(value) => updateQuoteField('status_id', value ? Number(value) : null)} data={quoteStatuses} disabled={isLocked} required /></Grid.Col>
             <Grid.Col span={{ base: 12, md: 6 }}><Select label="Forma de Pagamento" value={String(quote.payment_method_id || '')} onChange={(value) => updateQuoteField('payment_method_id', value ? Number(value) : null)} data={paymentMethods} disabled={isLocked} required /></Grid.Col>
-            <Grid.Col span={{ base: 12, md: 4 }}><NumberInput label="Desconto Geral (%)" value={quote.discount_percentage || 0} onChange={(value) => updateQuoteField('discount_percentage', Number(value) || 0)} min={0} max={99} allowDecimal={false} rightSection="%" disabled={isLocked} /></Grid.Col>
-            <Grid.Col span={{ base: 12, md: 4 }}><Select label="Opção de Entrega" value={String(quote.delivery_method_id || '')} onChange={(value) => updateQuoteField('delivery_method_id', value ? Number(value) : null)} data={deliveryMethods} disabled={isLocked} required /></Grid.Col>
-            <Grid.Col span={{ base: 12, md: 4 }}><DateTimePicker label="Data/Hora da Entrega" placeholder="Selecione data e hora" value={quote.delivery_datetime ? new Date(quote.delivery_datetime) : null} onChange={(date) => updateQuoteField('delivery_datetime', date?.toString() || null)} disabled={isLocked} clearable required minDate={new Date()} /></Grid.Col>
+            <Grid.Col span={{ base: 12, md: 6 }}><NumberInput label="Desconto Geral (%)" value={quote.discount_percentage || 0} onChange={(value) => updateQuoteField('discount_percentage', Number(value) || 0)} min={0} max={99} allowDecimal={false} rightSection="%" disabled={isLocked} /></Grid.Col>
+            <Grid.Col span={{ base: 12, md: 6 }}><Select label="Opção de Entrega" value={String(quote.delivery_method_id || '')} onChange={(value) => updateQuoteField('delivery_method_id', value ? Number(value) : null)} data={deliveryMethods} disabled={isLocked} required /></Grid.Col>
+            <Grid.Col span={{ base: 12, md: 6 }}><DateTimePicker label="Data/Hora da Entrega" placeholder="Selecione data e hora" value={quote.delivery_datetime ? new Date(quote.delivery_datetime) : null} onChange={(date) => updateQuoteField('delivery_datetime', date?.toString() || null)} disabled={isLocked} clearable required minDate={new Date()} /></Grid.Col>
+            <Grid.Col span={{ base: 12, md: 6 }}>
+                           <Select
+                                label="Origem da Negociação"
+                                placeholder="Selecione..."
+                                value={String(quote.negotiation_source_id || '')}
+                                onChange={(value) => updateQuoteField('negotiation_source_id', value ? Number(value) : null)}
+                                data={negotiationSources}
+                                disabled={isLocked}
+                                required
+                                clearable
+                            />
+                        </Grid.Col>
             <Grid.Col span={12}><Textarea label="Observações" placeholder="Adicione observações sobre o pedido..." value={quote.notes || ''} onChange={(event) => updateQuoteField('notes', event.currentTarget.value)} disabled={isLocked} autosize minRows={2} /></Grid.Col>
           </Grid>
         </Fieldset>
@@ -345,7 +367,7 @@ function QuoteFormPage() {
         <Paper withBorder p="md" mb="xl">
           <Title order={4} mb="md">Adicionar Produto ao Orçamento</Title>
           <Group align="flex-end">
-            <Select label="Produto" placeholder="Busque por nome ou SKU" data={products} value={selectedProduct} onChange={setSelectedProduct} searchable clearable style={{ flex: 1 }} />
+            <Select label="Produto" placeholder="Busque por nome ou código" data={products} value={selectedProduct} onChange={setSelectedProduct} searchable clearable style={{ flex: 1 }} />
             <NumberInput label="Quantidade" value={quantity} onChange={setQuantity} min={1} allowDecimal={false} style={{ width: 120 }} />
             <Button onClick={handleAddItem}>Adicionar</Button>
           </Group>

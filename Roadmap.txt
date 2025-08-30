@@ -1,7 +1,5 @@
 Módulo de Configurações (Refatorado):
 
-Criação/Edição de Origem da Negociação (uma opção a mais para ser inserida nos Orçamentos);
-
 Adicionar um botão no forms de criação de Orçamento para cadastro de um novo cliente;
 
 Condições de Pagamento detalhadas para o Módulo Financeiro;
