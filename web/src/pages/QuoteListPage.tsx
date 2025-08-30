@@ -1,5 +1,5 @@
 import { Fragment, useCallback, useEffect, useState } from 'react';
-import { Table, Title, Container, Button, Group, Badge, Modal, Select, Grid, TextInput, Textarea, ActionIcon, Fieldset, Menu, Collapse, Paper, Pagination, Loader } from '@mantine/core';
+import { Table, Title, Container, Button, Group, Badge, Modal, Select, Grid, TextInput, Textarea, ActionIcon, Fieldset, Menu, Collapse, Paper, Pagination, Loader, Tooltip } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
 import { DateTimePicker } from '@mantine/dates';
 import { IconPlus, IconEye, IconPrinter, IconTrash, IconDotsVertical, IconMail, IconBrandWhatsapp, IconChevronDown, IconSearch } from '@tabler/icons-react';
@@ -7,65 +7,8 @@ import { useDisclosure } from '@mantine/hooks';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../api/axios';
-
-interface Address {
-  id: number;
-  cep: string;
-  street: string;
-  number: string;
-  neighborhood: string;
-  complement: string | null;
-  city: string;
-  state: string;
-}
-interface Customer {
-  id: number;
-  name: string;
-  document: string;
-  type: string;
-  email: string | null;
-  phone: string | null;
-  addresses: Address[];
-}
-interface Product {
-  id: number;
-  name: string;
-}
-interface QuoteItem {
-  id: number;
-  product: Product;
-  quantity: number;
-  unit_sale_price: number;
-  total_price: number;
-}
-interface Quote {
-  id: number;
-  customer: Customer;
-  user: { name: string };
-  status: Status | null;
-  payment_method_id: number | null;
-  delivery_method_id: number | null;
-  total_amount: number;
-  created_at: string;
-  items: QuoteItem[];
-}
-interface PaymentMethod {
-  id: number;
-  name: string;
-}
-interface DeliveryMethod {
-  id: number;
-  name: string;
-}
-interface Status {
-  id: number;
-  name: string;
-  color: string;
-}
-interface SelectOption {
-  value: string;
-  label: string;
-}
+import type { Customer, Quote, SelectOption, PaymentMethod, DeliveryMethod } from '../types';
+import { CustomerForm } from '../components/CustomerForm';
 
 const initialFormData = {
   customer_id: '',
@@ -104,6 +47,7 @@ function QuoteListPage() {
   const [customerOptions, setCustomerOptions] = useState<SelectOption[]>([]);
   const [customerSearch, setCustomerSearch] = useState('');
   const [isSearchingCustomers, setIsSearchingCustomers] = useState(false);
+  const [customerModalOpened, { open: openCustomerModal, close: closeCustomerModal }] = useDisclosure(false);
   const [paymentMethods, setPaymentMethods] = useState<SelectOption[]>([]);
   const [deliveryMethods, setDeliveryMethods] = useState<SelectOption[]>([]);
   const [negotiationSources, setNegotiationSources] = useState<SelectOption[]>([]);
@@ -251,6 +195,13 @@ function QuoteListPage() {
       });
     }
   };
+
+  const handleNewCustomerSuccess = (newCustomer: Customer) => {
+    closeCustomerModal();
+    const newOption = { value: String(newCustomer.id), label: `${newCustomer.name} (${newCustomer.document})` };
+    setCustomerOptions(current => [...current, newOption]);
+    handleCustomerSelect(String(newCustomer.id));
+  };
   
   const rows = quotes.map((quote) => {
     const isExpanded = expandedQuoteIds.includes(quote.id);
@@ -322,7 +273,16 @@ function QuoteListPage() {
       <Modal opened={opened} onClose={close} title="Criar Novo Orçamento" size="xl">
         <Fieldset legend="Dados do Cliente" mt="md">
           <Grid>
-            <Grid.Col span={12}><Select label="Selecione o Cliente" placeholder="Digite para buscar..." data={customerOptions} searchable required clearable value={formData.customer_id} onChange={handleCustomerSelect} onSearchChange={setCustomerSearch} searchValue={customerSearch} rightSection={isSearchingCustomers ? <Loader size="xs" /> : null} /></Grid.Col>
+            <Grid.Col span={12}>
+              <Group align="flex-end" wrap="nowrap">
+                <Select style={{ flex: 1 }} label="Selecione o Cliente" placeholder="Digite para buscar..." data={customerOptions} searchable required clearable value={formData.customer_id} onChange={handleCustomerSelect} onSearchChange={setCustomerSearch} searchValue={customerSearch} rightSection={isSearchingCustomers ? <Loader size="xs" /> : null} />
+                <Tooltip label="Novo Cliente">
+                  <Button onClick={openCustomerModal} variant="outline" p="xs">
+                    <IconPlus size={18} />
+                  </Button>
+                </Tooltip>
+              </Group>
+            </Grid.Col>
             <Grid.Col span={{ base: 12, md: 6 }}><TextInput label="Email" value={formData.customer_email || ''} readOnly /></Grid.Col>
             <Grid.Col span={{ base: 12, md: 6 }}><TextInput label="Telefone" value={formData.customer_phone ? formatPhone(formData.customer_phone) : ''} readOnly /></Grid.Col>
             <Grid.Col span={12}><TextInput label="Endereço" value={formData.customer_address || ''} readOnly /></Grid.Col>
@@ -334,16 +294,7 @@ function QuoteListPage() {
             <Grid.Col span={{ base: 12, md: 6 }}><Select label="Forma de Pagamento" placeholder="Selecione..." data={paymentMethods} value={String(formData.payment_method_id || '')} onChange={(value) => setFormData(p => ({ ...p, payment_method_id: value ? Number(value) : null }))} /></Grid.Col>
             <Grid.Col span={{ base: 12, md: 6 }}><Select label="Opção de Entrega" placeholder="Selecione..." data={deliveryMethods} value={String(formData.delivery_method_id || '')} onChange={(value) => setFormData(p => ({ ...p, delivery_method_id: value ? Number(value) : null }))} /></Grid.Col>
             <Grid.Col span={{ base: 12, md: 6 }}><DateTimePicker label="Data/Hora da Entrega" value={formData.delivery_datetime ? new Date(formData.delivery_datetime) : null} onChange={(value) => setFormData(p => ({ ...p, delivery_datetime: value || '' }))} placeholder="Selecione a data e hora" clearable minDate={new Date()} /></Grid.Col>
-            <Grid.Col span={{ base: 12, md: 6 }}>
-                            <Select
-                                label="Origem da Negociação"
-                                placeholder="Selecione..."
-                                data={negotiationSources}
-                                value={String(formData.negotiation_source_id || '')}
-                                onChange={(value) => setFormData(p => ({ ...p, negotiation_source_id: value ? Number(value) : null }))}
-                                clearable
-                            />
-                        </Grid.Col>
+            <Grid.Col span={{ base: 12, md: 6 }}><Select label="Origem da Negociação" placeholder="Selecione..." data={negotiationSources} value={String(formData.negotiation_source_id || '')} onChange={(value) => setFormData(p => ({ ...p, negotiation_source_id: value ? Number(value) : null }))} clearable /></Grid.Col>
             <Grid.Col span={12}><Textarea label="Observações" onChange={(e) => setFormData(p => ({ ...p, notes: e.target.value }))} /></Grid.Col>
           </Grid>
         </Fieldset>
@@ -352,6 +303,10 @@ function QuoteListPage() {
           <Button variant="default" onClick={() => handleSaveQuote(false)}>Salvar Orçamento</Button>
           <Button onClick={() => handleSaveQuote(true)}>Salvar e Adicionar Itens</Button>
         </Group>
+      </Modal>
+
+      <Modal opened={customerModalOpened} onClose={closeCustomerModal} title="Cadastrar Novo Cliente" size="xl">
+        <CustomerForm onSuccess={handleNewCustomerSuccess} onCancel={closeCustomerModal} />
       </Modal>
       
       <Group justify="space-between" my="lg">
