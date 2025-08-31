@@ -1,13 +1,6 @@
 import { createContext, useState, useContext, type ReactNode, useEffect } from 'react';
 import api from '../api/axios';
-
-interface Settings {
-    company_fantasy_name: string | null;
-}
-
-interface SettingsContextType {
-    settings: Settings | null;
-}
+import type { Settings, SettingsContextType } from '../types';
 
 const SettingsContext = createContext<SettingsContextType | undefined>(undefined);
 

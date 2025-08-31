@@ -5,25 +5,7 @@ import { useForm } from '@mantine/form';
 import { IconPencil, IconTrash, IconPlus } from '@tabler/icons-react';
 import api from '../api/axios';
 import { notifications } from '@mantine/notifications';
-
-interface Role {
-    id: number;
-    name: string;
-    display_name: string;
-}
-
-interface User {
-    id: number;
-    name: string;
-    email: string;
-    phone: string | null;
-    roles: Role[];
-}
-
-interface SelectOption {
-    value: string;
-    label: string;
-}
+import type { User, Role, SelectOption } from '../types';
 
 const formatPhone = (phone: string = '') => {
   const cleaned = phone.replace(/\D/g, '').substring(0, 11);

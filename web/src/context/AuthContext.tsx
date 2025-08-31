@@ -1,23 +1,6 @@
 import { createContext, useState, useContext, type ReactNode, useEffect } from 'react';
 import api from '../api/axios';
-
-interface User {
-  id: number;
-  name: string;
-  email: string;
-  phone: string | null;
-  role: string;
-  permissions: string[];
-}
-
-interface AuthContextType {
-  user: User | null;
-  token: string | null;
-  isLoading: boolean;
-  login: (userData: User, token: string) => void;
-  logout: () => void;
-  can: (permissionName: string) => boolean;
-}
+import type { User, AuthContextType } from '../types';
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 

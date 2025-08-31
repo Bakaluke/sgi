@@ -4,12 +4,7 @@ import { BarChart, AreaChart } from '@mantine/charts';
 import { useAuth } from '../context/AuthContext';
 import { Cell } from 'recharts';
 import api from '../api/axios';
-
-interface Stats {
-  quoteStats: { [key: string]: number };
-  orderStats: { [key: string]: number };
-  quotesOverTime: { date: string, count: number }[];
-}
+import type { Stats } from '../types';
 
 const ChartTooltip = ({ label, payload }: { label: any, payload: any[] | undefined }) => {
   if (!payload || !payload.length) return null;

@@ -1,12 +1,7 @@
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { LoadingOverlay } from '@mantine/core';
-import type { JSX } from 'react';
-
-interface ProtectedRouteProps {
-  children: JSX.Element;
-  allowedRoles?: string[];
-}
+import type { ProtectedRouteProps } from '../types';
 
 const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) => {
   const { token, user, isLoading } = useAuth();

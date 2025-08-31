@@ -22,13 +22,13 @@ function LoginPage() {
       login(user, token);
       notifications.show({
         title: `Bem-vindo de volta, ${user.name}!`,
-        message: 'Login realizado com sucesso.',
+        message: 'Acesso realizado com sucesso.',
         color: 'green',
       });
       navigate('/dashboard');
     })
     .catch(err => {
-      console.error('Erro no login:', err);
+      console.error('Erro no acesso:', err);
       setError('E-mail ou senha inválidos. Por favor, tente novamente.');
     });
   };

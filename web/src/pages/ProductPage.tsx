@@ -6,33 +6,9 @@ import { useForm } from '@mantine/form';
 import { IconPencil, IconTrash, IconPlus, IconSearch, IconUpload, IconCategory, IconCategoryPlus } from '@tabler/icons-react';
 import { useAuth } from '../context/AuthContext';
 import api from '../api/axios';
+import type { Product, Category, SelectOption, ProductFormData } from '../types';
 
-interface Category {
-    id: number;
-    name: string;
-    description: string | null;
-    products_count: number;
-}
 
-interface Product {
-    id: number;
-    name: string;
-    sku: string;
-    sale_price: number;
-    cost_price: number;
-    quantity_in_stock: number;
-    description?: string;
-    image_path?: string | null;
-    category_id?: number | null;
-    category?: Category;
-}
-
-interface SelectOption {
-    value: string;
-    label: string;
-}
-
-type ProductFormData = Omit<Product, 'id' | 'cost_price' | 'quantity_in_stock' | 'image_path' | 'category'>;
 
 const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', {

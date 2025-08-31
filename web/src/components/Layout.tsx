@@ -11,8 +11,8 @@ const getInitials = (name: string | undefined): string => {
     const parts = name.trim().split(' ');
     const firstInitial = parts[0].charAt(0);
     if (parts.length > 1) {
-        const lastInitial = parts[parts.length - 1].charAt(0);
-        return `${firstInitial}${lastInitial}`.toUpperCase();
+      const lastInitial = parts[parts.length - 1].charAt(0);
+      return `${firstInitial}${lastInitial}`.toUpperCase();
     }
     return firstInitial.toUpperCase();
 };

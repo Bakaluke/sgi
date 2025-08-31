@@ -23,16 +23,16 @@ function ProfilePage() {
             phone: user?.phone || '',
         },
         validate: {
-            name: (value) => (value.trim().length < 2 ? 'O nome deve ter pelo menos 2 caracteres' : null),
-            email: (value) => (/^\S+@\S+$/.test(value) ? null : 'E-mail inválido'),
+            name: (value) => (value.trim().length < 2 ? 'O nome deve ter pelo menos 2 caracteres!' : null),
+            email: (value) => (/^\S+@\S+$/.test(value) ? null : 'E-mail inválido!'),
         }
     });
 
     const passwordForm = useForm({
         initialValues: { current_password: '', password: '', password_confirmation: '' },
         validate: {
-            password: (val) => (val.length < 8 ? 'A nova senha deve ter pelo menos 8 caracteres' : null),
-            password_confirmation: (val, values) => (val !== values.password ? 'As senhas não conferem' : null),
+            password: (val) => (val.length < 8 ? 'A nova senha deve ter pelo menos 8 caracteres.' : null),
+            password_confirmation: (val, values) => (val !== values.password ? 'As senhas não conferem!' : null),
         }
     });
 

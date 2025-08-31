@@ -9,6 +9,7 @@ use App\Models\User;
 use App\Models\PaymentMethod;
 use App\Models\DeliveryMethod;
 use App\Models\QuoteStatus;
+use App\Models\NegotiationSource;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class QuoteFactory extends Factory
@@ -19,6 +20,7 @@ class QuoteFactory extends Factory
         $user = User::whereHas('roles', fn ($query) => $query->where('name', 'vendedor'))->inRandomOrder()->first();
         $paymentMethod = PaymentMethod::inRandomOrder()->first();
         $deliveryMethod = DeliveryMethod::inRandomOrder()->first();
+        $negotiationSource = NegotiationSource::inRandomOrder()->first();
 
         $primaryAddress = $customer->addresses->first();
         $addressString = $primaryAddress ? implode(', ', array_filter([
@@ -45,6 +47,7 @@ class QuoteFactory extends Factory
             'salesperson_name' => $user->name,
             'delivery_method_id' => $deliveryMethod->id,
             'payment_method_id' => $paymentMethod->id,
+            'negotiation_source_id' => $negotiationSource->id,
             'notes' => fake()->sentence(),
         ];
     }

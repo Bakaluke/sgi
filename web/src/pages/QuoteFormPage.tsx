@@ -5,83 +5,7 @@ import { notifications } from '@mantine/notifications';
 import { useParams } from 'react-router-dom';
 import { IconTrash, IconPrinter } from '@tabler/icons-react';
 import api from '../api/axios';
-
-interface SelectOption { 
-  value: string; 
-  label: string; 
-}
-interface Address {
-  id: number;
-  cep: string;
-  street: string;
-  number: string;
-  neighborhood: string;
-  complement: string | null;
-  city: string;
-  state: string;
-}
-interface Customer {
-  id: number;
-  name: string;
-  document: string;
-  type: string;
-  email: string | null;
-  phone: string | null;
-  addresses: Address[];
-}
-interface Product {
-  id: number;
-  name: string;
-  sku: string;
-  sale_price: string;
-}
-interface QuoteItem {
-  id: number; 
-  product: Product; 
-  quantity: number;
-  payment_method_id: number | null;
-  unit_cost_price: number;
-  unit_sale_price: number; 
-  discount_percentage: number; 
-  total_price: number;
-  profit_margin?: number;
-}
-interface User {
-  id: number;
-  name: string;
-  role: string;
-}
-interface CustomerDataSnapshot {
-  name: string;
-  email: string | null;
-  phone: string | null;
-  address: string | null;
-}
-interface Status {
-  id: number;
-  name: string;
-  color: string;
-}
-interface Quote {
-  id: number;
-  customer: Customer;
-  user: User;
-  total_amount: number;
-  created_at: string;
-  items: QuoteItem[];
-  discount_percentage: number;
-  status_id: number | null;
-  status: Status | null;
-  payment_method_id: number | null;
-  payment_method: { id: number; name: string } | null;
-  delivery_method_id: string | null;
-  delivery_method: { id: number; name: string } | null;
-  negotiation_source_id: number | null;
-  negotiation_source: { id: number; name: string } | null;
-  delivery_datetime: string | null;
-  notes: string | null;
-  customer_data: CustomerDataSnapshot;
-}
+import type { SelectOption, Status, Customer, Product, Quote } from '../types';
 
 const formatPhone = (phone: string = '') => {
   const cleaned = phone.replace(/\D/g, '').substring(0, 11);
@@ -130,6 +54,8 @@ function QuoteFormPage() {
   const [quoteStatuses, setQuoteStatuses] = useState<SelectOption[]>([]);
   const [negotiationSources, setNegotiationSources] = useState<SelectOption[]>([]);
   const isLocked = initialStatus === 'Aprovado' || initialStatus === 'Cancelado';
+  const _dummyCustomer: Customer | null = null;
+  if (false) console.log(_dummyCustomer);
 
   useEffect(() => {
     api.get('/products').then(res => {
@@ -339,18 +265,7 @@ function QuoteFormPage() {
             <Grid.Col span={{ base: 12, md: 6 }}><NumberInput label="Desconto Geral (%)" value={quote.discount_percentage || 0} onChange={(value) => updateQuoteField('discount_percentage', Number(value) || 0)} min={0} max={99} allowDecimal={false} rightSection="%" disabled={isLocked} /></Grid.Col>
             <Grid.Col span={{ base: 12, md: 6 }}><Select label="Opção de Entrega" value={String(quote.delivery_method_id || '')} onChange={(value) => updateQuoteField('delivery_method_id', value ? Number(value) : null)} data={deliveryMethods} disabled={isLocked} required /></Grid.Col>
             <Grid.Col span={{ base: 12, md: 6 }}><DateTimePicker label="Data/Hora da Entrega" placeholder="Selecione data e hora" value={quote.delivery_datetime ? new Date(quote.delivery_datetime) : null} onChange={(date) => updateQuoteField('delivery_datetime', date?.toString() || null)} disabled={isLocked} clearable required minDate={new Date()} /></Grid.Col>
-            <Grid.Col span={{ base: 12, md: 6 }}>
-                           <Select
-                                label="Origem da Negociação"
-                                placeholder="Selecione..."
-                                value={String(quote.negotiation_source_id || '')}
-                                onChange={(value) => updateQuoteField('negotiation_source_id', value ? Number(value) : null)}
-                                data={negotiationSources}
-                                disabled={isLocked}
-                                required
-                                clearable
-                            />
-                        </Grid.Col>
+            <Grid.Col span={{ base: 12, md: 6 }}><Select label="Origem da Negociação" placeholder="Selecione..." value={String(quote.negotiation_source_id || '')} onChange={(value) => updateQuoteField('negotiation_source_id', value ? Number(value) : null)} data={negotiationSources} disabled={isLocked} required clearable /></Grid.Col>
             <Grid.Col span={12}><Textarea label="Observações" placeholder="Adicione observações sobre o pedido..." value={quote.notes || ''} onChange={(event) => updateQuoteField('notes', event.currentTarget.value)} disabled={isLocked} autosize minRows={2} /></Grid.Col>
           </Grid>
         </Fieldset>

@@ -331,7 +331,7 @@ function QuoteListPage() {
         </Table.Thead>
         <Table.Tbody>{rows.length > 0 ? ( rows ) : ( 
           <Table.Tr>
-            <Table.Td colSpan={8} align="center">Nenhum produto encontrado.</Table.Td>
+            <Table.Td colSpan={8} align="center">Nenhum orçamento encontrado.</Table.Td>
           </Table.Tr>
         )}</Table.Tbody>
       </Table>

@@ -5,24 +5,7 @@ import { IconSearch, IconHistory, IconArrowsTransferUp, IconRefresh } from '@tab
 import { notifications } from '@mantine/notifications';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
-
-interface Product {
-    id: number;
-    name: string;
-    sku: string;
-    quantity_in_stock: number;
-}
-interface StockMovement {
-    id: number;
-    created_at: string;
-    type: string;
-    quantity: number;
-    notes: string | null;
-}
-
-const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
-};
+import type { Product, StockMovement, StockMovementPayload } from '../types';
 
 const entryTypes = [ 'Entrada Inicial', 'Compra/Reposição', 'Ajuste Manual - Entrada' ];
 const exitTypes = [ 'Perda de Produção', 'Defeito de Fabricação', 'Ajuste Manual - Saída' ];
@@ -33,12 +16,8 @@ const initialMovementFormData = {
     cost_price: 0
 };
 
-type StockMovementPayload = {
-    product_id: number;
-    type: string;
-    quantity: number;
-    notes: string;
-    cost_price: number | null;
+const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
 };
 
 function StockPage() {

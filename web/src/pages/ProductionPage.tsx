@@ -4,37 +4,7 @@ import { IconChevronDown, IconDotsVertical, IconFileText, IconPrinter, IconSearc
 import { notifications } from '@mantine/notifications';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
-
-interface Product {
-  id: number;
-  name: string;
-}
-interface Status {
-  id: number;
-  name: string;
-  color: string;
-}
-interface QuoteItem {
-  id: number;
-  product: Product;
-  quantity: number;
-  unit_sale_price: number;
-  total_price: number;
-}
-interface ProductionOrder {
-  user: { name: string };
-  id: number;
-  quote_id: number;
-  customer: { name: string };
-  status: Status | null;
-  status_id: number | null;
-  created_at: string;
-  quote: { items: QuoteItem[]; };
-}
-interface SelectOption {
-  value: string;
-  label: string;
-}
+import type { ProductionOrder, SelectOption, Status } from '../types';
 
 function ProductionPage() {
   const { can } = useAuth();

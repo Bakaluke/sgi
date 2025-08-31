@@ -176,13 +176,16 @@ return [
         'image' => 'Imagem',
 
         // Orçamentos
+        'status' => 'Status',
+        'status_id' => 'Status',
         'payment_method' => 'Forma de Pagamento',
         'payment_method_id' => 'Forma de Pagamento',
         'delivery_method' => 'Forma de Entrega',
         'delivery_method_id' => 'Forma de Entrega',
         'delivery_datetime' => 'Data/Hora da Entrega',
+        'negotiation_source'=> 'Origem da Negociação',
+        'negotiation_source_id'=> 'Origem da Negociação',
         'notes' => 'Observações',
-        'status' => 'Status',
         'discount_percentage' => 'Desconto',
     ],
 ];

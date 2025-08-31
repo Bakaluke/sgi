@@ -3,9 +3,9 @@ import { Table, Title, Container, Button, Modal, Group, Tooltip, Pagination, Tex
 import { useDisclosure } from '@mantine/hooks';
 import { IconPencil, IconTrash, IconPlus, IconSearch } from '@tabler/icons-react';
 import { useAuth } from '../context/AuthContext';
-import api from '../api/axios';
 import type { Customer } from '../types';
 import { CustomerForm } from '../components/CustomerForm';
+import api from '../api/axios';
 
 const formatDocument = (doc: string = '') => {
   const cleaned = doc.replace(/\D/g, '');

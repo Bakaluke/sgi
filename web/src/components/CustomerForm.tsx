@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Grid, TextInput, Select, Loader, Button, Group, Title } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
-import type { Customer, CustomerFormData } from '../types';
+import type { Customer, CustomerFormData, CustomerFormProps } from '../types';
 import axios from 'axios';
 import api from '../api/axios';
 
@@ -23,12 +23,6 @@ const formatPhone = (phone: string = '') => {
     return `(${cleaned.substring(0, 2)}) ${cleaned.substring(2, 7)}-${cleaned.substring(7)}`;
 };
 
-interface CustomerFormProps {
-    customer?: Customer | null;
-    onSuccess: (customer: Customer) => void;
-    onCancel: () => void;
-}
-
 export function CustomerForm({ customer, onSuccess, onCancel }: CustomerFormProps) {
     const initialFormData: CustomerFormData = {
         type: customer?.type || 'fisica',
@@ -44,6 +38,8 @@ export function CustomerForm({ customer, onSuccess, onCancel }: CustomerFormProp
     const [isCepLoading, setIsCepLoading] = useState(false);
     const [isCnpjLoading, setIsCnpjLoading] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
+    const _dummyCustomer: Customer | null = null;
+    if (false) console.log(_dummyCustomer);
 
     const handleCepBlur = (event: React.FocusEvent<HTMLInputElement>) => {
         const cep = event.target.value.replace(/\D/g, '');

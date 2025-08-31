@@ -6,55 +6,7 @@ import { useForm } from '@mantine/form';
 import { IconUpload, IconPencil, IconTrash, IconPlus } from '@tabler/icons-react';
 import api from '../api/axios';
 import axios from 'axios';
-
-interface SettingsData {
-    legal_name: string;
-    company_fantasy_name: string;
-    cnpj: string;
-    email: string;
-    phone: string;
-    cep: string;
-    street: string;
-    number: string;
-    complement: string | null;
-    neighborhood: string;
-    city: string;
-    state: string;
-    logo_path: string | null;
-    website: string | null;
-}
-interface Permission {
-    id: number;
-    name: string;
-}
-interface Role {
-    id: number;
-    name: string;
-    display_name: string;
-    permissions: Permission[];
-}
-interface PaymentMethod {
-    id: number;
-    name: string;
-}
-interface DeliveryMethod {
-    id: number;
-    name: string;
-}
-interface QuoteStatus {
-    id: number;
-    name: string;
-    color: string;
-}
-interface ProductionStatus {
-    id: number;
-    name: string;
-    color: string;
-}
-interface NegotiationSource {
-    id: number;
-    name: string;
-}
+import type { SettingsData, Permission, Role, QuoteStatus, ProductionStatus, NegotiationSource, DeliveryMethod, PaymentMethod } from '../types';
 
 const formatCnpj = (cnpj: string = '') => {
     return cnpj
