@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\ProductionOrder;
 use App\Models\ProductionStatus;
+use App\Models\Product;
 use App\Models\Quote;
 use App\Models\QuoteStatus;
 use Carbon\Carbon;
@@ -28,6 +29,8 @@ class DashboardController extends Controller
             'quoteStats' => null,
             'orderStats' => null,
             'quotesOverTime' => [],
+            'kpis' => [ 'approvedValue' => 0, 'averageTicket' => 0, 'forecastValue' => 0 ],
+            'lowStockProducts' => [],
         ];
 
         $formatCounts = function ($queryResult) {
@@ -49,6 +52,22 @@ class DashboardController extends Controller
         }
 
         if ($user->can('quotes.view') || $user->can('quotes.view_all')) {
+            $approvedQuotesQuery = (clone $baseQuoteQuery)->join('quote_statuses', 'quotes.status_id', '=', 'quote_statuses.id')->where('quote_statuses.name', 'Aprovado');
+            $negotiationQuotesQuery = (clone $baseQuoteQuery)->join('quote_statuses', 'quotes.status_id', '=', 'quote_statuses.id')->where('quote_statuses.name', 'Negociação');
+            
+            $approvedValue = (clone $approvedQuotesQuery)->sum('quotes.total_amount');
+            $approvedCount = (clone $approvedQuotesQuery)->count();
+
+            $response['kpis']['approvedValue'] = $approvedValue;
+            $response['kpis']['averageTicket'] = ($approvedCount > 0) ? ($approvedValue / $approvedCount) : 0;
+            $response['kpis']['forecastValue'] = (clone $negotiationQuotesQuery)->sum('quotes.total_amount');
+
+            if ($user->can('quotes.view_all')) {
+                $approvedQuotesQuery = (clone $baseQuoteQuery)
+                    ->join('quote_statuses', 'quotes.status_id', '=', 'quote_statuses.id')
+                    ->where('quote_statuses.name', 'Aprovado');
+            }
+
             $response['quoteStats'] = [
                 'counts' => $formatCounts((clone $baseQuoteQuery)
                     ->join('quote_statuses', 'quotes.status_id', '=', 'quote_statuses.id')
@@ -56,6 +75,7 @@ class DashboardController extends Controller
                     ->groupBy('quote_statuses.name')->get()),
                 'statuses' => QuoteStatus::where('is_active', true)->orderBy('name')->get(['name', 'color']),
             ];
+            
             $response['quotesOverTime'] = (clone $baseQuoteQuery)
                 ->groupBy('date')->orderBy('date', 'ASC')
                 ->get([ DB::raw('DATE(quotes.created_at) as date'), DB::raw('count(*) as count') ])
@@ -70,6 +90,14 @@ class DashboardController extends Controller
                     ->groupBy('production_statuses.name')->get()),
                 'statuses' => ProductionStatus::where('is_active', true)->orderBy('name')->get(['name', 'color']),
             ];
+        }
+
+        if ($user->can('stock.manage')) {
+            $lowStockThreshold = 10;
+            $response['lowStockProducts'] = Product::where('quantity_in_stock', '<=', $lowStockThreshold)
+                ->orderBy('quantity_in_stock', 'asc')
+                ->limit(5)
+                ->get(['id', 'name', 'quantity_in_stock']);
         }
 
         return response()->json($response);

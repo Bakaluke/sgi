@@ -126,10 +126,18 @@ export interface StatusInfo {
   color: string;
 }
 
+export interface ProductAlert {
+  id: number;
+  name: string;
+  quantity_in_stock: number;
+}
+
 export interface Stats {
   quoteStats: { counts: { [key: string]: number }, statuses: StatusInfo[] } | null;
   orderStats: { counts: { [key: string]: number }, statuses: StatusInfo[] } | null;
   quotesOverTime: { date: string, count: number }[];
+  kpis: { approvedValue: number; averageTicket: number; forecastValue: number; };
+  lowStockProducts: ProductAlert[];
 }
 
 export interface ProductionOrder {
