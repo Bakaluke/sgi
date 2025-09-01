@@ -10,26 +10,26 @@ class NegotiationSourcePolicy
 {
     public function viewAny(User $user): bool
     {
-        return $user->can('users.manage');
+        return true;
     }
 
     public function view(User $user, NegotiationSource $negotiationSource): bool
     {
-        return $user->can('users.manage');
+        return false;
     }
 
     public function create(User $user): bool
     {
-        return $user->can('users.manage');
+        return $user->can('settings.manage');
     }
 
     public function update(User $user, NegotiationSource $negotiationSource): bool
     {
-        return $user->can('users.manage') && $user->id !== $negotiationSource->id;
+        return $user->can('settings.manage');
     }
 
     public function delete(User $user, NegotiationSource $negotiationSource): bool
     {
-        return $user->can('users.manage') && $user->id !== $negotiationSource->id;
+        return $user->can('settings.manage');
     }
 }

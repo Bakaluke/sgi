@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react';
-import { Container, Title, Paper, Text, Skeleton } from '@mantine/core';
+import { Container, Title, Paper, Text, Skeleton, SegmentedControl, Group } from '@mantine/core';
 import { BarChart, AreaChart } from '@mantine/charts';
 import { useAuth } from '../context/AuthContext';
 import { Cell } from 'recharts';
-import api from '../api/axios';
+import { DatePickerInput, type DatesRangeValue } from '@mantine/dates';
+import { startOfMonth, endOfMonth, subMonths, subDays } from 'date-fns';
 import type { Stats } from '../types';
+import api from '../api/axios';
 
 const ChartTooltip = ({ label, payload }: { label: any, payload: any[] | undefined }) => {
   if (!payload || !payload.length) return null;
@@ -21,62 +23,93 @@ const ChartTooltip = ({ label, payload }: { label: any, payload: any[] | undefin
 };
 
 function DashboardPage() {
-  const { user } = useAuth();
+  const { can } = useAuth();
   const [stats, setStats] = useState<Stats | null>(null);
+  const [loading, setLoading] = useState(true);
+  const now = new Date();
+  const [period, setPeriod] = useState('this_month');
+  const [dateRange, setDateRange] = useState<[Date, Date]>([startOfMonth(now), endOfMonth(now)]);
   
   useEffect(() => {
-    api.get('/dashboard/stats').then(response => { setStats(response.data); });
-  }, []);
+    setLoading(true);
+    const [startDate, endDate] = dateRange;
+    if (!startDate || !endDate) {
+      setLoading(false);
+      return;
+    }
+    const params = {
+      startDate: startDate.toISOString().split('T')[0],
+      endDate: endDate.toISOString().split('T')[0],
+    };
+    api.get('/dashboard/stats', { params })
+    .then(response => { setStats(response.data); })
+    .finally(() => setLoading(false));
+  }, [dateRange]);
 
-  if (!stats) {
+  useEffect(() => {
+    const today = new Date();
+    if (period === 'today') setDateRange([now, now]);
+    if (period === 'last_7_days') setDateRange([subDays(now, 6), now]);
+    if (period === 'this_month') setDateRange([startOfMonth(today), endOfMonth(today)]);
+    if (period === 'last_month') {
+      const lastMonth = subMonths(today, 1);
+      setDateRange([startOfMonth(lastMonth), endOfMonth(lastMonth)]);
+    }
+  }, [period]);
+  
+  const quoteStatusData = stats?.quoteStats?.statuses.map(status => ({
+    status: status.name,
+    Orçamentos: stats.quoteStats?.counts[status.name] || 0,
+    color: `var(--mantine-color-${status.color}-6)`,
+  })).filter(item => item.Orçamentos > 0) ?? [];
+  
+  const orderStatusData = stats?.orderStats?.statuses.map(status => ({
+    status: status.name,
+    Pedidos: stats.orderStats?.counts[status.name] || 0,
+    color: `var(--mantine-color-${status.color}-6)`,
+  })).filter(item => item.Pedidos > 0) ?? [];
+
+  if (loading || !stats) {
     return (
     <Container>
       <Skeleton height={40} mb="xl" />
-      <Skeleton height={200} mb="xl" />
-      <Skeleton height={200} />
+      <Skeleton height={300} mb="xl" />
+      <Skeleton height={300} />
     </Container>
     );
   }
 
-  const { quoteStats, orderStats, quotesOverTime } = stats;
-
-  const quoteStatusData = [
-    { status: 'Aberto', Orçamentos: quoteStats['Aberto'] || 0, color: 'blue.6' },
-    { status: 'Negociação', Orçamentos: quoteStats['Negociação'] || 0, color: 'yellow.6' },
-    { status: 'Aprovado', Orçamentos: quoteStats['Aprovado'] || 0, color: 'green.6' },
-    { status: 'Cancelado', Orçamentos: quoteStats['Cancelado'] || 0, color: 'red.6' },
-  ];
-  
-  const orderStatusData = [
-    { status: 'Pendente', Pedidos: orderStats['Pendente'] || 0, color: 'blue.6' },
-    { status: 'Em Produção', Pedidos: orderStats['Em Produção'] || 0, color: 'yellow.6' },
-    { status: 'Concluído', Pedidos: orderStats['Concluído'] || 0, color: 'green.6' },
-  ];
-
   return (
   <Container>
-    <Title order={1} mb="xl">Dashboard</Title>
+    <Group justify="space-between" mb="xl">
+      <Title order={1}>Dashboard</Title>
+      <SegmentedControl value={period} onChange={setPeriod} data={[ { label: 'Hoje', value: 'today' }, { label: 'Últimos 7 dias', value: 'last_7_days' }, { label: 'Este Mês', value: 'this_month' }, { label: 'Mês Passado', value: 'last_month' }, { label: 'Customizado', value: 'custom' }, ]} />
+    </Group>
+
+    {period === 'custom' && (<DatePickerInput type="range" label="Selecione o período" placeholder="De - Até" value={dateRange} onChange={(value: DatesRangeValue) => { const [start, end] = value; if (!start || !end) { return; } const startDate = typeof start === 'string' ? new Date(start) : start; const endDate = typeof end === 'string' ? new Date(end) : end; if (!isNaN(startDate.getTime()) && !isNaN(endDate.getTime())) { setDateRange([startDate, endDate]); } }} mb="xl" /> )}
     
-    {user && ['admin', 'vendedor'].includes(user.role) && (
+    {can('quotes.view') && (
       <Paper withBorder p="lg" mb="xl">
         <Title order={3} mb="md">Resumo de Orçamentos</Title>
         <BarChart h={300} data={quoteStatusData} dataKey="status" series={[{ name: 'Orçamentos' }]} tooltipProps={{ content: ({ label, payload }) => <ChartTooltip label={label} payload={payload} />, cursor: false }} xAxisProps={{ angle: 0, textAnchor: 'end', fontSize: 11 }}>
-        {quoteStatusData.map((item) => (<Cell key={item.status} fill={`var(--mantine-color-${item.color})`} />))}
+        {quoteStatusData.map((item) => (<Cell key={item.status} fill={item.color} />))}
         </BarChart>
       </Paper>
     )}
     
+    {(can('production_orders.view') || can('production_orders.view_all')) && (
     <Paper withBorder p="lg" mb="xl">
       <Title order={3} mb="md">Resumo de Pedidos</Title>
       <BarChart h={300} data={orderStatusData} dataKey="status" series={[{ name: 'Pedidos' }]} tooltipProps={{ content: ({ label, payload }) => <ChartTooltip label={label} payload={payload} />, cursor: false }} xAxisProps={{ angle: 0, textAnchor: 'end', fontSize: 11 }}>
-      {orderStatusData.map((item) => (<Cell key={item.status} fill={`var(--mantine-color-${item.color.replace('.', '-')})`} />))}
+      {orderStatusData.map((item) => (<Cell key={item.status} fill={item.color} />))}
       </BarChart>
     </Paper>
+    )}
     
-    {user && ['admin', 'vendedor'].includes(user.role) && (
+    {can('quotes.view') && stats.quotesOverTime.length > 0 && (
       <Paper withBorder p="lg">
-        <Title order={3} mb="md">Orçamentos Criados (Últimos 7 Dias)</Title>
-        <AreaChart h={300} data={quotesOverTime} dataKey="date" series={[{ name: 'count', color: 'blue.6' }]} curveType="linear" tooltipProps={{ content: ({ label, payload }) => <ChartTooltip label={label} payload={payload} /> }} />
+        <Title order={3} mb="md">Orçamentos Criados</Title>
+        <AreaChart h={300} data={stats.quotesOverTime} dataKey="date" series={[{ name: 'count', color: 'blue.6' }]} curveType="natural" tooltipProps={{ content: ({ label, payload }) => <ChartTooltip label={label} payload={payload} /> }} />
       </Paper>
     )}
   </Container>

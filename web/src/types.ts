@@ -121,9 +121,14 @@ export interface ProtectedRouteProps {
   allowedRoles?: string[];
 }
 
+export interface StatusInfo {
+  name: string;
+  color: string;
+}
+
 export interface Stats {
-  quoteStats: { [key: string]: number };
-  orderStats: { [key: string]: number };
+  quoteStats: { counts: { [key: string]: number }, statuses: StatusInfo[] } | null;
+  orderStats: { counts: { [key: string]: number }, statuses: StatusInfo[] } | null;
   quotesOverTime: { date: string, count: number }[];
 }
 

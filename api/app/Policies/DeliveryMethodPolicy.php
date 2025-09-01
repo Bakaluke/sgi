@@ -10,26 +10,26 @@ class DeliveryMethodPolicy
 {
     public function viewAny(User $user): bool
     {
-        return $user->can('users.manage');
+        return true;
     }
 
     public function view(User $user, DeliveryMethod $deliveryMethod): bool
     {
-        return $user->can('users.manage');
+        return false;
     }
 
     public function create(User $user): bool
     {
-        return $user->can('users.manage');
+        return $user->can('settings.manage');
     }
 
     public function update(User $user, DeliveryMethod $deliveryMethod): bool
     {
-        return $user->can('users.manage') && $user->id !== $deliveryMethod->id;
+        return $user->can('settings.manage');
     }
 
     public function delete(User $user, DeliveryMethod $deliveryMethod): bool
     {
-        return $user->can('users.manage') && $user->id !== $deliveryMethod->id;
+        return $user->can('settings.manage');
     }
 }

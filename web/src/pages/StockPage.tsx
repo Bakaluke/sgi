@@ -84,7 +84,7 @@ function StockPage() {
     const handleSaveMovement = () => {
         const isEntry = entryTypes.includes(movementFormData.type);
         if (!selectedProduct || !movementFormData.type || !movementFormData.quantity || (isEntry && movementFormData.cost_price <= 0)) {
-            notifications.show({ title: 'Atenção', message: 'Preencha todos os campos obrigatórios (Tipo, Quantidade e Custo para entradas).', color: 'yellow' });
+            notifications.show({ title: 'Atenção', message: 'Preencha todos os campos obrigatórios.', color: 'yellow' });
             return;
         }
         setIsSaving(true);
@@ -156,7 +156,7 @@ function StockPage() {
                     </Tabs.Panel>
                 </Tabs>
                 <NumberInput mt="md" label="Quantidade" value={movementFormData.quantity} onChange={(value) => setMovementFormData(p => ({ ...p, quantity: Number(value) || 0 }))} min={1} allowDecimal={false} thousandSeparator="." decimalSeparator="," required />
-                <Textarea mt="md" label="Observações (Opcional)" ref={notesRef} autosize minRows={2} />
+                <Textarea mt="md" label="Observações" required ref={notesRef} autosize minRows={2} />
                 <Group justify="flex-end" mt="xl">
                     <Button onClick={handleSaveMovement} loading={isSaving}>Registrar</Button>
                 </Group>

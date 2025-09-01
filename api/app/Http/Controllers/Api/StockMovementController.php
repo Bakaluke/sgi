@@ -28,7 +28,7 @@ class StockMovementController extends Controller
                 'Ajuste Manual - Saída',
                 'Ajuste - Estorno',
             ])],
-            'notes' => 'nullable|string',
+            'notes' => 'required|string',
             'cost_price' => 'nullable|numeric|min:0',
         ]);
 
