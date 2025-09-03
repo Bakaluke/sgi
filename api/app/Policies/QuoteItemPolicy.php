@@ -10,16 +10,19 @@ class QuoteItemPolicy
 {
     public function create(User $user, Quote $quote): bool
     {
+        if ($user->can('quotes.view_all')) { return true; }
+        return $user->can('quotes.create') && $user->id === $quote->user_id;
+    }
+
+    public function update(User $user, QuoteItem $quoteItem, Quote $quote): bool
+    {
+        if ($user->can('quotes.view_all')) { return true; }
         return $user->can('quotes.edit') && $user->id === $quote->user_id;
     }
 
-    public function update(User $user, QuoteItem $quoteItem): bool
+    public function delete(User $user, QuoteItem $quoteItem, Quote $quote): bool
     {
-        return $user->can('quotes.edit') && $user->id === $quoteItem->quote->user_id;
-    }
-
-    public function delete(User $user, QuoteItem $quoteItem): bool
-    {
-        return $user->can('quotes.edit') && $user->id === $quoteItem->quote->user_id;
+        if ($user->can('quotes.view_all')) { return true; }
+        return $user->can('quotes.delete') && $user->id === $quote->user_id;
     }
 }

@@ -59,12 +59,13 @@ export interface QuoteItem {
   id: number;
   product: Product;
   quantity: number;
-  payment_method_id: number | null;
   unit_cost_price: number;
   unit_sale_price: number;
   discount_percentage: number;
   total_price: number;
-  profit_margin?: number;
+  profit_margin?: number | null;
+  notes: string | null;
+  file_path: string | null;
 }
 
 export interface Status {

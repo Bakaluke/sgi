@@ -19,6 +19,9 @@ class QuoteItem extends Model
         'unit_sale_price',
         'discount_percentage',
         'total_price',
+        'profit_margin',
+        'notes',
+        'file_path',
         'commission_percentage',
     ];
 

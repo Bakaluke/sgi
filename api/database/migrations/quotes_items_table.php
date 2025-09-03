@@ -21,6 +21,11 @@ return new class extends Migration
             $table->decimal('discount_percentage', 5, 2)->default(0);
             $table->decimal('total_price', 10, 2);
 
+            $table->decimal('profit_margin', 5, 2)->nullable();
+
+            $table->text('notes')->nullable();
+            $table->string('file_path')->nullable();
+
             $table->decimal('commission_percentage', 5, 2)->default(0);
 
             $table->timestamps();
