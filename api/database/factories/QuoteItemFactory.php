@@ -13,6 +13,10 @@ class QuoteItemFactory extends Factory
         $quantity = fake()->numberBetween(1, 5);
         $salePrice = $product->sale_price;
 
+        $lucro = $salePrice - $product->cost_price;
+        $lucro2 = $lucro / $salePrice;
+        $profit = $lucro2 * 100;
+
         return [
             'product_id' => $product->id,
             'product_name' => $product->name,
@@ -20,6 +24,7 @@ class QuoteItemFactory extends Factory
             'unit_cost_price' => $product->cost_price,
             'unit_sale_price' => $salePrice,
             'total_price' => $quantity * $salePrice,
+            'profit_margin' => $profit,
         ];
     }
 }

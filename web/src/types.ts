@@ -63,7 +63,7 @@ export interface QuoteItem {
   unit_sale_price: number;
   discount_percentage: number;
   total_price: number;
-  profit_margin?: number | null;
+  profit_margin: number | null;
   notes: string | null;
   file_path: string | null;
 }
