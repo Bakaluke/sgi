@@ -34,4 +34,12 @@ class QuoteItem extends Model
     {
         return $this->belongsTo(Product::class);
     }
+
+    public function updateTotalPrice()
+    {
+        $discount = $this->unit_sale_price * ($this->discount_percentage / 100);
+        $priceWithDiscount = $this->unit_sale_price - $discount;
+        $this->total_price = $this->quantity * $priceWithDiscount;
+        $this->save();
+    }
 }

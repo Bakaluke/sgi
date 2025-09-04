@@ -71,22 +71,23 @@ function QuoteFormPage() {
     if (!editingItem) return;
     const cost = Number(editingItem.unit_cost_price);
     const sale = Number(itemForm.values.unit_sale_price);
-    itemForm.setFieldValue('profit_margin', calculateProfitMargin(cost, sale));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [itemForm.values.unit_sale_price]);
-    
+    const newMargin = calculateProfitMargin(cost, sale);
+    if (Number(itemForm.values.profit_margin).toFixed(2) !== newMargin.toFixed(2)) {
+      itemForm.setFieldValue('profit_margin', newMargin);
+    }
+  }, [itemForm.values.unit_sale_price, editingItem]);
+
     useEffect(() => {
       if (!editingItem) return;
       const cost = Number(editingItem.unit_cost_price);
       const margin = Number(itemForm.values.profit_margin);
       if (margin < 100 && cost > 0) {
         const newSalePrice = cost / (1 - (margin / 100));
-        if (itemForm.values.unit_sale_price.toFixed(2) !== newSalePrice.toFixed(2)) {
+        if (Number(itemForm.values.unit_sale_price).toFixed(2) !== newSalePrice.toFixed(2)) {
           itemForm.setFieldValue('unit_sale_price', newSalePrice);
         }
       }
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [itemForm.values.profit_margin]);
+    }, [itemForm.values.profit_margin, editingItem]);
   
   useEffect(() => {
     api.get('/products', { params: { per_page: 1000 } }).then(res => {
@@ -171,12 +172,12 @@ function QuoteFormPage() {
   const handleOpenEditItemModal = (item: QuoteItem) => {
     setEditingItem(item);
     itemForm.setValues({
-        quantity: item.quantity,
-        unit_sale_price: item.unit_sale_price,
-        discount_percentage: item.discount_percentage,
-        profit_margin: item.profit_margin || 0,
-        notes: item.notes || '',
-        file: null,
+      quantity: item.quantity,
+      unit_sale_price: item.unit_sale_price,
+      discount_percentage: item.discount_percentage,
+      profit_margin: item.profit_margin || 0,
+      notes: item.notes || '',
+      file: null,
     });
     openItemModal();
   };
@@ -199,7 +200,7 @@ function QuoteFormPage() {
     })
     .catch(() => notifications.show({ title: 'Erro!', message: 'Não foi possível atualizar o item.', color: 'red'}));
   };
-
+  
   const handleRemoveItem = (itemId: number) => {
     if (!quote) return;
     if (window.confirm('Tem certeza que deseja remover este item?')) {
@@ -215,13 +216,13 @@ function QuoteFormPage() {
   const itemRows = quote?.items?.map((item) => (
   <Table.Tr key={item.id}>
     <Table.Td>
-    {item.product.name}
-    {item.notes && <Text size="xs" c="dimmed">Obs: {item.notes}</Text>}
-    {item.file_path && (
-    <Anchor href={`${import.meta.env.VITE_API_BASE_URL.replace('/api', '')}/storage/${item.file_path}`} target="_blank" size="xs">
-      <Group gap="xs" mt={4}> <IconFile size={14} /> Ver Anexo </Group>
-    </Anchor>
-    )}
+      {item.product.name}
+      {item.notes && <Text size="xs" c="dimmed">Obs: {item.notes}</Text>}
+      {item.file_path && (
+        <Anchor href={`${import.meta.env.VITE_API_BASE_URL.replace('/api', '')}/storage/${item.file_path}`} target="_blank" size="xs">
+          <Group gap="xs" mt={4}> <IconFile size={14} /> Ver Anexo </Group>
+        </Anchor>
+      )}
     </Table.Td>
     <Table.Td>{item.quantity}</Table.Td>
     <Table.Td>{formatCurrency(item.unit_sale_price)}</Table.Td>
@@ -251,14 +252,15 @@ function QuoteFormPage() {
             <Grid.Col span={4}><NumberInput label="Lucro (%)" min={0} max={99.99} decimalScale={2} {...itemForm.getInputProps('profit_margin')} /></Grid.Col>
             <Grid.Col span={4}><NumberInput label="Desconto (%)" min={0} max={100} {...itemForm.getInputProps('discount_percentage')} /></Grid.Col>
           </Grid>
-          <Textarea mt="md" label="Observações de Personalização" placeholder="Detalhes de personalização, medidas, cores, etc." minRows={3} {...itemForm.getInputProps('notes')} />
-          <FileInput mt="md" label="Arquivo de Arte/Referência" placeholder="Anexe um arquivo (PDF, JPG, PNG, ZIP...)" leftSection={<IconUpload size={14} />} {...itemForm.getInputProps('file')} clearable />
+          <Textarea mt="md" label="Observações de Personalização" placeholder="Detalhes, medidas, cores..." minRows={3} {...itemForm.getInputProps('notes')} />
+          <FileInput mt="md" label="Arquivo de Arte/Referência" placeholder="Anexe um arquivo (PDF, JPG...)" leftSection={<IconUpload size={14} />} {...itemForm.getInputProps('file')} clearable />
           <Group justify="flex-end" mt="lg">
             <Button variant="default" onClick={closeItemModal}>Cancelar</Button>
             <Button type="submit">Salvar Item</Button>
           </Group>
         </form>
       </Modal>
+
       <Title order={2} mb="lg">Orçamento Nº {quote.id}</Title>
       
       <Paper withBorder p="md">

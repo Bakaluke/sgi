@@ -17,6 +17,7 @@ class QuoteItemPolicy
     public function update(User $user, QuoteItem $quoteItem, Quote $quote): bool
     {
         if ($user->can('quotes.view_all')) { return true; }
+
         return $user->can('quotes.edit') && $user->id === $quote->user_id;
     }
 

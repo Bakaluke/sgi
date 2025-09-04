@@ -13,29 +13,28 @@ class QuoteItemController extends Controller
     public function store(Request $request, Quote $quote)
     {
         $this->authorize('create', [QuoteItem::class, $quote]);
-
         $validated = $request->validate([
             'product_id' => 'required|exists:products,id',
             'quantity' => 'required|integer|min:1',
         ]);
 
         $product = Product::find($validated['product_id']);
-
         $item = $quote->items()->where('product_id', $product->id)->first();
 
         if ($item) {
-            $item->quantity += $validated['quantity'];
-            $item->save();
+            $item->increment('quantity', $validated['quantity']);
         } else {
-            $quote->items()->create([
+            $item = $quote->items()->create([
                 'product_id' => $product->id,
                 'product_name' => $product->name,
                 'quantity' => $validated['quantity'],
                 'unit_cost_price' => $product->cost_price,
                 'unit_sale_price' => $product->sale_price,
+                'discount_percentage' => 0,
             ]);
         }
         
+        $item->updateTotalPrice();
         $quote->recalculateTotals();
         
         return $quote->load(['items.product', 'status', 'paymentMethod', 'deliveryMethod', 'negotiationSource']);

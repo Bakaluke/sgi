@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\DB;
 
 class Quote extends Model
 {
@@ -46,9 +47,9 @@ class Quote extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function deliveryMethod(): BelongsTo
+    public function status(): BelongsTo
     {
-        return $this->belongsTo(DeliveryMethod::class);
+        return $this->belongsTo(QuoteStatus::class);
     }
 
     public function paymentMethod(): BelongsTo
@@ -56,9 +57,14 @@ class Quote extends Model
         return $this->belongsTo(PaymentMethod::class);
     }
 
-    public function status(): BelongsTo
+    public function deliveryMethod(): BelongsTo
     {
-        return $this->belongsTo(QuoteStatus::class);
+        return $this->belongsTo(DeliveryMethod::class);
+    }
+
+    public function negotiationSource(): BelongsTo
+    {
+        return $this->belongsTo(NegotiationSource::class);
     }
 
     public function items(): HasMany
@@ -66,8 +72,16 @@ class Quote extends Model
         return $this->hasMany(QuoteItem::class);
     }
 
-    public function negotiationSource(): BelongsTo
+    public function recalculateTotals()
     {
-        return $this->belongsTo(NegotiationSource::class);
+        $subtotal = $this->items()->sum('total_price');
+
+        $discountValue = $subtotal * ($this->discount_percentage / 100);
+
+        $totalAmount = $subtotal - $discountValue;
+
+        $this->subtotal = $subtotal;
+        $this->total_amount = $totalAmount;
+        $this->save();
     }
 }
