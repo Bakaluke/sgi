@@ -34,7 +34,14 @@ class QuoteItemController extends Controller
             ]);
         }
         
+        if ($item->unit_sale_price > 0 && $item->unit_cost_price > 0) {
+            $item->profit_margin = (($item->unit_sale_price - $item->unit_cost_price) / $item->unit_sale_price) * 100;
+        } else {
+            $item->profit_margin = 0;
+        }
+        $item->save();
         $item->updateTotalPrice();
+        
         $quote->recalculateTotals();
         
         return $quote->load(['items.product', 'status', 'paymentMethod', 'deliveryMethod', 'negotiationSource']);

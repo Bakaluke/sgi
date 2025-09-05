@@ -52,7 +52,7 @@ function QuoteFormPage() {
   const [deliveryMethods, setDeliveryMethods] = useState<SelectOption[]>([]);
   const [quoteStatuses, setQuoteStatuses] = useState<SelectOption[]>([]);
   const [negotiationSources, setNegotiationSources] = useState<SelectOption[]>([]);
-  const [itemModalOpened, { open: openItemModal, close: closeItemModal }] = useDisclosure(false);
+  const [itemModalOpened, { open: openItemModal, close: closeItemModalHook }] = useDisclosure(false);
   const [editingItem, setEditingItem] = useState<QuoteItem | null>(null);
   const isLocked = initialStatus === 'Aprovado' || initialStatus === 'Cancelado';
   
@@ -75,19 +75,21 @@ function QuoteFormPage() {
     if (Number(itemForm.values.profit_margin).toFixed(2) !== newMargin.toFixed(2)) {
       itemForm.setFieldValue('profit_margin', newMargin);
     }
-  }, [itemForm.values.unit_sale_price, editingItem]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [itemForm.values.unit_sale_price]);
 
-    useEffect(() => {
-      if (!editingItem) return;
-      const cost = Number(editingItem.unit_cost_price);
-      const margin = Number(itemForm.values.profit_margin);
-      if (margin < 100 && cost > 0) {
-        const newSalePrice = cost / (1 - (margin / 100));
-        if (Number(itemForm.values.unit_sale_price).toFixed(2) !== newSalePrice.toFixed(2)) {
-          itemForm.setFieldValue('unit_sale_price', newSalePrice);
-        }
+  useEffect(() => {
+    if (!editingItem) return;
+    const cost = Number(editingItem.unit_cost_price);
+    const margin = Number(itemForm.values.profit_margin);
+    if (margin < 100 && cost > 0) {
+      const newSalePrice = cost / (1 - (margin / 100));
+      if (Number(itemForm.values.unit_sale_price).toFixed(2) !== newSalePrice.toFixed(2)) {
+        itemForm.setFieldValue('unit_sale_price', newSalePrice);
       }
-    }, [itemForm.values.profit_margin, editingItem]);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [itemForm.values.profit_margin]);
   
   useEffect(() => {
     api.get('/products', { params: { per_page: 1000 } }).then(res => {
@@ -181,6 +183,12 @@ function QuoteFormPage() {
     });
     openItemModal();
   };
+
+  const handleCloseItemModal = () => {
+    closeItemModalHook();
+    setEditingItem(null);
+    itemForm.reset();
+  };
   
   const handleItemUpdate = (values: typeof itemForm.values) => {
     if (!quote || !editingItem) return;
@@ -195,7 +203,7 @@ function QuoteFormPage() {
     api.post(`/quotes/${quote.id}/items/${editingItem.id}`, data)
     .then(res => {
       setQuote(enrichQuoteWithProfitMargin(res.data));
-      closeItemModal();
+      handleCloseItemModal();
       notifications.show({ title: 'Sucesso!', message: 'Item atualizado.', color: 'green'});
     })
     .catch(() => notifications.show({ title: 'Erro!', message: 'Não foi possível atualizar o item.', color: 'red'}));
@@ -244,7 +252,7 @@ function QuoteFormPage() {
 
   return (
     <Container size="xl">
-      <Modal opened={itemModalOpened} onClose={closeItemModal} title={`Editar Item: ${editingItem?.product.name}`}>
+      <Modal opened={itemModalOpened} onClose={handleCloseItemModal} title={`Editar Item: ${editingItem?.product.name}`}>
         <form onSubmit={itemForm.onSubmit(handleItemUpdate)}>
           <Grid>
             <Grid.Col span={4}><NumberInput label="Quantidade" min={1} {...itemForm.getInputProps('quantity')} /></Grid.Col>
@@ -255,7 +263,7 @@ function QuoteFormPage() {
           <Textarea mt="md" label="Observações de Personalização" placeholder="Detalhes, medidas, cores..." minRows={3} {...itemForm.getInputProps('notes')} />
           <FileInput mt="md" label="Arquivo de Arte/Referência" placeholder="Anexe um arquivo (PDF, JPG...)" leftSection={<IconUpload size={14} />} {...itemForm.getInputProps('file')} clearable />
           <Group justify="flex-end" mt="lg">
-            <Button variant="default" onClick={closeItemModal}>Cancelar</Button>
+            <Button variant="default" onClick={handleCloseItemModal}>Cancelar</Button>
             <Button type="submit">Salvar Item</Button>
           </Group>
         </form>
