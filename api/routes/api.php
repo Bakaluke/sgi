@@ -46,6 +46,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('quotes/{quote}/items/{quote_item}', [QuoteItemController::class, 'update']);
     Route::delete('quotes/{quote}/items/{quote_item}', [QuoteItemController::class, 'destroy']);
 
+    Route::delete('quote-items/{quote_item}/file', [QuoteItemController::class, 'destroyFile']);
+
     Route::apiResource('production-orders', ProductionOrderController::class);
 
     Route::get('/dashboard/stats', [DashboardController::class, 'getStats']);

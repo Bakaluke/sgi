@@ -5,7 +5,7 @@ import { useDisclosure } from '@mantine/hooks';
 import { useForm } from '@mantine/form';
 import { notifications } from '@mantine/notifications';
 import { useParams } from 'react-router-dom';
-import { IconTrash, IconPrinter, IconPencil, IconUpload, IconFile } from '@tabler/icons-react';
+import { IconTrash, IconPrinter, IconPencil, IconUpload, IconFile, IconX } from '@tabler/icons-react';
 import api from '../api/axios';
 import type { SelectOption, Status, Customer, Product, Quote, QuoteItem } from '../types';
 
@@ -23,21 +23,17 @@ const formatCurrency = (value: number) => {
   return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
 };
 
-const formatPercentage = (value: number | undefined | null): string => (value ? `${value.toFixed(2)}%` : '0.00%');
+const formatPercentage = (value: any): string => {
+  const num = Number(value);
+  if (isNaN(num)) {
+    return '0.00%';
+  }
+  return `${num.toFixed(2)}%`;
+};
 
 const calculateProfitMargin = (cost: number, sale: number): number => {
   if (sale <= 0 || cost > sale || cost <= 0) return 0;
   return parseFloat((((sale - cost) / sale) * 100).toFixed(2));
-};
-
-const enrichQuoteWithProfitMargin = (quoteData: Quote): Quote => {
-  if (quoteData && quoteData.items) {
-    quoteData.items = quoteData.items.map((item) => ({
-      ...item,
-      profit_margin: calculateProfitMargin(item.unit_cost_price, item.unit_sale_price),
-    }));
-  }
-  return quoteData;
 };
 
 function QuoteFormPage() {
@@ -59,7 +55,7 @@ function QuoteFormPage() {
   const _dummyCustomer: Customer | null = null;
   // eslint-disable-next-line no-constant-condition
   if (false) console.log(_dummyCustomer);
-
+  
   const itemForm = useForm({
     initialValues: {
       quantity: 1, unit_sale_price: 0, discount_percentage: 0,
@@ -77,19 +73,6 @@ function QuoteFormPage() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [itemForm.values.unit_sale_price]);
-
-  useEffect(() => {
-    if (!editingItem) return;
-    const cost = Number(editingItem.unit_cost_price);
-    const margin = Number(itemForm.values.profit_margin);
-    if (margin < 100 && cost > 0) {
-      const newSalePrice = cost / (1 - (margin / 100));
-      if (Number(itemForm.values.unit_sale_price).toFixed(2) !== newSalePrice.toFixed(2)) {
-        itemForm.setFieldValue('unit_sale_price', newSalePrice);
-      }
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [itemForm.values.profit_margin]);
   
   useEffect(() => {
     api.get('/products', { params: { per_page: 1000 } }).then(res => {
@@ -104,9 +87,8 @@ function QuoteFormPage() {
   useEffect(() => {
     if (quoteId) {
       api.get(`/quotes/${quoteId}`).then(res => {
-        const enrichedQuote = enrichQuoteWithProfitMargin(res.data);
-        setQuote(enrichedQuote);
-        setInitialStatus(enrichedQuote.status?.name || null);
+        setQuote(res.data);
+        setInitialStatus(res.data.status?.name || null);
       });
     }
   }, [quoteId]);
@@ -118,15 +100,34 @@ function QuoteFormPage() {
     });
   };
 
+  const handleCloseItemModal = () => {
+    closeItemModalHook();
+    setEditingItem(null);
+    itemForm.reset();
+  };
+  
+  const handleOpenEditItemModal = (item: QuoteItem) => {
+    setEditingItem(item);
+    itemForm.setValues({
+      quantity: item.quantity,
+      unit_sale_price: item.unit_sale_price,
+      discount_percentage: item.discount_percentage,
+      notes: item.notes || '',
+      file: null,
+    });
+    openItemModal();
+  };
+
   const handleAddItem = () => {
-    if (!selectedProduct || !quantity) return;
-    api.post(`/quotes/${quoteId}/items`, { product_id: selectedProduct, quantity }).then(res => {
-      const enrichedQuote = enrichQuoteWithProfitMargin(res.data);
-      setQuote(enrichedQuote);
+    if (!selectedProduct || !quantity || !quoteId) return;
+    api.post(`/quotes/${quoteId}/items`, { product_id: selectedProduct, quantity })
+    .then(res => {
+      setQuote(res.data);
       setSelectedProduct(null);
       setQuantity(1);
       notifications.show({ title: 'Sucesso!', message: 'Item adicionado.', color: 'green' });
-    }).catch(() => notifications.show({ title: 'Erro!', message: 'Não foi possível adicionar o item.', color: 'red' }));
+    })
+    .catch(() => notifications.show({ title: 'Erro!', message: 'Não foi possível adicionar o item.', color: 'red' }));
   };
 
   const handleUpdateHeader = () => {
@@ -143,7 +144,7 @@ function QuoteFormPage() {
       notes: quote.notes,
     })
     .then(res => {
-      const enrichedQuote = enrichQuoteWithProfitMargin(res.data);
+      const enrichedQuote = res.data;
       setQuote(enrichedQuote);
       setInitialStatus(enrichedQuote.status?.name || null);
       notifications.show({ title: 'Sucesso!', message: 'Alterações salvas.', color: 'green' });
@@ -171,38 +172,18 @@ function QuoteFormPage() {
     });
   };
   
-  const handleOpenEditItemModal = (item: QuoteItem) => {
-    setEditingItem(item);
-    itemForm.setValues({
-      quantity: item.quantity,
-      unit_sale_price: item.unit_sale_price,
-      discount_percentage: item.discount_percentage,
-      profit_margin: item.profit_margin || 0,
-      notes: item.notes || '',
-      file: null,
-    });
-    openItemModal();
-  };
-
-  const handleCloseItemModal = () => {
-    closeItemModalHook();
-    setEditingItem(null);
-    itemForm.reset();
-  };
-  
   const handleItemUpdate = (values: typeof itemForm.values) => {
     if (!quote || !editingItem) return;
     const data = new FormData();
     data.append('quantity', String(values.quantity));
     data.append('unit_sale_price', String(values.unit_sale_price));
     data.append('discount_percentage', String(values.discount_percentage));
-    data.append('profit_margin', String(values.profit_margin));
     data.append('notes', values.notes);
-    if (values.file) { data.append('file', values.file); }
+    if (values.file) data.append('file', values.file);
     data.append('_method', 'PUT');
     api.post(`/quotes/${quote.id}/items/${editingItem.id}`, data)
     .then(res => {
-      setQuote(enrichQuoteWithProfitMargin(res.data));
+      setQuote(res.data);
       handleCloseItemModal();
       notifications.show({ title: 'Sucesso!', message: 'Item atualizado.', color: 'green'});
     })
@@ -211,13 +192,26 @@ function QuoteFormPage() {
   
   const handleRemoveItem = (itemId: number) => {
     if (!quote) return;
-    if (window.confirm('Tem certeza que deseja remover este item?')) {
+    if (window.confirm('Tem certeza?')) {
       api.delete(`/quotes/${quote.id}/items/${itemId}`)
       .then(res => {
-        setQuote(enrichQuoteWithProfitMargin(res.data));
+        setQuote(res.data);
         notifications.show({ title: 'Sucesso!', message: 'Item removido.', color: 'green'});
       })
       .catch(() => notifications.show({ title: 'Erro!', message: 'Não foi possível remover o item.', color: 'red' }));
+    }
+  };
+
+  const handleRemoveFile = () => {
+    if (!quote || !editingItem) return;
+    if (window.confirm('Tem certeza que deseja remover o anexo deste item?')) {
+      api.delete(`/quote-items/${editingItem.id}/file`)
+      .then(res => {
+        setQuote(res.data);
+        setEditingItem(prev => prev ? { ...prev, file_path: null } : null);
+        notifications.show({ title: 'Sucesso!', message: 'Anexo removido.', color: 'green'});
+      })
+      .catch(() => notifications.show({ title: 'Erro!', message: 'Não foi possível remover o anexo.', color: 'red'}));
     }
   };
   
@@ -235,7 +229,7 @@ function QuoteFormPage() {
     <Table.Td>{item.quantity}</Table.Td>
     <Table.Td>{formatCurrency(item.unit_sale_price)}</Table.Td>
     <Table.Td>{formatPercentage(item.profit_margin)}</Table.Td>
-    <Table.Td>{item.discount_percentage}%</Table.Td>
+    <Table.Td>{formatPercentage(item.discount_percentage)}</Table.Td>
     <Table.Td>{formatCurrency(item.total_price)}</Table.Td>
     <Table.Td>
       <Group gap="xs">
@@ -257,11 +251,24 @@ function QuoteFormPage() {
           <Grid>
             <Grid.Col span={4}><NumberInput label="Quantidade" min={1} {...itemForm.getInputProps('quantity')} /></Grid.Col>
             <Grid.Col span={4}><TextInput label="Preço Unit." value={formatCurrency(itemForm.values.unit_sale_price)} onChange={(e) => itemForm.setFieldValue('unit_sale_price', Number(e.target.value.replace(/\D/g, ''))/100)} /></Grid.Col>
-            <Grid.Col span={4}><NumberInput label="Lucro (%)" min={0} max={99.99} decimalScale={2} {...itemForm.getInputProps('profit_margin')} /></Grid.Col>
+            <Grid.Col span={4}><NumberInput label="Lucro (%)" min={0} max={99.99} decimalScale={2} {...itemForm.getInputProps('profit_margin')} readOnly /></Grid.Col>
             <Grid.Col span={4}><NumberInput label="Desconto (%)" min={0} max={100} {...itemForm.getInputProps('discount_percentage')} /></Grid.Col>
           </Grid>
           <Textarea mt="md" label="Observações de Personalização" placeholder="Detalhes, medidas, cores..." minRows={3} {...itemForm.getInputProps('notes')} />
-          <FileInput mt="md" label="Arquivo de Arte/Referência" placeholder="Anexe um arquivo (PDF, JPG...)" leftSection={<IconUpload size={14} />} {...itemForm.getInputProps('file')} clearable />
+          {editingItem?.file_path ? (
+            <Paper withBorder p="sm" mt="md">
+              <Group justify="space-between">
+                <Anchor href={`${import.meta.env.VITE_API_BASE_URL.replace('/api', '')}/storage/${editingItem.file_path}`} target="_blank">
+                  <Group gap="xs"><IconFile size={16} /> Ver Anexo Atual</Group>
+                </Anchor>
+                <Tooltip label="Remover anexo">
+                  <ActionIcon color="red" onClick={handleRemoveFile}><IconX size={16} /></ActionIcon>
+                </Tooltip>
+              </Group>
+            </Paper>
+          ) : (
+            <FileInput mt="md" label="Arquivo de Arte/Referência" placeholder="Anexe um arquivo" leftSection={<IconUpload size={14} />} {...itemForm.getInputProps('file')} clearable />
+          )}
           <Group justify="flex-end" mt="lg">
             <Button variant="default" onClick={handleCloseItemModal}>Cancelar</Button>
             <Button type="submit">Salvar Item</Button>

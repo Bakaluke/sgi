@@ -277,7 +277,7 @@ function QuoteListPage() {
               <Group align="flex-end" wrap="nowrap">
                 <Select style={{ flex: 1 }} label="Selecione o Cliente" placeholder="Digite para buscar..." data={customerOptions} searchable required clearable value={formData.customer_id} onChange={handleCustomerSelect} onSearchChange={setCustomerSearch} searchValue={customerSearch} rightSection={isSearchingCustomers ? <Loader size="xs" /> : null} />
                 <Tooltip label="Novo Cliente">
-                  <Button onClick={openCustomerModal} variant="outline" p="xs">
+                  <Button onClick={openCustomerModal} color="green" p="xs">
                     <IconPlus size={18} />
                   </Button>
                 </Tooltip>

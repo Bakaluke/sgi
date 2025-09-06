@@ -62,8 +62,8 @@ export interface QuoteItem {
   unit_cost_price: number;
   unit_sale_price: number;
   discount_percentage: number;
-  total_price: number;
   profit_margin: number | null;
+  total_price: number;
   notes: string | null;
   file_path: string | null;
 }
@@ -78,18 +78,19 @@ export interface Quote {
   id: number;
   customer: Customer;
   user: User;
+  status_id: number | null;
+  status: Status | null;
   total_amount: number;
+  subtotal: number;
   created_at: string;
   items: QuoteItem[];
   discount_percentage: number;
-  status_id: number | null;
-  status: Status | null;
   payment_method_id: number | null;
-  payment_method: { id: number; name: string } | null;
-  delivery_method_id: string | null;
-  delivery_method: { id: number; name: string } | null;
+  payment_method: PaymentMethod | null;
+  delivery_method_id: number | null;
+  delivery_method: DeliveryMethod | null;
   negotiation_source_id: number | null;
-  negotiation_source: { id: number; name: string } | null;
+  negotiation_source: NegotiationSource | null;
   delivery_datetime: string | null;
   notes: string | null;
   customer_data: CustomerDataSnapshot;

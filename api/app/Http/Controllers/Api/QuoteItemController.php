@@ -19,11 +19,16 @@ class QuoteItemController extends Controller
         ]);
 
         $product = Product::find($validated['product_id']);
+
         $item = $quote->items()->where('product_id', $product->id)->first();
 
         if ($item) {
             $item->increment('quantity', $validated['quantity']);
         } else {
+            $lucro = $product->sale_price - $product->cost_price;
+            $lucro2 = $lucro / $product->sale_price;
+            $profit = $lucro2 * 100;
+
             $item = $quote->items()->create([
                 'product_id' => $product->id,
                 'product_name' => $product->name,
@@ -31,15 +36,11 @@ class QuoteItemController extends Controller
                 'unit_cost_price' => $product->cost_price,
                 'unit_sale_price' => $product->sale_price,
                 'discount_percentage' => 0,
+                'profit_margin' => $profit,
+                'total_price' => $validated['quantity'] * $product->sale_price,
             ]);
         }
         
-        if ($item->unit_sale_price > 0 && $item->unit_cost_price > 0) {
-            $item->profit_margin = (($item->unit_sale_price - $item->unit_cost_price) / $item->unit_sale_price) * 100;
-        } else {
-            $item->profit_margin = 0;
-        }
-        $item->save();
         $item->updateTotalPrice();
         
         $quote->recalculateTotals();
@@ -109,5 +110,18 @@ class QuoteItemController extends Controller
         $quote->recalculateTotals();
         
         return $quote->load(['items.product', 'status', 'paymentMethod', 'deliveryMethod', 'negotiationSource']);
+    }
+
+    public function destroyFile(QuoteItem $quote_item)
+    {
+        $this->authorize('update', [$quote_item, $quote_item->quote]);
+
+        if ($quote_item->file_path) {
+            Storage::disk('public')->delete($quote_item->file_path);
+            $quote_item->file_path = null;
+            $quote_item->save();
+        }
+        
+        return $quote_item->quote->load(['items.product', 'status', 'paymentMethod', 'deliveryMethod', 'negotiationSource']);
     }
 }
