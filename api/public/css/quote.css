@@ -1,8 +1,11 @@
-body { font-family: 'Helvetica', sans-serif; font-size: 12px; }
+body { font-family: 'Helvetica', sans-serif; font-size: 14px; color: #333; }
 .container { width: 100%; margin: 0 auto; }
 .header, .footer { text-align: center; }
-.header h2 { margin: 0; }
-.customer-info, .quote-info, .quote-table { margin-top: 5px; border: 1px solid #eee; }
+.header h1 { margin: 0; }
+.header p { margin: 2px 0; }
+.customer-info { margin-top: 10px; border: 1px solid #eee; padding-left: 10px; }
+.quote-info { margin-top: 5px; border: 1px solid #eee; padding-left: 10px; }
+.quote-table { margin-top: 5px; border: 1px solid #eee; }
 .quote-table table { width: 100%; border-collapse: collapse; }
 th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
 th { background-color: #f2f2f2; }
@@ -11,3 +14,4 @@ th { background-color: #f2f2f2; }
 .totals { width: 100%;}
 .totals table { width: 250px; float: right; }
 .signatures { margin-top: 40px; }
+hr { border: 0; border-top: 1px solid #ccc; }

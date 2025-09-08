@@ -1,0 +1,20 @@
+body { font-family: 'Helvetica', sans-serif; font-size: 14px; color: #333; }
+.container { width: 100%; margin: 0 auto; }
+.header, .footer { text-align: center; }
+.header h1 { margin: 0; font-size: 18px; }
+.header p { margin: 2px 0; }
+.details-table, .items-table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+.details-table th, .details-table td, .items-table th, .items-table td { border: 1px solid #ddd; padding: 6px; text-align: left; }
+.items-table th { background-color: #f2f2f2; }
+.items-table .amount { text-align: right; }
+hr { border: 0; border-top: 1px solid #ccc; margin: 15px 0; }
+.logo { max-width: 150px; max-height: 70px; }
+.company-details { text-align: right; font-size: 10px; }
+.notes { font-size: 10px; white-space: pre-wrap; color: #555; }
+.signatures { margin-top: 50px; width: 100%; }
+.signatures td { width: 50%; text-align: center; border: none; padding-top: 10px; }
+.cut-line { border: 1px dashed #999; margin: 20px 0; }
+.total-section { width: 50%; margin-top: 10px; border-collapse: collapse; border: 1px solid #ddd; float: right; }
+.total-section td { text-align: right; padding: 5px; font-size: 14px; }
+.total-section .label { font-weight: bold; }
+.total-section .value { background-color: #f2f2f2; }

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\ProductionOrder;
+use App\Models\Setting;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -75,15 +76,28 @@ class ProductionOrderController extends Controller
 
     public function generateWorkOrderPdf(ProductionOrder $productionOrder)
     {
-        $productionOrder->load(['customer', 'quote.items.product']);
-        $pdf = Pdf::loadView('pdf.work_order', ['order' => $productionOrder]);
+        $productionOrder->load(['customer', 'user', 'quote.items.product']);
+        
+        $settings = Setting::first();
+        
+        $pdf = Pdf::loadView('pdf.work_order', [
+            'order' => $productionOrder,
+            'settings' => $settings 
+        ]);
+        
         return $pdf->stream('ordem-de-servico-'.$productionOrder->id.'.pdf');
     }
 
     public function generateDeliveryProtocolPdf(ProductionOrder $productionOrder)
     {
-        $productionOrder->load(['customer', 'quote.items.product']);
-        $pdf = Pdf::loadView('pdf.delivery_protocol', ['order' => $productionOrder]);
+        $productionOrder->load(['customer', 'user', 'quote.items.product']);
+        $settings = Setting::first();
+
+        $pdf = Pdf::loadView('pdf.delivery_protocol', [
+            'order' => $productionOrder,
+            'settings' => $settings 
+        ]);
+
         return $pdf->stream('protocolo-de-entrega-'.$productionOrder->id.'.pdf');
     }
 }

@@ -50,6 +50,8 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::apiResource('production-orders', ProductionOrderController::class);
 
+    Route::get('/production-orders/{productionOrder}/delivery-protocol-pdf', [ProductionOrderController::class, 'generateDeliveryProtocolPdf']);
+
     Route::get('/dashboard/stats', [DashboardController::class, 'getStats']);
 
     Route::get('/settings', [SettingsController::class, 'show']);    

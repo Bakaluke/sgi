@@ -1,10 +1,10 @@
 import { Fragment, useCallback, useEffect, useState } from 'react';
-import { Table, Title, Container, Group, Pagination, TextInput, Select, ActionIcon, Collapse, Paper, Menu } from '@mantine/core';
-import { IconChevronDown, IconDotsVertical, IconFileText, IconPrinter, IconSearch, IconTrash } from '@tabler/icons-react';
+import { Table, Title, Container, Group, Pagination, TextInput, Select, ActionIcon, Collapse, Paper, Text, Menu, Anchor } from '@mantine/core';
+import { IconChevronDown, IconDotsVertical, IconFile, IconFileText, IconPrinter, IconSearch, IconTrash } from '@tabler/icons-react';
 import { notifications } from '@mantine/notifications';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
-import type { ProductionOrder, SelectOption, Status } from '../types';
+import type { ProductionOrder, ProductionStatus, SelectOption, QuoteItem } from '../types';
 
 function ProductionPage() {
   const { can } = useAuth();
@@ -24,10 +24,6 @@ function ProductionPage() {
     })
     .catch(error => console.error('Houve um erro!', error));
   }, []);
-
-  useEffect(() => {
-    fetchOrders(activePage, searchQuery);
-  }, [activePage, searchQuery, fetchOrders]);
   
   useEffect(() => {
     const debounceTimer = setTimeout(() => {
@@ -37,10 +33,11 @@ function ProductionPage() {
   }, [searchTerm]);
 
   useEffect(() => {
+    fetchOrders(activePage, searchQuery);
     api.get('/production-statuses').then(res => {
-      setProductionStatuses(res.data.map((ps: Status) => ({ value: String(ps.id), label: ps.name })));
+      setProductionStatuses(res.data.map((ps: ProductionStatus) => ({ value: String(ps.id), label: ps.name })));
     });
-  }, []);
+  }, [activePage, searchQuery, fetchOrders]);
 
   const handleStatusChange = (orderId: number, newStatusId: string | null) => {
     if (!newStatusId) return;
@@ -87,27 +84,37 @@ function ProductionPage() {
     return (
     <Fragment key={order.id}>
       <Table.Tr>
-        <Table.Td><ActionIcon onClick={() => setExpandedOrderIds(current => isExpanded ? current.filter(id => id !== order.id) : [...current, order.id])} disabled={order.quote.items.length === 0} ><IconChevronDown style={{ transition: 'transform 200ms ease', transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)' }} /></ActionIcon></Table.Td>
+        <Table.Td>
+          <ActionIcon onClick={() => setExpandedOrderIds((current) => isExpanded ? current.filter((id) => id !== order.id) : [...current, order.id])} disabled={order.quote.items.length === 0}>
+            <IconChevronDown style={{ transition: 'transform 200ms ease', transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)', }} />
+          </ActionIcon>
+        </Table.Td>
         <Table.Td>{order.id}</Table.Td>
         <Table.Td>{order.quote_id}</Table.Td>
-        <Table.Td>{order.customer.name}</Table.Td>
+        <Table.Td>{order.customer?.name || 'N/A'}</Table.Td>
         {can('production_orders.view_all') && <Table.Td>{order.user?.name || 'N/A'}</Table.Td>}
-        <Table.Td style={{ width: 200 }}><Select value={String(order.status_id || '')} onChange={(value) => handleStatusChange(order.id, value)} data={productionStatuses} variant="unstyled" styles={(theme) => { const color = order.status?.color || 'gray'; if (!theme.colors[color]) return {}; return { input: { backgroundColor: theme.colors[color][1], color: theme.colors[color][9], fontWeight: 700, textAlign: 'center', border: `1px solid ${theme.colors[color][2]}`, paddingRight: '1.75rem', }, }; }} /></Table.Td>
+        <Table.Td style={{ width: 200 }}>
+          <Select value={String(order.status_id || '')} onChange={(value) => handleStatusChange(order.id, value)} data={productionStatuses} variant="unstyled" styles={(theme) => { const color = order.status?.color || 'gray'; if (!theme.colors[color]) return {}; return { input: { backgroundColor: theme.colors[color][1], color: theme.colors[color][9], fontWeight: 700, textAlign: 'center', border: `1px solid ${theme.colors[color][2]}`, paddingRight: '1.75rem', }, }; }} />
+        </Table.Td>
         <Table.Td>{order.created_at ? new Date(order.created_at).toLocaleDateString('pt-BR') : 'N/A'}</Table.Td>
         <Table.Td>
-            <Menu shadow="md" width={250}>
-                <Menu.Target><ActionIcon variant="subtle" color="gray"><IconDotsVertical size={16} /></ActionIcon></Menu.Target>
-                <Menu.Dropdown>
-                    <Menu.Label>Ações do Pedido</Menu.Label>
-                    <Menu.Item leftSection={<IconPrinter size={14} />} component="a" href={`${import.meta.env.VITE_API_BASE_URL.replace('/api', '')}/production-orders/${order.id}/work-order`} target="_blank">Imprimir Ordem de Serviço</Menu.Item>
-                    <Menu.Item leftSection={<IconFileText size={14} />} component="a" href={`${import.meta.env.VITE_API_BASE_URL.replace('/api', '')}/production-orders/${order.id}/delivery-protocol`} target="_blank">Imprimir Protocolo de Entrega</Menu.Item>
-                    {can('production_orders.delete') && (<><Menu.Divider /><Menu.Item color="red" leftSection={<IconTrash size={14} />} onClick={() => handleDelete(order.id)}>Apagar Ordem de Produção</Menu.Item></>)}
-                </Menu.Dropdown>
-            </Menu>
+          <Menu shadow="md" width={250}>
+            <Menu.Target>
+              <ActionIcon variant="subtle" color="gray">
+                <IconDotsVertical size={16} />
+              </ActionIcon>
+            </Menu.Target>
+            <Menu.Dropdown>
+              <Menu.Label>Ações do Pedido</Menu.Label>
+              <Menu.Item leftSection={<IconPrinter size={14} />} component="a" href={`${import.meta.env.VITE_API_BASE_URL.replace('/api', '')}/production-orders/${order.id}/work-order`} target="_blank">Ordem de Serviço</Menu.Item>
+              <Menu.Item leftSection={<IconFileText size={14} />} component="a" href={`${import.meta.env.VITE_API_BASE_URL.replace('/api', '')}/production-orders/${order.id}/delivery-protocol`} target="_blank">Protocolo de Entrega</Menu.Item>
+              {can('production_orders.delete') && (<><Menu.Divider /><Menu.Item color="red" leftSection={<IconTrash size={14} />} onClick={() => handleDelete(order.id)}>Apagar Ordem de Produção</Menu.Item></>)}
+            </Menu.Dropdown>
+          </Menu>
         </Table.Td>
       </Table.Tr>
       <Table.Tr>
-        <Table.Td colSpan={7} style={{ padding: '0.05rem 0.10rem', border: 0 }}>
+        <Table.Td colSpan={8} style={{ padding: '0.05rem 0.10rem', border: 0 }}>
           <Collapse in={isExpanded}>
           <Paper p="md" withBorder bg="gray.0" radius={0}>
             <Title order={6}>Itens do Pedido</Title>
@@ -118,9 +125,17 @@ function ProductionPage() {
                   <Table.Th>Qtd.</Table.Th>
                 </Table.Tr>
               </Table.Thead>
-              <Table.Tbody>{order.quote.items.map(item => (
+              <Table.Tbody>{order.quote.items.map((item: QuoteItem) => (
                 <Table.Tr key={item.id}>
-                  <Table.Td>{item.product.name}</Table.Td>
+                  <Table.Td>
+                    {item.product.name}
+                    {item.notes && <Text size="xs" c="dimmed" mt={4}>Obs: {item.notes}</Text>}
+                    {item.file_path && (
+                      <Anchor href={`${import.meta.env.VITE_API_BASE_URL.replace('/api', '')}/storage/${item.file_path}`} target="_blank" size="xs">
+                        <Group gap="xs" mt={4}><IconFile size={14} /> Ver Anexo</Group>
+                      </Anchor>
+                    )}
+                  </Table.Td>
                   <Table.Td>{item.quantity}</Table.Td>
                 </Table.Tr>))}
               </Table.Tbody>

@@ -1,18 +1,88 @@
-<!DOCTYPE html><html><head><title>Ordem de Produção Nº {{ $order->id }}</title><style>/* ... CSS ... */</style></head><body>
-    <h1>Ordem de Produção Nº {{ $order->id }}</h1>
-    <p><strong>Cliente:</strong> {{ $order->customer->name }}</p>
-    <p><strong>Data do Pedido:</strong> {{ $order->created_at->format('d/m/Y') }}</p>
-    <hr>
-    <h3>Itens a Produzir/Separar:</h3>
-    <table>
-        <thead><tr><th>Produto (SKU)</th><th>Quantidade</th></tr></thead>
-        <tbody>
-            @foreach($order->quote->items as $item)
-            <tr>
-                <td>{{ $item->product->name }} ({{ $item->product->sku }})</td>
-                <td>{{ $item->quantity }}</td>
-            </tr>
-            @endforeach
-        </tbody>
-    </table>
-</body></html>
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ordem de Produção Nº {{ $order->id }}</title>
+    <style>
+        {!! file_get_contents(public_path('css/work_order.css')) !!}
+    </style>    
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <table style="width: 100%; border: none;">
+                <tr>
+                    <td style="width: 25%; border: none;">
+                        @if($settings && $settings->logo_path)
+                            <img src="{{ public_path('storage/' . $settings->logo_path) }}" alt="Logo" style="max-width: 150px; max-height: 70px;">
+                        @endif
+                    </td>
+                    <td style="width: 75%; text-align: right; border: none;">
+                        <h2 style="margin: 0;">{{ $settings->company_fantasy_name ?? 'Nome da Empresa' }}</h2>
+                        <p style="margin: 0; font-size: 10px;">{{ $settings->legal_name ?? '' }}</p>
+                        <p style="margin: 0; font-size: 10px;">CNPJ: {{ $settings->cnpj ?? '' }}</p>
+                        <p style="margin: 0; font-size: 10px;">Tel: {{ $settings->phone ?? '' }} | Email: {{ $settings->email ?? '' }}</p>
+                        <p style="margin: 0; font-size: 10px;">
+                            {{
+                                implode(', ', array_filter([
+                                    $settings->street,
+                                    $settings->number ? 'nº ' . $settings->number : null,
+                                    $settings->complement,
+                                    $settings->neighborhood,
+                                    $settings->city ? $settings->city . ' - ' . $settings->state : null,
+                                    $settings->cep
+                                ]))
+                            }}
+                        </p>
+                    </td>
+                </tr>
+            </table>
+            <hr>
+            <h2>Ordem de Produção Nº {{ $order->id }}</h2>
+            <p>Data de Emissão: {{ $order->created_at->format('d/m/Y') }}</p>
+        </div>
+
+        <div class="quote-info">
+            <p><strong>Cliente:</strong> {{ $order->customer->name ?? 'N/A' }}</p>
+            <p><strong>Consultor:</strong> {{ $order->user->name ?? 'N/A' }}</p>
+            <p><strong>Observações Gerais:</strong> Orçamento Nº {{ $order->quote_id }}<br>{{ $order->notes }}</p>
+        </div>
+
+        <h3 style="margin-top: 30px;">Itens do Pedido:</h3>
+        <table class="items-table">
+            <thead>
+                <tr>
+                    <th style="width: 80%;">Produto</th>
+                    <th style="width: 20%; text-align: center;">Quantidade</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach($order->quote->items as $item)
+                    <tr style="background-color: #f9f9f9;">
+                        <td><span style="font-weight: bold;">{{ $item->product->name }}</span><br>@if($item->notes){{ $item->notes }}@endif</td>
+                        <td style="text-align: center; font-weight: bold;">{{ $item->quantity }}</td>
+                    </tr>
+
+                    @if($item->notes || $item->file_path)
+                    <tr>
+                        <td colspan="2" style="padding-left: 20px;">
+                            @if($item->file_path)
+                                <p class="notes" style="margin: 10px 0 5px 0;"><strong>Desenho:</strong></p>
+                                <div style="text-align: center;">
+                                    @if(in_array(pathinfo(storage_path('app/public/' . $item->file_path), PATHINFO_EXTENSION), ['jpg', 'jpeg', 'png', 'gif']))
+                                        <img src="{{ public_path('storage/' . $item->file_path) }}" alt="Desenho" class="attachment-image">
+                                    @else
+                                        <span>Arquivo anexado (não é uma imagem)</span>
+                                    @endif
+                                </div>
+                            @endif
+                        </td>
+                    </tr>
+                    @endif
+                @endforeach
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>
