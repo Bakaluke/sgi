@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react';
-import { Container, Title, Paper, Text, Skeleton, SegmentedControl, Group, SimpleGrid, List, ThemeIcon } from '@mantine/core';
+import { Container, Title, Paper, Text, Skeleton, SegmentedControl, Group, SimpleGrid, List, ThemeIcon, Button } from '@mantine/core';
 import { BarChart, AreaChart } from '@mantine/charts';
 import { useAuth } from '../context/AuthContext';
 import { Cell } from 'recharts';
 import type { ReactNode } from 'react';
-import { startOfMonth, endOfMonth, subMonths, subDays } from 'date-fns';
-import { IconAlertTriangle } from '@tabler/icons-react';
+import { Link } from 'react-router-dom';
+import { startOfMonth, endOfMonth, subMonths, subDays, differenceInDays } from 'date-fns';
+import { IconAlertTriangle, IconClockHour4 } from '@tabler/icons-react';
 import type { Stats } from '../types';
 import api from '../api/axios';
 
@@ -78,7 +79,7 @@ function DashboardPage() {
     );
   }
 
-  const { kpis, lowStockProducts } = stats;
+  const { kpis, lowStockProducts, staleQuotes } = stats;
   
   const quoteStatusData = stats.quoteStats?.statuses.map(status => ({
     status: status.name,
@@ -126,28 +127,44 @@ function DashboardPage() {
     )}
     
     {can('quotes.view') && stats.quotesOverTime.length > 0 && (
-    <Paper withBorder p="lg">
+    <Paper withBorder p="lg" mb="xl">
       <Title order={3} mb="md">Orçamentos Criados</Title>
       <AreaChart h={300} data={stats.quotesOverTime} dataKey="date" series={[{ name: 'count', color: 'blue.6' }]} curveType="natural" tooltipProps={{ content: ({ label, payload }) => <ChartTooltip label={label} payload={payload} /> }} />
     </Paper>
     )}
     
-    {can('stock.manage') && lowStockProducts.length > 0 && (
+    {(can('stock.manage') && lowStockProducts.length > 0) || (can('quotes.view') && staleQuotes.length > 0) ? (
       <Paper withBorder p="lg" mb="xl">
         <Title order={3} mb="md">Pontos de Atenção:</Title>
-        <List spacing="xs" size="sm" center icon={ <ThemeIcon color="red" size={24} radius="xl"><IconAlertTriangle size={16} /></ThemeIcon> }>
-        {lowStockProducts.map(product => (
-          <List.Item key={product.id}>
-            <Group justify="space-between">
-              <Text>Estoque baixo para <strong>{product.name}</strong></Text>
-              <Text c="red" fw={700}>Apenas {product.quantity_in_stock} unidades restantes</Text>
-            </Group>
-          </List.Item>
-        ))}
-        </List>
-      </Paper>
-    )}
+        {can('stock.manage') && lowStockProducts.length > 0 && (
+          <List spacing="xs" size="sm" center icon={ <ThemeIcon color="red" size={24} radius="xl"><IconAlertTriangle size={16} /></ThemeIcon> }>
+            {lowStockProducts.map(product => (
+              <List.Item key={product.id}>
+                <Group justify="space-between">
+                  <Text>Estoque baixo para <strong>{product.name}:</strong></Text>
+                  <Text c="red" fw={700}>{product.quantity_in_stock} unidades restantes</Text>
+                </Group>
+              </List.Item>
+            ))}
+          </List>
+        )}
 
+        {can('quotes.view') && staleQuotes.length > 0 && (
+          <List spacing="xs" size="sm" center mt="md" icon={ <ThemeIcon color="orange" size={24} radius="xl"><IconClockHour4 size={16} /></ThemeIcon> }>
+            {staleQuotes.map(quote => (
+              <List.Item key={quote.id}>
+                <Group justify="space-between">
+                  <Text>
+                    Orçamento para <strong>{quote.customer.name}</strong> está parado há {differenceInDays(new Date(), new Date(quote.created_at))} dias.
+                  </Text>
+                  <Button component={Link} to={`/quotes/${quote.id}`} size="xs" variant="light">Ver Orçamento</Button>
+                </Group>
+              </List.Item>
+            ))}
+          </List>
+        )}
+      </Paper>
+    ) : null}
   </Container>
   );
 }

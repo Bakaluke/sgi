@@ -23,7 +23,7 @@ const formatCurrency = (value: number) => {
   return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
 };
 
-const formatPercentage = (value: any): string => {
+const formatPercentage = (value: number | string | null | undefined): string => {
   const num = Number(value);
   if (isNaN(num)) {
     return '0.00%';
@@ -41,7 +41,7 @@ function QuoteFormPage() {
   const [quote, setQuote] = useState<Quote | null>(null);
   const [initialStatus, setInitialStatus] = useState<string | null>(null);
   const [isSavingHeader, setIsSavingHeader] = useState(false);
-  const [products, setProducts] = useState<SelectOption[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
   const [selectedProduct, setSelectedProduct] = useState<string | null>(null);
   const [quantity, setQuantity] = useState<number | string>(1);
   const [paymentMethods, setPaymentMethods] = useState<SelectOption[]>([]);
@@ -76,7 +76,7 @@ function QuoteFormPage() {
   
   useEffect(() => {
     api.get('/products', { params: { per_page: 1000 } }).then(res => {
-      setProducts(res.data.data.map((p: Product) => ({ value: String(p.id), label: `${p.name} (Código: ${p.sku})` })));
+      setProducts(res.data.data);
     });
     api.get('/payment-methods').then(res => setPaymentMethods(res.data.map((pm: {id: number, name: string}) => ({ value: String(pm.id), label: pm.name }))));
     api.get('/delivery-methods').then(res => setDeliveryMethods(res.data.map((dm: {id: number, name: string}) => ({ value: String(dm.id), label: dm.name }))));
@@ -120,7 +120,17 @@ function QuoteFormPage() {
 
   const handleAddItem = () => {
     if (!selectedProduct || !quantity || !quoteId) return;
-    api.post(`/quotes/${quoteId}/items`, { product_id: selectedProduct, quantity })
+    const productDetails = products.find(p => String(p.id) === selectedProduct);
+    const numericQuantity = Number(quantity);
+    if (productDetails && numericQuantity > productDetails.quantity_in_stock) {
+      notifications.show({
+        title: 'Atenção: Estoque Insuficiente',
+        message: `O produto "${productDetails.name}" possui apenas ${productDetails.quantity_in_stock} unidades em estoque.`,
+        color: 'yellow',
+        autoClose: 10000,
+      });
+    }
+    api.post(`/quotes/${quoteId}/items`, { product_id: selectedProduct, quantity: numericQuantity })
     .then(res => {
       setQuote(res.data);
       setSelectedProduct(null);
@@ -312,7 +322,7 @@ function QuoteFormPage() {
         <Paper withBorder p="md" mb="xl">
           <Title order={4} mb="md">Adicionar Produto ao Orçamento</Title>
           <Group align="flex-end">
-            <Select label="Produto" placeholder="Busque por nome ou código" data={products} value={selectedProduct} onChange={setSelectedProduct} searchable clearable style={{ flex: 1 }} />
+            <Select label="Produto" placeholder="Busque por nome ou código" data={products.map(p => ({ value: String(p.id), label: `${p.name} (Código: ${p.sku})` }))} value={selectedProduct} onChange={setSelectedProduct} searchable clearable style={{ flex: 1 }} />
             <NumberInput label="Quantidade" value={quantity} onChange={setQuantity} min={1} allowDecimal={false} style={{ width: 120 }} />
             <Button onClick={handleAddItem}>Adicionar</Button>
           </Group>

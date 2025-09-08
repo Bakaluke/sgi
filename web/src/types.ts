@@ -134,12 +134,19 @@ export interface ProductAlert {
   quantity_in_stock: number;
 }
 
+export interface QuoteAlert {
+  id: number;
+  customer: { name: string; };
+  created_at: string;
+}
+
 export interface Stats {
   quoteStats: { counts: { [key: string]: number }, statuses: StatusInfo[] } | null;
   orderStats: { counts: { [key: string]: number }, statuses: StatusInfo[] } | null;
   quotesOverTime: { date: string, count: number }[];
   kpis: { approvedValue: number; averageTicket: number; forecastValue: number; };
   lowStockProducts: ProductAlert[];
+  staleQuotes: QuoteAlert[];
 }
 
 export interface ProductionOrder {

@@ -1,3 +1,5 @@
+@page { margin: 10px; }
+* { margin: 0 15px 0 15px; padding: 0; box-sizing: border-box; }
 body { font-family: 'Helvetica', sans-serif; font-size: 14px; color: #333; }
 .container { width: 100%; margin: 0 auto; }
 .header, .footer { text-align: center; }

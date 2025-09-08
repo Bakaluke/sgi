@@ -40,7 +40,7 @@
             </table>
             <hr>
 
-            <h1>Protocolo de Entrega</h1>
+            <h1>Protocolo de Entrega (Via Cliente)</h1>
             <p><strong>Pedido Nº:</strong> {{ $order->id }} | <strong>Orçamento Nº:</strong> {{ $order->quote_id }} | <strong>Recebido em:</strong> {{ now()->format('d/m/Y') }}</p>
 
             <table class="details-table">
@@ -94,8 +94,8 @@
         <hr class="cut-line">
 
         <div class="header">
-            <h1>Protocolo de Entrega</h1>
-            <p><strong>Pedido Nº:</strong> {{ $order->id }} | <strong>Orçamento Nº:</strong> {{ $order->quote_id }} | <strong>Recebido em:</strong> {{ now()->format('d/m/Y') }}</p>
+            <h1>Protocolo de Entrega (Via Empresa)</h1>
+            <p><strong>Pedido Nº:</strong> {{ $order->id }} | <strong>Orçamento Nº:</strong> {{ $order->quote_id }} | <strong>Entregue em:</strong> {{ now()->format('d/m/Y') }}</p>
 
             <table class="details-table">
                 <tr>

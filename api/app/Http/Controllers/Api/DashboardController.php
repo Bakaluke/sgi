@@ -31,6 +31,7 @@ class DashboardController extends Controller
             'quotesOverTime' => [],
             'kpis' => [ 'approvedValue' => 0, 'averageTicket' => 0, 'forecastValue' => 0 ],
             'lowStockProducts' => [],
+            'staleQuotes' => [],
         ];
 
         $formatCounts = function ($queryResult) {
@@ -49,6 +50,11 @@ class DashboardController extends Controller
         $baseOrderQuery = ProductionOrder::query()->whereBetween('production_orders.created_at', [$startDate, $endDate]);
         if (!$user->can('production_orders.view_all')) {
             $baseOrderQuery->where('user_id', $user->id);
+        }
+
+        $alertsQuoteQuery = Quote::query();
+        if (!$user->can('quotes.view_all')) {
+            $alertsQuoteQuery->where('user_id', $user->id);
         }
 
         if ($user->can('quotes.view') || $user->can('quotes.view_all')) {
@@ -98,6 +104,20 @@ class DashboardController extends Controller
                 ->orderBy('quantity_in_stock', 'asc')
                 ->limit(5)
                 ->get(['id', 'name', 'quantity_in_stock']);
+        }
+
+        if ($user->can('quotes.view') || $user->can('quotes.view_all')) {
+            $staleThreshold = 7;
+            $staleQuotesQuery = (clone $alertsQuoteQuery)
+                ->with('customer')
+                ->join('quote_statuses', 'quotes.status_id', '=', 'quote_statuses.id')
+                ->whereIn('quote_statuses.name', ['Aberto', 'Negociação'])
+                ->where('quotes.created_at', '<', now()->subDays($staleThreshold));
+            
+            $response['staleQuotes'] = $staleQuotesQuery
+                ->orderBy('quotes.created_at', 'asc')
+                ->limit(5)
+                ->get(['quotes.id', 'quotes.customer_id', 'quotes.created_at']);
         }
 
         return response()->json($response);

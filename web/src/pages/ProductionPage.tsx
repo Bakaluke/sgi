@@ -1,6 +1,6 @@
 import { Fragment, useCallback, useEffect, useState } from 'react';
-import { Table, Title, Container, Group, Pagination, TextInput, Select, ActionIcon, Collapse, Paper, Text, Menu, Anchor } from '@mantine/core';
-import { IconChevronDown, IconDotsVertical, IconFile, IconFileText, IconPrinter, IconSearch, IconTrash } from '@tabler/icons-react';
+import { Table, Title, Container, Group, Pagination, TextInput, Select, ActionIcon, Collapse, Paper, Text, Menu, Anchor, Tooltip, ThemeIcon } from '@mantine/core';
+import { IconAlertTriangle, IconChevronDown, IconDotsVertical, IconFile, IconFileText, IconPrinter, IconSearch, IconTrash } from '@tabler/icons-react';
 import { notifications } from '@mantine/notifications';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
@@ -106,7 +106,7 @@ function ProductionPage() {
             </Menu.Target>
             <Menu.Dropdown>
               <Menu.Label>Ações do Pedido</Menu.Label>
-              <Menu.Item leftSection={<IconPrinter size={14} />} component="a" href={`${import.meta.env.VITE_API_BASE_URL.replace('/api', '')}/production-orders/${order.id}/work-order`} target="_blank">Ordem de Serviço</Menu.Item>
+              <Menu.Item leftSection={<IconPrinter size={14} />} component="a" href={`${import.meta.env.VITE_API_BASE_URL.replace('/api', '')}/production-orders/${order.id}/work-order`} target="_blank">Ordem de Produção</Menu.Item>
               <Menu.Item leftSection={<IconFileText size={14} />} component="a" href={`${import.meta.env.VITE_API_BASE_URL.replace('/api', '')}/production-orders/${order.id}/delivery-protocol`} target="_blank">Protocolo de Entrega</Menu.Item>
               {can('production_orders.delete') && (<><Menu.Divider /><Menu.Item color="red" leftSection={<IconTrash size={14} />} onClick={() => handleDelete(order.id)}>Apagar Ordem de Produção</Menu.Item></>)}
             </Menu.Dropdown>
@@ -128,7 +128,16 @@ function ProductionPage() {
               <Table.Tbody>{order.quote.items.map((item: QuoteItem) => (
                 <Table.Tr key={item.id}>
                   <Table.Td>
-                    {item.product.name}
+                    <Group gap="xs" wrap="nowrap">
+                      {item.product.quantity_in_stock < 0 && (
+                        <Tooltip label={`Estoque atual: ${item.product.quantity_in_stock}. Reposição necessária!`} color="red">
+                          <ThemeIcon color="red" variant="light" size="sm" radius="xl">
+                            <IconAlertTriangle size={14} />
+                          </ThemeIcon>
+                        </Tooltip>
+                      )}
+                      {item.product.name}
+                    </Group>
                     {item.notes && <Text size="xs" c="dimmed" mt={4}>Obs: {item.notes}</Text>}
                     {item.file_path && (
                       <Anchor href={`${import.meta.env.VITE_API_BASE_URL.replace('/api', '')}/storage/${item.file_path}`} target="_blank" size="xs">
