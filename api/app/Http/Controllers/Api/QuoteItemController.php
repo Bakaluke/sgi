@@ -13,6 +13,7 @@ class QuoteItemController extends Controller
     public function store(Request $request, Quote $quote)
     {
         $this->authorize('create', [QuoteItem::class, $quote]);
+
         $validated = $request->validate([
             'product_id' => 'required|exists:products,id',
             'quantity' => 'required|integer|min:1',
@@ -25,18 +26,24 @@ class QuoteItemController extends Controller
         if ($item) {
             $item->increment('quantity', $validated['quantity']);
         } else {
-            $lucro = $product->sale_price - $product->cost_price;
-            $lucro2 = $lucro / $product->sale_price;
-            $profit = $lucro2 * 100;
 
+            $costPrice = $product->isService() ? 0 : $product->cost_price;
+            $salePrice = $product->sale_price;
+            $profit = 0;
+            
+            if ($salePrice > 0) {
+                $lucro = $salePrice - $costPrice;
+                $profit = $lucro / $salePrice;
+            }
+            
             $item = $quote->items()->create([
                 'product_id' => $product->id,
                 'product_name' => $product->name,
                 'quantity' => $validated['quantity'],
-                'unit_cost_price' => $product->cost_price,
+                'unit_cost_price' => $product->isService() ? 0 : $product->cost_price,
                 'unit_sale_price' => $product->sale_price,
                 'discount_percentage' => 0,
-                'profit_margin' => $profit,
+                'profit_margin' => $profit * 100,
                 'total_price' => $validated['quantity'] * $product->sale_price,
             ]);
         }

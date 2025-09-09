@@ -13,5 +13,6 @@ class ProductionStatusSeeder extends Seeder
         ProductionStatus::create(['name' => 'Pendente', 'color' => 'blue']);
         ProductionStatus::create(['name' => 'Em Produção', 'color' => 'yellow']);
         ProductionStatus::create(['name' => 'Concluído', 'color' => 'green']);
+        ProductionStatus::create(['name' => 'Cancelado', 'color' => 'red']);
     }
 }

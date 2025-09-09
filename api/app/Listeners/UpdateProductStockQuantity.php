@@ -11,7 +11,7 @@ class UpdateProductStockQuantity
 {
     public function __construct()
     {
-        
+        //
     }
 
     public function handle(StockMovementCreated $event): void

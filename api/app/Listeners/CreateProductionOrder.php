@@ -10,7 +10,8 @@ use Illuminate\Queue\InteractsWithQueue;
 
 class CreateProductionOrder
 {
-    public function __construct() {
+    public function __construct()
+    {
         //
     }
 

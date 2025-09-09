@@ -18,6 +18,7 @@ class Product extends Model
     protected $fillable = [
         'name',
         'sku',
+        'type',
         'category_id',
         'description',
         'cost_price',
@@ -39,5 +40,10 @@ class Product extends Model
     public function category(): BelongsTo
     {
         return $this->belongsTo(Category::class);
+    }
+
+    public function isService(): bool
+    {
+        return $this->type === 'servico';
     }
 }

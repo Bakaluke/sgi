@@ -11,11 +11,10 @@ class QuoteItemFactory extends Factory
     {
         $product = Product::inRandomOrder()->first();
         $quantity = fake()->numberBetween(1, 5);
+        $costPrice = $product->isService() ? 0 : $product->cost_price;
         $salePrice = $product->sale_price;
-
-        $lucro = $salePrice - $product->cost_price;
-        $lucro2 = $lucro / $salePrice;
-        $profit = $lucro2 * 100;
+        $lucro = $salePrice - $costPrice;
+        $profit = $lucro / $salePrice;
 
         return [
             'product_id' => $product->id,
@@ -24,7 +23,7 @@ class QuoteItemFactory extends Factory
             'unit_cost_price' => $product->cost_price,
             'unit_sale_price' => $salePrice,
             'total_price' => $quantity * $salePrice,
-            'profit_margin' => $profit,
+            'profit_margin' => $profit * 100,
         ];
     }
 }
