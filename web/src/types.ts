@@ -39,6 +39,7 @@ export interface Product {
   id: number;
   name: string;
   sku: string;
+  type: 'produto' | 'servico';
   sale_price: number;
   cost_price: number;
   quantity_in_stock: number;

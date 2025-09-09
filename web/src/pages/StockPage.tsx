@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Table, Title, Container, Group, Pagination, TextInput, Button, Tooltip, Modal, Tabs, NumberInput, Select, Textarea, ActionIcon } from '@mantine/core';
+import { Table, Title, Container, Group, Pagination, TextInput, Button, Tooltip, Modal, Tabs, NumberInput, Select, Textarea, ActionIcon, Badge } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { IconSearch, IconHistory, IconArrowsTransferUp, IconRefresh } from '@tabler/icons-react';
 import { notifications } from '@mantine/notifications';
@@ -126,7 +126,7 @@ function StockPage() {
         <Table.Tr key={product.id}>
             <Table.Td>{product.id}</Table.Td>
             <Table.Td>{product.name}</Table.Td>
-            <Table.Td>{product.sku}</Table.Td>
+            <Table.Td>{product.sku}</Table.Td><Table.Td><Badge color={product.type === 'servico' ? 'grape' : 'blue'}>{product.type === 'servico' ? 'Serviço' : 'Produto'}</Badge></Table.Td>
             <Table.Td fw={700}>{product.quantity_in_stock}</Table.Td>
             <Table.Td>
                 <Group gap="xs">
@@ -205,6 +205,7 @@ function StockPage() {
                         <Table.Th>ID</Table.Th>
                         <Table.Th>Produto</Table.Th>
                         <Table.Th>Código</Table.Th>
+                        <Table.Th>Tipo</Table.Th>
                         <Table.Th>Estoque Atual</Table.Th>
                         <Table.Th>Ações</Table.Th>
                     </Table.Tr>

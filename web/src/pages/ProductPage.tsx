@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from 'react';
-import { Table, Title, Container, Button, Modal, TextInput, Textarea, Group, Tooltip, Pagination, Grid, Image, FileInput, Select, ActionIcon } from '@mantine/core';
+import { Table, Title, Container, Button, Modal, TextInput, Textarea, Group, Tooltip, Pagination, Grid, Image, FileInput, Select, ActionIcon, Badge } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
 import { useDisclosure } from '@mantine/hooks';
 import { useForm } from '@mantine/form';
@@ -72,14 +72,14 @@ function ProductPage() {
 
     const handleOpenCreateModal = () => {
         setEditingProduct(null);
-        setFormData({ name: '', sku: '', description: '', sale_price: 0, category_id: null });
+        setFormData({ name: '', sku: '', type: 'produto', description: '', sale_price: 0, category_id: null });
         setImageFile(null);
         openProductModal();
     };
 
     const handleOpenEditModal = (product: Product) => {
         setEditingProduct(product);
-        setFormData({ name: product.name, sku: product.sku, description: product.description || '', sale_price: product.sale_price, category_id: product.category_id });
+        setFormData({ name: product.name, sku: product.sku, type: product.type, description: product.description || '', sale_price: product.sale_price, category_id: product.category_id });
         setImageFile(null);
         openProductModal();
     };
@@ -89,6 +89,7 @@ function ProductPage() {
         const data = new FormData();
         data.append('name', formData.name || '');
         data.append('sku', formData.sku || '');
+        data.append('type', formData.type || '');
         data.append('sale_price', String(formData.sale_price || 0));
 
         if (formData.description) {
@@ -172,9 +173,10 @@ function ProductPage() {
             <Table.Td>{product.id}</Table.Td>
             <Table.Td>{product.name}</Table.Td>
             <Table.Td>{product.sku}</Table.Td>
+            <Table.Td><Badge color={product.type === 'servico' ? 'grape' : 'blue'}>{product.type === 'servico' ? 'Serviço' : 'Produto'}</Badge></Table.Td>
             <Table.Td>{product.category?.name || 'N/A'}</Table.Td>
             <Table.Td>{formatCurrency(product.sale_price)}</Table.Td>
-            <Table.Td>{product.quantity_in_stock}</Table.Td>
+            <Table.Td>{product.type === 'produto' ? product.quantity_in_stock : 'N/A'}</Table.Td>
             <Table.Td>
                 <Group gap="xs">
                     {can('products.edit') && (<Tooltip label="Editar Produto"><ActionIcon variant="light" color="blue" onClick={() => handleOpenEditModal(product)}><IconPencil size={16} /></ActionIcon></Tooltip>)}
@@ -203,9 +205,10 @@ function ProductPage() {
                 <form onSubmit={handleFormSubmit}>
                     <Grid>
                         <Grid.Col span={{ base: 12, md: 7 }}>
-                            <TextInput label="Nome do Produto" value={formData.name || ''} onChange={(e) => setFormData(p => ({...p, name: e.target.value}))} required />
+                            <Select label="Tipo de Item" value={formData.type} onChange={(value) => setFormData(p => ({ ...p, type: value as 'produto' | 'servico' }))} data={[ { value: 'produto', label: 'Produto Físico (movimenta estoque)' }, { value: 'servico', label: 'Serviço (não movimenta estoque)' }, ]} required />
+                            <TextInput label="Nome do Produto" value={formData.name || ''} onChange={(e) => setFormData(p => ({...p, name: e.target.value}))} required mt="md" />
                             <TextInput label="Código (SKU)" value={formData.sku || ''} onChange={(e) => setFormData(p => ({...p, sku: e.target.value}))} required mt="md" />
-                            <TextInput label="Preço de Venda" placeholder="R$ 0,00" value={formatCurrency(formData.sale_price || 0)} onChange={(e) => setFormData(p => ({...p, sale_price: Number(e.target.value.replace(/\D/g, '')) / 100}))} required mt="md" />
+                            <TextInput label="Preço de Venda" placeholder="R$ 0,00" value={formatCurrency(formData.sale_price || 0)} onChange={(e) => setFormData(p => ({...p, sale_price: Number(e.target.value.replace(/\D/g, '')) / 100}))} mt="md" />
                             <Select label="Categoria" placeholder="Selecione uma categoria" data={categoryOptions} value={String(formData.category_id || '')} onChange={(value) => setFormData(p => ({ ...p, category_id: value ? Number(value) : null }))} clearable mt="md" />
                             <Textarea label="Descrição (Opcional)" value={formData.description || ''} onChange={(e) => setFormData(p => ({ ...p, description: e.target.value }))} mt="md" autosize minRows={2} />
                         </Grid.Col>
@@ -257,6 +260,7 @@ function ProductPage() {
                         <Table.Th>ID</Table.Th>
                         <Table.Th>Produto</Table.Th>
                         <Table.Th>Código</Table.Th>
+                        <Table.Th>Tipo</Table.Th>
                         <Table.Th>Categoria</Table.Th>
                         <Table.Th>Preço de Venda</Table.Th>
                         <Table.Th>Estoque</Table.Th>

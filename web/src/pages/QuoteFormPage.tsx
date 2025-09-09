@@ -122,7 +122,7 @@ function QuoteFormPage() {
     if (!selectedProduct || !quantity || !quoteId) return;
     const productDetails = products.find(p => String(p.id) === selectedProduct);
     const numericQuantity = Number(quantity);
-    if (productDetails && numericQuantity > productDetails.quantity_in_stock) {
+    if (productDetails && productDetails.type === 'produto' && numericQuantity > productDetails.quantity_in_stock) {
       notifications.show({
         title: 'Atenção: Estoque Insuficiente',
         message: `O produto "${productDetails.name}" possui apenas ${productDetails.quantity_in_stock} unidades em estoque.`,
