@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Events\OrderCompleted;
 use App\Http\Controllers\Controller;
 use App\Models\ProductionOrder;
 use App\Models\Setting;
@@ -53,15 +54,24 @@ class ProductionOrderController extends Controller
     {
         $this->authorize('update', $productionOrder);
 
+        $oldStatusName = $productionOrder->status?->name;
+
         $validated = $request->validate([
             'status_id' => 'required|exists:production_statuses,id',
         ]);
 
         $productionOrder->update($validated);
 
+        $productionOrder->refresh();
+        $newStatusName = $productionOrder->status?->name;
+
         if ($productionOrder->status->name === 'Concluído' && is_null($productionOrder->completed_at)) {
             $productionOrder->completed_at = now();
             $productionOrder->save();
+        }
+
+        if ($oldStatusName !== 'Concluído' && $newStatusName === 'Concluído') {
+            OrderCompleted::dispatch($productionOrder);
         }
 
         return $productionOrder->load(['customer', 'user', 'quote.items.product', 'status']);
