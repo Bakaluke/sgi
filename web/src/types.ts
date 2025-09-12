@@ -122,6 +122,7 @@ export interface DeliveryMethod {
 export interface ProtectedRouteProps {
   children: JSX.Element;
   allowedRoles?: string[];
+  requiredPermission?: string;
 }
 
 export interface StatusInfo {
@@ -141,6 +142,11 @@ export interface QuoteAlert {
   created_at: string;
 }
 
+export interface ProductStat {
+  product_name: string;
+  total_quantity: number;
+}
+
 export interface Stats {
   quoteStats: { counts: { [key: string]: number }, statuses: StatusInfo[] } | null;
   orderStats: { counts: { [key: string]: number }, statuses: StatusInfo[] } | null;
@@ -148,6 +154,7 @@ export interface Stats {
   kpis: { approvedValue: number; averageTicket: number; forecastValue: number; };
   lowStockProducts: ProductAlert[];
   staleQuotes: QuoteAlert[];
+  topSellingProducts: ProductStat[];
 }
 
 export interface ProductionOrder {
@@ -248,4 +255,19 @@ export interface Settings {
 
 export interface SettingsContextType {
   settings: Settings | null;
+}
+
+export interface AccountReceivable {
+  id: number;
+  quote_id: number;
+  customer_id: number;
+  production_order_id: number;
+  total_amount: number;
+  paid_amount: number;
+  due_date: string;
+  paid_at: string | null;
+  status: string;
+  created_at: string;
+  customer: { name: string; };
+  quote: { id: number; };
 }

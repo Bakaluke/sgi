@@ -8,6 +8,7 @@ use App\Models\ProductionStatus;
 use App\Models\Product;
 use App\Models\Quote;
 use App\Models\QuoteStatus;
+use App\Models\QuoteItem;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -32,6 +33,7 @@ class DashboardController extends Controller
             'kpis' => [ 'approvedValue' => 0, 'averageTicket' => 0, 'forecastValue' => 0 ],
             'lowStockProducts' => [],
             'staleQuotes' => [],
+            'topSellingProducts' => [],
         ];
 
         $formatCounts = function ($queryResult) {
@@ -118,6 +120,19 @@ class DashboardController extends Controller
                 ->orderBy('quotes.created_at', 'asc')
                 ->limit(5)
                 ->get(['quotes.id', 'quotes.customer_id', 'quotes.created_at']);
+        }
+
+        if ($user->can('quotes.view_all')) {
+            $response['topSellingProducts'] = QuoteItem::query()
+                ->join('quotes', 'quote_items.quote_id', '=', 'quotes.id')
+                ->join('quote_statuses', 'quotes.status_id', '=', 'quote_statuses.id')
+                ->where('quote_statuses.name', 'Aprovado')
+                ->whereBetween('quotes.created_at', [$startDate, $endDate])
+                ->select('quote_items.product_name', DB::raw('SUM(quote_items.quantity) as total_quantity'))
+                ->groupBy('quote_items.product_name')
+                ->orderBy('total_quantity', 'desc')
+                ->limit(5)
+                ->get();
         }
 
         return response()->json($response);

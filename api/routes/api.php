@@ -20,6 +20,7 @@ use App\Http\Controllers\Api\DeliveryMethodController;
 use App\Http\Controllers\Api\QuoteStatusController;
 use App\Http\Controllers\Api\ProductionStatusController;
 use App\Http\Controllers\Api\NegotiationSourceController;
+use App\Http\Controllers\Api\AccountReceivableController;
 
 Route::post('/login', [LoginController::class, 'login']);
 
@@ -78,4 +79,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('production-statuses', ProductionStatusController::class);
 
     Route::apiResource('negotiation-sources', NegotiationSourceController::class);
+
+    Route::apiResource('accounts-receivable', AccountReceivableController::class);
 });

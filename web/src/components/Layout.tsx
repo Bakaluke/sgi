@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { AppShell, Burger, Group, NavLink, Title, Text, Menu, Avatar } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { Outlet, NavLink as RouterNavLink } from 'react-router-dom';
-import { IconHome, IconUsers, IconPackage, IconLogout, IconFileInvoice, IconTools, IconSettings, IconClipboardList, IconUsersGroup, IconUserCircle, IconChevronDown } from '@tabler/icons-react';
+import { IconHome, IconUsers, IconPackage, IconLogout, IconFileInvoice, IconTools, IconSettings, IconClipboardList, IconUsersGroup, IconUserCircle, IconChevronDown, IconCash } from '@tabler/icons-react';
 import { useAuth } from '../context/AuthContext';
 import { useSettings } from '../context/SettingsContext';
 
@@ -60,6 +60,7 @@ export function Layout() {
         <NavLink label="Produtos" component={RouterNavLink} to="/products" leftSection={<IconPackage size="1rem" />} />
         <NavLink label="Estoque" component={RouterNavLink} to="/stock" leftSection={<IconClipboardList size="1rem" />} />
         <NavLink label="Clientes" component={RouterNavLink} to="/customers" leftSection={<IconUsers size="1rem" />} />
+        {can('finance.view_receivables') && (<NavLink label="Financeiro" leftSection={<IconCash size="1rem" />} childrenOffset={28}><NavLink label="Contas a Receber" component={RouterNavLink} to="/financial/accounts-receivable" /></NavLink>)}
       </AppShell.Navbar>
 
       <AppShell.Footer p="xs" style={{ background: 'var(--mantine-color-body)' }}>

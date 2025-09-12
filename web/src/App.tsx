@@ -12,6 +12,7 @@ import SettingsPage from './pages/SettingsPage';
 import StockPage from './pages/StockPage';
 import UsersPage from './pages/UsersPage';
 import ProfilePage from './pages/ProfilePage';
+import AccountsReceivablePage from './pages/AccountsReceivablePage';
 
 function App() {
   return (
@@ -19,17 +20,18 @@ function App() {
       <Routes>
         <Route path="/login" element={<LoginPage />} />
         <Route path="/" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
-          <Route index element={<Navigate to="/dashboard" />} />
+          <Route index element={<DashboardPage />} />
           <Route path="dashboard" element={<DashboardPage />} />
           <Route path="products" element={<ProductPage />} />
-          <Route path="stock" element={<StockPage />} />
-          <Route path="customers" element={<CustomerPage />} />
-          <Route path="quotes" element={<ProtectedRoute allowedRoles={['admin', 'vendedor']}><QuoteListPage /></ProtectedRoute>} />
-          <Route path="quotes/:quoteId" element={<ProtectedRoute allowedRoles={['admin', 'vendedor']}><QuoteFormPage /></ProtectedRoute>} />
-          <Route path="production" element={<ProductionPage />} />
+          <Route path="customers" element={<ProtectedRoute requiredPermission="customers.view"><CustomerPage /></ProtectedRoute>} />
+          <Route path="quotes" element={<ProtectedRoute requiredPermission="quotes.view"><QuoteListPage /></ProtectedRoute>} />
+          <Route path="quotes/:quoteId" element={<ProtectedRoute requiredPermission="quotes.view"><QuoteFormPage /></ProtectedRoute>} />
+          <Route path="production" element={<ProtectedRoute requiredPermission="production_orders.view"><ProductionPage /></ProtectedRoute>} />
+          <Route path="stock" element={<ProtectedRoute requiredPermission="stock.manage"><StockPage /></ProtectedRoute>} />
           <Route path="profile" element={<ProfilePage />} />
-          <Route path="users" element={<ProtectedRoute allowedRoles={['admin']}><UsersPage /></ProtectedRoute>} />
-          <Route path="settings" element={<ProtectedRoute allowedRoles={['admin']}><SettingsPage /></ProtectedRoute>} />
+          <Route path="users" element={<ProtectedRoute requiredPermission="users.manage"><UsersPage /></ProtectedRoute>} />
+          <Route path="settings" element={<ProtectedRoute requiredPermission="settings.manage"><SettingsPage /></ProtectedRoute>} />
+          <Route path="financial/accounts-receivable" element={<ProtectedRoute requiredPermission="finance.view_receivables"><AccountsReceivablePage /></ProtectedRoute>} />
         </Route>
         <Route path="*" element={<Navigate to="/login" />} />
       </Routes>
