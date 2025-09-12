@@ -178,7 +178,7 @@ function ProductionPage() {
       </Table.Thead>
       <Table.Tbody>{rows.length > 0 ? rows : (
         <Table.Tr>
-          <Table.Td colSpan={6} align="center">Nenhuma ordem de produção encontrada.</Table.Td>
+          <Table.Td colSpan={8} align="center">Nenhuma ordem de produção encontrada.</Table.Td>
         </Table.Tr> )}
       </Table.Tbody>
     </Table>

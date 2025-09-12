@@ -81,4 +81,5 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('negotiation-sources', NegotiationSourceController::class);
 
     Route::apiResource('accounts-receivable', AccountReceivableController::class);
+    Route::post('/accounts-receivable/{accountReceivable}/register-payment', [AccountReceivableController::class, 'registerPayment']);
 });

@@ -11,4 +11,9 @@ class AccountReceivablePolicy
     {
         return $user->can('finance.view_receivables');
     }
+
+    public function registerPayment(User $user, AccountReceivable $accountReceivable): bool
+    {
+        return $user->can('finance.register_payment');
+    }
 }

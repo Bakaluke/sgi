@@ -36,6 +36,7 @@ const groupTranslations: { [key: string]: string } = {
     'production_orders': 'Ordens de Produção',
     'stock': 'Estoque',
     'categories': 'Categorias',
+    'finance': 'Financeiro',
 };
 
 const permissionTranslations: { [key: string]: string } = {
@@ -61,6 +62,8 @@ const permissionTranslations: { [key: string]: string } = {
     'production_orders.delete': 'Excluir Ordens de Produção',
     'stock.manage': 'Gerenciar Estoque',
     'categories.manage': 'Gerenciar Categorias',
+    'finance.view_receivables': 'Ver Contas a Receber',
+    'finance.register_payment': 'Dar Baixa em Pagamentos',
 };
 
 function SettingsPage() {

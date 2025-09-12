@@ -7,7 +7,7 @@ import { useDisclosure } from '@mantine/hooks';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../api/axios';
-import type { Customer, Quote, SelectOption, PaymentMethod, DeliveryMethod } from '../types';
+import type { Customer, Quote, SelectOption, PaymentMethod, DeliveryMethod, NegotiationSource } from '../types';
 import { CustomerForm } from '../components/CustomerForm';
 
 const initialFormData = {
@@ -100,7 +100,7 @@ function QuoteListPage() {
       })))
     );
     api.get('/negotiation-sources').then(res =>
-      setNegotiationSources(res.data.map((ns: any) => ({
+      setNegotiationSources(res.data.map((ns: NegotiationSource) => ({
         value: String(ns.id),
         label: ns.name
       })))

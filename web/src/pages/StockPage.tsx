@@ -212,7 +212,7 @@ function StockPage() {
                 </Table.Thead>
                 <Table.Tbody>
                     {rows.length > 0 ? rows : (
-                        <Table.Tr><Table.Td colSpan={4} align="center">Nenhum produto encontrado.</Table.Td></Table.Tr>
+                        <Table.Tr><Table.Td colSpan={6} align="center">Nenhum produto encontrado.</Table.Td></Table.Tr>
                     )}
                 </Table.Tbody>
             </Table>

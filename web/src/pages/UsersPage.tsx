@@ -88,19 +88,21 @@ function UsersPage() {
     };
 
     const handleSubmit = (values: typeof form.values) => {
-        const { password, ...restOfPayload } = values;
-        let payload: any = restOfPayload;
-        if (editingUser) {
-            if (password) {
-                payload.password = password;
-            }
-        } else {
-            payload.password = password;
+        const payload: Partial<typeof form.values> = {
+            name: values.name,
+            email: values.email,
+            phone: values.phone,
+            role: values.role,
+        };
+
+        if (!editingUser || (editingUser && values.password)) {
+            payload.password = values.password;
+            payload.password_confirmation = values.password_confirmation;
         }
 
         const promise = editingUser
-        ? api.put(`/users/${editingUser.id}`, payload)
-        : api.post('/users', payload);
+            ? api.put(`/users/${editingUser.id}`, payload)
+            : api.post('/users', payload);
         
         promise.then(() => {
             closeModal();
@@ -168,7 +170,7 @@ function UsersPage() {
                     </Table.Tr>
                 </Table.Thead>
                 <Table.Tbody>
-                    {rows.length > 0 ? rows : <Table.Tr><Table.Td colSpan={4} align="center">Nenhum usuário encontrado.</Table.Td></Table.Tr>}
+                    {rows.length > 0 ? rows : <Table.Tr><Table.Td colSpan={5} align="center">Nenhum usuário encontrado.</Table.Td></Table.Tr>}
                 </Table.Tbody>
             </Table>
             
