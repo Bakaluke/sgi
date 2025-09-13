@@ -271,3 +271,17 @@ export interface AccountReceivable {
   customer: { name: string; };
   quote: { id: number; };
 }
+
+export interface AccountPayable {
+  quote: any;
+  customer: any;
+  id: number;
+  description: string;
+  supplier: string | null;
+  total_amount: number;
+  paid_amount: number;
+  due_date: string;
+  paid_at: string | null;
+  status: string;
+  created_at: string;
+}

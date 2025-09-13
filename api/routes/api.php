@@ -21,6 +21,7 @@ use App\Http\Controllers\Api\QuoteStatusController;
 use App\Http\Controllers\Api\ProductionStatusController;
 use App\Http\Controllers\Api\NegotiationSourceController;
 use App\Http\Controllers\Api\AccountReceivableController;
+use App\Http\Controllers\Api\AccountPayableController;
 
 Route::post('/login', [LoginController::class, 'login']);
 
@@ -82,4 +83,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::apiResource('accounts-receivable', AccountReceivableController::class);
     Route::post('/accounts-receivable/{accountReceivable}/register-payment', [AccountReceivableController::class, 'registerPayment']);
+
+    Route::apiResource('accounts-payable', AccountPayableController::class);
+    Route::post('/accounts-payable/{accountPayable}/register-payment', [AccountPayableController::class, 'registerPayment']);
 });

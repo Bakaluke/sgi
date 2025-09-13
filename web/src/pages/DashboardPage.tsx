@@ -96,7 +96,7 @@ function DashboardPage() {
   const topProductsRows = topSellingProducts.map((product) => (
     <Table.Tr key={product.product_name}>
       <Table.Td>{product.product_name}</Table.Td>
-      <Table.Td align="right">{product.total_quantity}</Table.Td>
+      <Table.Td align="left">{product.total_quantity}</Table.Td>
     </Table.Tr>
   ));
 

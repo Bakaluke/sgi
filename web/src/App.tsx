@@ -13,6 +13,7 @@ import StockPage from './pages/StockPage';
 import UsersPage from './pages/UsersPage';
 import ProfilePage from './pages/ProfilePage';
 import AccountsReceivablePage from './pages/AccountsReceivablePage';
+import AccountsPayablePage from './pages/AccountsPayablePage';
 
 function App() {
   return (
@@ -32,6 +33,7 @@ function App() {
           <Route path="users" element={<ProtectedRoute requiredPermission="users.manage"><UsersPage /></ProtectedRoute>} />
           <Route path="settings" element={<ProtectedRoute requiredPermission="settings.manage"><SettingsPage /></ProtectedRoute>} />
           <Route path="financial/accounts-receivable" element={<ProtectedRoute requiredPermission="finance.view_receivables"><AccountsReceivablePage /></ProtectedRoute>} />
+          <Route path="financial/accounts-payable" element={<ProtectedRoute requiredPermission="finance.view_payables"><AccountsPayablePage /></ProtectedRoute>} />
         </Route>
         <Route path="*" element={<Navigate to="/login" />} />
       </Routes>

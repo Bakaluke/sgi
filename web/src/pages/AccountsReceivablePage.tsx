@@ -141,8 +141,8 @@ function AccountsReceivablePage() {
                     </Table.Tr>}
                 </Table.Tbody>
             </Table>
-
-             <Group justify="center" mt="xl">
+            
+            <Group justify="center" mt="xl">
                 <Pagination total={totalPages} value={activePage} onChange={setActivePage} />
             </Group>
         </Container>

@@ -60,7 +60,12 @@ export function Layout() {
         <NavLink label="Produtos" component={RouterNavLink} to="/products" leftSection={<IconPackage size="1rem" />} />
         <NavLink label="Estoque" component={RouterNavLink} to="/stock" leftSection={<IconClipboardList size="1rem" />} />
         <NavLink label="Clientes" component={RouterNavLink} to="/customers" leftSection={<IconUsers size="1rem" />} />
-        {can('finance.view_receivables') && (<NavLink label="Financeiro" leftSection={<IconCash size="1rem" />} childrenOffset={28}><NavLink label="Contas a Receber" component={RouterNavLink} to="/financial/accounts-receivable" /></NavLink>)}
+        {can('finance.view_receivables') && (
+          <NavLink label="Financeiro" leftSection={<IconCash size="1rem" />} childrenOffset={28}>
+            <NavLink label="Contas a Receber" component={RouterNavLink} to="/financial/accounts-receivable" />
+            <NavLink label="Contas a Pagar" component={RouterNavLink} to="/financial/accounts-payable" />
+          </NavLink>
+        )}
       </AppShell.Navbar>
 
       <AppShell.Footer p="xs" style={{ background: 'var(--mantine-color-body)' }}>

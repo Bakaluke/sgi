@@ -64,6 +64,8 @@ const permissionTranslations: { [key: string]: string } = {
     'categories.manage': 'Gerenciar Categorias',
     'finance.view_receivables': 'Ver Contas a Receber',
     'finance.register_payment': 'Dar Baixa em Pagamentos',
+    'finance.view_payables': 'Ver Contas a Pagar',
+    'finance.manage_payables': 'Gerenciar Contas',
 };
 
 function SettingsPage() {
