@@ -102,7 +102,8 @@ class DashboardController extends Controller
 
         if ($user->can('stock.manage')) {
             $lowStockThreshold = 10;
-            $response['lowStockProducts'] = Product::where('quantity_in_stock', '<=', $lowStockThreshold)
+            $response['lowStockProducts'] = Product::where('type', 'produto')
+                ->where('quantity_in_stock', '<=', $lowStockThreshold)
                 ->orderBy('quantity_in_stock', 'asc')
                 ->limit(5)
                 ->get(['id', 'name', 'quantity_in_stock']);

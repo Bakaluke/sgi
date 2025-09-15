@@ -8,8 +8,6 @@ import { useAuth } from '../context/AuthContext';
 import api from '../api/axios';
 import type { Product, Category, SelectOption, ProductFormData } from '../types';
 
-
-
 const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', {
         style: 'currency',
@@ -104,13 +102,9 @@ function ProductPage() {
             data.append('image', imageFile);
         }
 
-        let promise;
-        if (editingProduct) {
-            data.append('_method', 'PUT');
-            promise = api.post(`/products/${editingProduct.id}`, data);
-        } else {
-            promise = api.post('/products', data);
-        }
+        const promise = editingProduct
+        ? api.post(`/products/${editingProduct.id}`, data, { params: { _method: 'PUT' } })
+        : api.post('/products', data);
         
         promise.then(() => {
             closeProductModal();
@@ -205,7 +199,7 @@ function ProductPage() {
                 <form onSubmit={handleFormSubmit}>
                     <Grid>
                         <Grid.Col span={{ base: 12, md: 7 }}>
-                            <Select label="Tipo de Item" value={formData.type} onChange={(value) => setFormData(p => ({ ...p, type: value as 'produto' | 'servico' }))} data={[ { value: 'produto', label: 'Produto Físico (movimenta estoque)' }, { value: 'servico', label: 'Serviço (não movimenta estoque)' }, ]} required />
+                            <Select label="Tipo de Item" value={formData.type} onChange={(value) => setFormData(p => ({ ...p, type: value as 'produto' | 'servico' }))} data={[ { value: 'produto', label: 'Produto Físico (controla estoque)' }, { value: 'servico', label: 'Serviço (não controla estoque)' }, ]} required />
                             <TextInput label="Nome do Produto" value={formData.name || ''} onChange={(e) => setFormData(p => ({...p, name: e.target.value}))} required mt="md" />
                             <TextInput label="Código (SKU)" value={formData.sku || ''} onChange={(e) => setFormData(p => ({...p, sku: e.target.value}))} required mt="md" />
                             <TextInput label="Preço de Venda" placeholder="R$ 0,00" value={formatCurrency(formData.sale_price || 0)} onChange={(e) => setFormData(p => ({...p, sale_price: Number(e.target.value.replace(/\D/g, '')) / 100}))} mt="md" />

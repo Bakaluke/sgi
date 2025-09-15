@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Api;
 
+use App\Http\Controllers\Controller;
 use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -13,31 +14,26 @@ class ProductController extends Controller
     {
         $this->authorize('viewAny', Product::class);
         
-        $query = Product::query();
-
-        $query->with('category');
+        $query = Product::query()->with('category');
 
         if ($request->has('search') && $request->input('search') != '') {
             $searchTerm = $request->input('search');
             $query->where(function ($q) use ($searchTerm) {
                 $q->where('name', 'like', "%{$searchTerm}%")
-                ->orWhere('sku', 'like', "%{$searchTerm}%")
-                ->orWhereHas('category', function($subQ) use ($searchTerm) {
-                    $subQ->where('name', 'like', "%{$searchTerm}%");
-                });
+                  ->orWhere('sku', 'like', "%{$searchTerm}%")
+                  ->orWhereHas('category', function($subQ) use ($searchTerm) {
+                      $subQ->where('name', 'like', "%{$searchTerm}%");
+                  });
             });
+        }
+
+        if ($request->has('type')) {
+            $query->where('type', $request->input('type'));
         }
         
         $query->orderBy('id', 'desc');
         
-        $products = $query->paginate(30);
-
-        return $products;
-    }
-
-    public function create()
-    {
-        
+        return $query->paginate($request->get('per_page', 30));
     }
 
     public function store(Request $request)
@@ -67,12 +63,7 @@ class ProductController extends Controller
     public function show(Product $product)
     {
         $this->authorize('view', $product);
-        return $product;
-    }
-
-    public function edit(Product $product)
-    {
-        
+        return $product->load('category');
     }
 
     public function update(Request $request, Product $product)

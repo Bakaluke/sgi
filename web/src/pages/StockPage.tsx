@@ -122,7 +122,9 @@ function StockPage() {
         .finally(() => setIsLoadingHistory(false));
     };
 
-    const rows = products.map((product) => (
+    const rows = products
+    .filter(product => product.type === 'produto')
+    .map((product) => (
         <Table.Tr key={product.id}>
             <Table.Td>{product.id}</Table.Td>
             <Table.Td>{product.name}</Table.Td>
