@@ -105,4 +105,45 @@ class ProductController extends Controller
 
         return response()->noContent();
     }
+
+    public function export()
+    {
+        $this->authorize('viewAny', Product::class);
+
+        $fileName = 'produtos.csv';
+        $products = Product::with('category')->get();
+
+        $headers = [
+            "Content-type"        => "text/csv; charset=UTF-8",
+            "Content-Disposition" => "attachment; filename=$fileName",
+            "Pragma"              => "no-cache",
+            "Cache-Control"       => "must-revalidate, post-check=0, pre-check=0",
+            "Expires"             => "0"
+        ];
+
+        $callback = function() use($products) {
+            $file = fopen('php://output', 'w');
+            fputs($file, $bom =( chr(0xEF) . chr(0xBB) . chr(0xBF) ));
+
+            $columns = ['ID', 'Nome', 'Tipo', 'SKU', 'Categoria', 'Preço de Venda', 'Estoque Atual'];
+            fputcsv($file, $columns, ';');
+
+            foreach ($products as $product) {
+                $row = [
+                    $product->id,
+                    $product->name,
+                    $product->type === 'servico' ? 'Serviço' : 'Produto',
+                    $product->sku,
+                    $product->category?->name ?? 'N/A',
+                    number_format($product->sale_price, 2, ',', '.'),
+                    $product->type === 'produto' ? $product->quantity_in_stock : 'N/A',
+                ];
+                fputcsv($file, $row, ';');
+            }
+
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
+    }
 }

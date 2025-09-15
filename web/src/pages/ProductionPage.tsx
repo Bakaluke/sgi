@@ -1,6 +1,6 @@
 import { Fragment, useCallback, useEffect, useState } from 'react';
-import { Table, Title, Container, Group, Pagination, TextInput, Select, ActionIcon, Collapse, Paper, Text, Menu, Anchor, Tooltip, ThemeIcon } from '@mantine/core';
-import { IconAlertTriangle, IconChevronDown, IconDotsVertical, IconFile, IconFileText, IconPrinter, IconSearch, IconTrash } from '@tabler/icons-react';
+import { Table, Title, Container, Group, Pagination, TextInput, Select, ActionIcon, Collapse, Paper, Text, Menu, Anchor, Tooltip, ThemeIcon, Button } from '@mantine/core';
+import { IconAlertTriangle, IconChevronDown, IconDotsVertical, IconFile, IconFileExport, IconFileText, IconPrinter, IconSearch, IconTrash } from '@tabler/icons-react';
 import { notifications } from '@mantine/notifications';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
@@ -15,6 +15,7 @@ function ProductionPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [expandedOrderIds, setExpandedOrderIds] = useState<number[]>([]);
   const [productionStatuses, setProductionStatuses] = useState<SelectOption[]>([]);
+  const [isExporting, setIsExporting] = useState(false);
   
   const fetchOrders = useCallback((page: number, search: string) => {
     api.get('/production-orders', { params: { page, search } })
@@ -77,6 +78,21 @@ function ProductionPage() {
         });
       });
     }
+  };
+
+  const handleExport = () => {
+    setIsExporting(true);
+    api.get('/production-orders/export', { responseType: 'blob' })
+    .then(response => {
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', 'ordens-de-producao.csv');
+      document.body.appendChild(link);
+      link.click();
+      link.parentNode?.removeChild(link);
+    })
+    .finally(() => setIsExporting(false));
   };
 
   const rows = orders.map((order) => {
@@ -161,6 +177,9 @@ function ProductionPage() {
   <Container>
     <Group justify="space-between" my="lg">
       <Title order={1}>Ordens de Produção</Title>
+      <Group>
+        {can('production_orders.view_all') && (<Button onClick={handleExport} loading={isExporting} color="green" leftSection={<IconFileExport size={16} />}>Exportar</Button>)}
+      </Group>
       </Group>
     <TextInput label="Buscar Ordem de Produção" placeholder="Digite o Nº, nome do cliente ou status..." value={searchTerm} onChange={(event) => setSearchTerm(event.currentTarget.value)} leftSection={<IconSearch size={16} />} mb="md" />
     <Table>

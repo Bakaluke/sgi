@@ -110,4 +110,49 @@ class ProductionOrderController extends Controller
 
         return $pdf->stream('protocolo-de-entrega-'.$productionOrder->id.'.pdf');
     }
+
+    public function export(Request $request)
+    {
+        $this->authorize('viewAny', ProductionOrder::class);
+
+        $user = $request->user();
+        $fileName = 'ordens_de_producao.csv';
+
+        $query = ProductionOrder::query();
+        if (!$user->can('production_orders.view_all')) {
+            $query->where('user_id', $user->id);
+        }
+        $orders = $query->with(['customer', 'user', 'status'])->get();
+
+        $headers = [
+            "Content-type"        => "text/csv; charset=UTF-8",
+            "Content-Disposition" => "attachment; filename=$fileName",
+            "Pragma"              => "no-cache",
+            "Cache-Control"       => "must-revalidate, post-check=0, pre-check=0",
+            "Expires"             => "0"
+        ];
+
+        $callback = function() use($orders) {
+            $file = fopen('php://output', 'w');
+            fputs($file, $bom =( chr(0xEF) . chr(0xBB) . chr(0xBF) ));
+
+            $columns = ['Nº Pedido', 'Nº Orçamento', 'Cliente', 'Vendedor', 'Status', 'Data do Pedido'];
+            fputcsv($file, $columns, ';');
+
+            foreach ($orders as $order) {
+                $row = [
+                    $order->id,
+                    $order->quote_id,
+                    $order->customer->name,
+                    $order->user->name,
+                    $order->status?->name ?? 'N/A',
+                    (new \DateTime($order->created_at))->format('d/m/Y'),
+                ];
+                fputcsv($file, $row, ';');
+            }
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
+    }
 }

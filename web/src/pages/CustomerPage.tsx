@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Table, Title, Container, Button, Modal, Group, Tooltip, Pagination, TextInput } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
-import { IconPencil, IconTrash, IconPlus, IconSearch } from '@tabler/icons-react';
+import { IconPencil, IconTrash, IconPlus, IconSearch, IconFileExport } from '@tabler/icons-react';
 import { useAuth } from '../context/AuthContext';
 import type { Customer } from '../types';
 import { CustomerForm } from '../components/CustomerForm';
@@ -29,6 +29,7 @@ function CustomerPage() {
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [opened, { open, close }] = useDisclosure(false);
   const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
+  const [isExporting, setIsExporting] = useState(false);
   const [activePage, setActivePage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [searchTerm, setSearchTerm] = useState('');
@@ -75,6 +76,26 @@ function CustomerPage() {
       });
     }
   };
+
+  const handleExport = () => {
+    setIsExporting(true);
+    api.get('/customers/export', {
+      responseType: 'blob',
+    }).then(response => {
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', 'clientes.csv');
+      document.body.appendChild(link);
+      link.click();
+      link.parentNode?.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    }).catch(error => {
+      console.error("Erro ao exportar clientes:", error);
+    }).finally(() => {
+      setIsExporting(false);
+    });
+  };
   
   const rows = customers.map((customer) => (
   <Table.Tr key={customer.id}>
@@ -99,7 +120,10 @@ function CustomerPage() {
     </Modal>
     <Group justify="space-between" my="lg">
       <Title order={1}>Gestão de Clientes</Title>
-      {can('customers.create') && (<Button onClick={handleOpenCreateModal} leftSection={<IconPlus size={16} />}>Adicionar Cliente</Button>)}
+      <Group>
+        {can('customers.view') && (<Button onClick={handleExport} loading={isExporting} color="green" leftSection={<IconFileExport size={16} />}>Exportar</Button>)}
+        {can('customers.create') && (<Button onClick={handleOpenCreateModal} leftSection={<IconPlus size={16} />}>Adicionar Cliente</Button>)}
+      </Group>
     </Group>
     <TextInput label="Buscar Cliente" placeholder="Digite o nome, documento ou e-mail..." value={searchTerm} onChange={(event) => setSearchTerm(event.currentTarget.value)} leftSection={<IconSearch size={16} />} mb="md" />
     <Table>

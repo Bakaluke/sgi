@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { Table, Title, Container, Pagination, Group, Badge, TextInput, Menu, ActionIcon, Modal, NumberInput, Button } from '@mantine/core';
 import api from '../api/axios';
 import type { AccountReceivable } from '../types';
-import { IconCash, IconDotsVertical, IconSearch } from '@tabler/icons-react';
+import { IconCash, IconDotsVertical, IconFileExport, IconSearch } from '@tabler/icons-react';
 import { notifications } from '@mantine/notifications';
 import { DatePickerInput } from '@mantine/dates';
 import { useForm } from '@mantine/form';
@@ -28,6 +28,7 @@ function AccountsReceivablePage() {
     const [searchQuery, setSearchQuery] = useState('');
     const [modalOpened, { open, close }] = useDisclosure(false);
     const [editingReceivable, setEditingReceivable] = useState<AccountReceivable | null>(null);
+    const [isExporting, setIsExporting] = useState(false);
 
     const paymentForm = useForm({
         initialValues: { paid_amount: 0, paid_at: new Date() },
@@ -78,6 +79,21 @@ function AccountsReceivablePage() {
             })
             .catch(() => notifications.show({ title: 'Erro!', message: 'Não foi possível registrar o pagamento.', color: 'red' }));
     };
+
+    const handleExport = () => {
+        setIsExporting(true);
+        api.get('/accounts-receivable/export', { responseType: 'blob' })
+        .then(response => {
+            const url = window.URL.createObjectURL(new Blob([response.data]));
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', 'contas-a-receber.csv');
+            document.body.appendChild(link);
+            link.click();
+            link.parentNode?.removeChild(link);
+        })
+        .finally(() => setIsExporting(false));
+    };
     
     const rows = receivables.map((item) => {
         const statusInfo = getStatusInfo(item.status);
@@ -119,7 +135,10 @@ function AccountsReceivablePage() {
                 </form>
             </Modal>
             
-            <Title order={1} mb="xl">Contas a Receber</Title>
+            <Group justify="space-between" mb="xl">
+                <Title order={1}>Contas a Receber</Title>
+                <Button onClick={handleExport} loading={isExporting} color="green" leftSection={<IconFileExport size={16} />}>Exportar</Button>
+            </Group>
             <TextInput label="Buscar" placeholder="Digite o nome do cliente ou nº do orçamento..." value={searchTerm} onChange={(event) => setSearchTerm(event.currentTarget.value)} leftSection={<IconSearch size={16} />} mb="md" />
 
             <Table>

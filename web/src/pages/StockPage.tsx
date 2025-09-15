@@ -1,13 +1,14 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Table, Title, Container, Group, Pagination, TextInput, Button, Tooltip, Modal, Tabs, NumberInput, Select, Textarea, ActionIcon, Badge } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
-import { IconSearch, IconHistory, IconArrowsTransferUp, IconRefresh } from '@tabler/icons-react';
+import { IconSearch, IconHistory, IconArrowsTransferUp, IconRefresh, IconFileExport } from '@tabler/icons-react';
 import { notifications } from '@mantine/notifications';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
 import type { Product, StockMovement, StockMovementPayload } from '../types';
 
 const entryTypes = [ 'Entrada Inicial', 'Compra/Reposição', 'Ajuste Manual - Entrada' ];
+
 const exitTypes = [ 'Perda de Produção', 'Defeito de Fabricação', 'Ajuste Manual - Saída' ];
 
 const initialMovementFormData = {
@@ -34,8 +35,10 @@ function StockPage() {
     const notesRef = useRef<HTMLTextAreaElement>(null);
     const [historyModalOpened, { open: openHistoryModal, close: closeHistoryModal }] = useDisclosure(false);
     const [historyData, setHistoryData] = useState<StockMovement[]>([]);
-    const [, setIsLoadingHistory] = useState(false);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const [isLoadingHistory, setIsLoadingHistory] = useState(false);
     const [productForHistory, setProductForHistory] = useState<Product | null>(null);
+    const [isExporting, setIsExporting] = useState(false);
     
     const fetchProducts = useCallback((page: number, search: string) => {
         api.get('/products', { params: { page, search } }).then(response => {
@@ -122,6 +125,23 @@ function StockPage() {
         .finally(() => setIsLoadingHistory(false));
     };
 
+    const handleExport = () => {
+        setIsExporting(true);
+        api.get('/products/export', { responseType: 'blob' })
+        .then(response => {
+            const url = window.URL.createObjectURL(new Blob([response.data]));
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', 'estoque.csv');
+            document.body.appendChild(link);
+            link.click();
+            link.parentNode?.removeChild(link);
+            window.URL.revokeObjectURL(url);
+        })
+        .catch(error => console.error("Erro ao exportar estoque:", error))
+        .finally(() => setIsExporting(false));
+    };
+
     const rows = products
     .filter(product => product.type === 'produto')
     .map((product) => (
@@ -197,6 +217,9 @@ function StockPage() {
 
             <Group justify="space-between" my="lg">
                 <Title order={1}>Gestão de Estoque</Title>
+                <Group>
+                    {can('products.view') && (<Button onClick={handleExport} loading={isExporting} color="green" leftSection={<IconFileExport size={16} />}>Exportar</Button>)}
+                </Group>
             </Group>
 
             <TextInput label="Buscar Produto" placeholder="Digite o nome ou código para buscar automaticamente..." value={searchTerm} onChange={(event) => setSearchTerm(event.currentTarget.value)} leftSection={<IconSearch size={16} />} mb="md" />

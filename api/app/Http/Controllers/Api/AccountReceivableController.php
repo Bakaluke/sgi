@@ -43,4 +43,45 @@ class AccountReceivableController extends Controller
 
         return $accountReceivable->load(['customer', 'quote']);
     }
+
+    public function export(Request $request)
+    {
+        $this->authorize('viewAny', AccountReceivable::class);
+
+        $fileName = 'contas_a_receber.csv';
+        $receivables = AccountReceivable::with(['customer', 'quote'])->get();
+
+        $headers = [
+            "Content-type"        => "text/csv",
+            "Content-Disposition" => "attachment; filename=$fileName",
+            "Pragma"              => "no-cache",
+            "Cache-Control"       => "must-revalidate, post-check=0, pre-check=0",
+            "Expires"             => "0"
+        ];
+
+        $callback = function() use($receivables) {
+            $file = fopen('php://output', 'w');
+            fputs($file, $bom =( chr(0xEF) . chr(0xBB) . chr(0xBF) ));
+
+            $columns = ['ID', 'Cliente', 'Orçamento Nº', 'Valor Total', 'Valor Pago', 'Vencimento', 'Data Pagamento', 'Status'];
+            fputcsv($file, $columns, ';');
+
+            foreach ($receivables as $item) {
+                $row = [
+                    $item->id,
+                    $item->customer->name,
+                    $item->quote->id,
+                    number_format($item->total_amount, 2, ',', '.'),
+                    number_format($item->paid_amount, 2, ',', '.'),
+                    (new \DateTime($item->due_date))->format('d/m/Y'),
+                    $item->paid_at ? (new \DateTime($item->paid_at))->format('d/m/Y') : 'N/A',
+                    $item->status,
+                ];
+                fputcsv($file, $row, ';');
+            }
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
+    }
 }

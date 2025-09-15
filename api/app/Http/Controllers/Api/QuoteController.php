@@ -164,4 +164,49 @@ class QuoteController extends Controller
 
         return $pdf->stream('orcamento-'.$quote->id.'.pdf');
     }
+
+    public function export(Request $request)
+    {
+        $this->authorize('viewAny', Quote::class);
+
+        $user = $request->user();
+        $fileName = 'orcamentos.csv';
+
+        $query = Quote::query();
+        if (!$user->can('quotes.view_all')) {
+            $query->where('user_id', $user->id);
+        }
+        $quotes = $query->with(['customer', 'user', 'status'])->get();
+
+        $headers = [
+            "Content-type"        => "text/csv; charset=UTF-8",
+            "Content-Disposition" => "attachment; filename=$fileName",
+            "Pragma"              => "no-cache",
+            "Cache-Control"       => "must-revalidate, post-check=0, pre-check=0",
+            "Expires"             => "0"
+        ];
+
+        $callback = function() use($quotes) {
+            $file = fopen('php://output', 'w');
+            fputs($file, $bom =( chr(0xEF) . chr(0xBB) . chr(0xBF) ));
+
+            $columns = ['Nº', 'Cliente', 'Vendedor', 'Status', 'Data', 'Valor Total'];
+            fputcsv($file, $columns, ';');
+
+            foreach ($quotes as $quote) {
+                $row = [
+                    $quote->id,
+                    $quote->customer->name,
+                    $quote->user->name,
+                    $quote->status?->name ?? 'N/A',
+                    (new \DateTime($quote->created_at))->format('d/m/Y'),
+                    number_format($quote->total_amount, 2, ',', '.'),
+                ];
+                fputcsv($file, $row, ';');
+            }
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
+    }
 }

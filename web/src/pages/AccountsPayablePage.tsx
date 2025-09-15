@@ -4,7 +4,7 @@ import { DatePickerInput } from '@mantine/dates';
 import { useDisclosure } from '@mantine/hooks';
 import { useForm } from '@mantine/form';
 import { notifications } from '@mantine/notifications';
-import { IconSearch, IconDotsVertical, IconCash, IconPlus, IconPencil, IconTrash } from '@tabler/icons-react';
+import { IconSearch, IconDotsVertical, IconCash, IconPlus, IconPencil, IconTrash, IconFileExport } from '@tabler/icons-react';
 import api from '../api/axios';
 import type { AccountPayable } from '../types';
 
@@ -30,6 +30,7 @@ function AccountsPayablePage() {
     const [crudModalOpened, { open: openCrudModal, close: closeCrudModal }] = useDisclosure(false);
     const [paymentModalOpened, { open: openPaymentModal, close: closePaymentModal }] = useDisclosure(false);    
     const [editingPayable, setEditingPayable] = useState<AccountPayable | null>(null);
+    const [isExporting, setIsExporting] = useState(false);
 
     const crudForm = useForm({
         initialValues: { description: '', supplier: '', total_amount: 0, due_date: new Date() },
@@ -115,6 +116,21 @@ function AccountsPayablePage() {
         });
     };
 
+    const handleExport = () => {
+        setIsExporting(true);
+        api.get('/accounts-payable/export', { responseType: 'blob' })
+        .then(response => {
+            const url = window.URL.createObjectURL(new Blob([response.data]));
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', 'contas-a-pagar.csv');
+            document.body.appendChild(link);
+            link.click();
+            link.parentNode?.removeChild(link);
+        })
+        .finally(() => setIsExporting(false));
+    };
+
     const rows = payables.map((item) => {
         const statusInfo = getStatusInfo(item.status);
         return (
@@ -167,7 +183,10 @@ function AccountsPayablePage() {
             
             <Group justify="space-between" mb="xl">
                 <Title order={1}>Contas a Pagar</Title>
-                <Button onClick={handleOpenCreateModal} leftSection={<IconPlus size={16}/>}>Adicionar Despesa</Button>
+                <Group>
+                    <Button onClick={handleExport} loading={isExporting} color="green" leftSection={<IconFileExport size={16} />}>Exportar</Button>
+                    <Button onClick={handleOpenCreateModal} leftSection={<IconPlus size={16}/>}>Adicionar Despesa</Button>
+                </Group>
             </Group>
 
             <TextInput label="Buscar" placeholder="Digite a descrição ou fornecedor..." value={searchTerm} onChange={(event) => setSearchTerm(event.currentTarget.value)} leftSection={<IconSearch size={16} />} mb="md" />

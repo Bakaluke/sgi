@@ -83,4 +83,45 @@ class AccountPayableController extends Controller
 
         return $accountPayable;
     }
+
+    public function export(Request $request)
+    {
+        $this->authorize('viewAny', AccountPayable::class);
+
+        $fileName = 'contas_a_pagar.csv';
+        $payables = AccountPayable::all();
+
+        $headers = [
+            "Content-type"        => "text/csv",
+            "Content-Disposition" => "attachment; filename=$fileName",
+            "Pragma"              => "no-cache",
+            "Cache-Control"       => "must-revalidate, post-check=0, pre-check=0",
+            "Expires"             => "0"
+        ];
+
+        $callback = function() use($payables) {
+            $file = fopen('php://output', 'w');
+            fputs($file, $bom =( chr(0xEF) . chr(0xBB) . chr(0xBF) ));
+
+            $columns = ['ID', 'Descrição', 'Fornecedor', 'Valor Total', 'Valor Pago', 'Vencimento', 'Data Pagamento', 'Status'];
+            fputcsv($file, $columns, ';');
+
+            foreach ($payables as $item) {
+                $row = [
+                    $item->id,
+                    $item->description,
+                    $item->supplier ?? 'N/A',
+                    number_format($item->total_amount, 2, ',', '.'),
+                    number_format($item->paid_amount, 2, ',', '.'),
+                    $item->due_date->format('d/m/Y'),
+                    $item->paid_at ? $item->paid_at->format('d/m/Y') : 'N/A',
+                    $item->status,
+                ];
+                fputcsv($file, $row, ';');
+            }
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
+    }
 }

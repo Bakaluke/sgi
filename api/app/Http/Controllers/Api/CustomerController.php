@@ -115,4 +115,54 @@ class CustomerController extends Controller
         
         return response()->noContent();
     }
+
+    public function export()
+    {
+        $this->authorize('viewAny', Customer::class);
+
+        $fileName = 'clientes.csv';
+        $customers = Customer::with('addresses')->get();
+
+        $headers = [
+            "Content-type"        => "text/csv",
+            "Content-Disposition" => "attachment; filename=$fileName",
+            "Pragma"              => "no-cache",
+            "Cache-Control"       => "must-revalidate, post-check=0, pre-check=0",
+            "Expires"             => "0"
+        ];
+
+        $callback = function() use($customers) {
+            $file = fopen('php://output', 'w');
+            
+            fputs($file, $bom =( chr(0xEF) . chr(0xBB) . chr(0xBF) ));
+
+            $columns = ['ID', 'Nome', 'Tipo', 'Documento', 'E-mail', 'Telefone', 'Endereço'];
+            fputcsv($file, $columns, ';');
+
+            foreach ($customers as $customer) {
+                $primaryAddress = $customer->addresses->first();
+                $addressString = $primaryAddress ? implode(', ', array_filter([
+                    $primaryAddress->street,
+                    $primaryAddress->number ? 'nº ' . $primaryAddress->number : null,
+                    $primaryAddress->neighborhood,
+                    $primaryAddress->city ? $primaryAddress->city . ' - ' . $primaryAddress->state : null,
+                    $primaryAddress->cep
+                ])) : 'N/A';
+
+                $row['ID'] = $customer->id;
+                $row['Nome'] = $customer->name;
+                $row['Tipo'] = $customer->type === 'fisica' ? 'Pessoa Física' : 'Pessoa Jurídica';
+                $row['Documento'] = $customer->document;
+                $row['E-mail'] = $customer->email;
+                $row['Telefone'] = $customer->phone;
+                $row['Endereço'] = $addressString;
+
+                fputcsv($file, array_values($row), ';');
+            }
+
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
+    }
 }

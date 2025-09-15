@@ -3,7 +3,7 @@ import { Table, Title, Container, Button, Modal, TextInput, Textarea, Group, Too
 import { notifications } from '@mantine/notifications';
 import { useDisclosure } from '@mantine/hooks';
 import { useForm } from '@mantine/form';
-import { IconPencil, IconTrash, IconPlus, IconSearch, IconUpload, IconCategory, IconCategoryPlus } from '@tabler/icons-react';
+import { IconPencil, IconTrash, IconPlus, IconSearch, IconUpload, IconCategory, IconCategoryPlus, IconFileExport } from '@tabler/icons-react';
 import { useAuth } from '../context/AuthContext';
 import api from '../api/axios';
 import type { Product, Category, SelectOption, ProductFormData } from '../types';
@@ -30,6 +30,7 @@ function ProductPage() {
     const [categoryOptions, setCategoryOptions] = useState<SelectOption[]>([]);
     const [categoryModalOpened, { open: openCategoryModal, close: closeCategoryModal }] = useDisclosure(false);
     const [editingCategory, setEditingCategory] = useState<Category | null>(null);
+    const [isExporting, setIsExporting] = useState(false);
 
     const categoryForm = useForm({
         initialValues: { name: '', description: '' },
@@ -162,6 +163,23 @@ function ProductPage() {
         }
     };
 
+    const handleExport = () => {
+        setIsExporting(true);
+        api.get('/products/export', { responseType: 'blob' })
+            .then(response => {
+                const url = window.URL.createObjectURL(new Blob([response.data]));
+                const link = document.createElement('a');
+                link.href = url;
+                link.setAttribute('download', 'produtos.csv');
+                document.body.appendChild(link);
+                link.click();
+                link.parentNode?.removeChild(link);
+                window.URL.revokeObjectURL(url);
+            })
+            .catch(error => console.error("Erro ao exportar produtos:", error))
+            .finally(() => setIsExporting(false));
+    };
+
     const rows = products.map((product) => (
         <Table.Tr key={product.id}>
             <Table.Td>{product.id}</Table.Td>
@@ -241,7 +259,8 @@ function ProductPage() {
             <Group justify="space-between" my="lg">
                 <Title order={1}>Gestão de Produtos</Title>
                 <Group>
-                    {can('categories.manage') && (<Button variant="default" onClick={handleOpenCreateCategoryModal} leftSection={<IconCategory size={16}/>}>Gerenciar Categorias</Button>)}
+                    {can('products.view') && (<Button onClick={handleExport} loading={isExporting} color="green" leftSection={<IconFileExport size={16} />}>Exportar</Button>)}
+                    {can('categories.manage') && (<Button variant="default" onClick={handleOpenCreateCategoryModal} leftSection={<IconCategory size={16} />}>Gerenciar Categorias</Button>)}
                     {can('products.create') && (<Button onClick={handleOpenCreateModal} leftSection={<IconPlus size={16} />}>Adicionar Produto</Button>)}
                 </Group>
             </Group>

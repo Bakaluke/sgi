@@ -39,10 +39,13 @@ Route::middleware('auth:sanctum')->group(function () {
         return $user;
     });
 
+    Route::get('/products/export', [ProductController::class, 'export']);
     Route::apiResource('products', ProductController::class);
     
+    Route::get('/customers/export', [CustomerController::class, 'export']);
     Route::apiResource('customers', CustomerController::class);
 
+    Route::get('/quotes/export', [QuoteController::class, 'export']);
     Route::apiResource('quotes', QuoteController::class);
     Route::post('quotes/{quote}/items', [QuoteItemController::class, 'store']);
     Route::put('quotes/{quote}/items/{quote_item}', [QuoteItemController::class, 'update']);
@@ -50,6 +53,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::delete('quote-items/{quote_item}/file', [QuoteItemController::class, 'destroyFile']);
 
+    Route::get('/production-orders/export', [ProductionOrderController::class, 'export']);
     Route::apiResource('production-orders', ProductionOrderController::class);
 
     Route::get('/production-orders/{productionOrder}/delivery-protocol-pdf', [ProductionOrderController::class, 'generateDeliveryProtocolPdf']);
@@ -81,9 +85,11 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::apiResource('negotiation-sources', NegotiationSourceController::class);
 
+    Route::get('/accounts-receivable/export', [AccountReceivableController::class, 'export']);
     Route::apiResource('accounts-receivable', AccountReceivableController::class);
     Route::post('/accounts-receivable/{accountReceivable}/register-payment', [AccountReceivableController::class, 'registerPayment']);
 
+    Route::get('/accounts-payable/export', [AccountPayableController::class, 'export']);
     Route::apiResource('accounts-payable', AccountPayableController::class);
     Route::post('/accounts-payable/{accountPayable}/register-payment', [AccountPayableController::class, 'registerPayment']);
 });
