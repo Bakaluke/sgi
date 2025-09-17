@@ -14,6 +14,7 @@ import UsersPage from './pages/UsersPage';
 import ProfilePage from './pages/ProfilePage';
 import AccountsReceivablePage from './pages/AccountsReceivablePage';
 import AccountsPayablePage from './pages/AccountsPayablePage';
+import ReportsPage from './pages/ReportsPage';
 
 function App() {
   return (
@@ -34,6 +35,7 @@ function App() {
           <Route path="settings" element={<ProtectedRoute requiredPermission="settings.manage"><SettingsPage /></ProtectedRoute>} />
           <Route path="financial/accounts-receivable" element={<ProtectedRoute requiredPermission="finance.view_receivables"><AccountsReceivablePage /></ProtectedRoute>} />
           <Route path="financial/accounts-payable" element={<ProtectedRoute requiredPermission="finance.view_payables"><AccountsPayablePage /></ProtectedRoute>} />
+          <Route path="reports" element={<ProtectedRoute requiredPermission="reports.view"><ReportsPage /></ProtectedRoute>} />
         </Route>
         <Route path="*" element={<Navigate to="/login" />} />
       </Routes>

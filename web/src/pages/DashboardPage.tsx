@@ -1,14 +1,22 @@
 import { useEffect, useState } from 'react';
-import { Container, Title, Paper, Text, Skeleton, SegmentedControl, Group, SimpleGrid, List, ThemeIcon, Button, Table } from '@mantine/core';
+import { Container, Title, Paper, Text, Skeleton, SegmentedControl, Group, SimpleGrid, List, ThemeIcon, Button, Table, Grid } from '@mantine/core';
 import { BarChart, AreaChart } from '@mantine/charts';
 import { useAuth } from '../context/AuthContext';
 import { Cell } from 'recharts';
-import type { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
-import { startOfMonth, endOfMonth, subMonths, subDays, differenceInDays } from 'date-fns';
+import { DatePickerInput, type DatesRangeValue } from '@mantine/dates';
+import { startOfMonth, endOfMonth, subMonths, subDays, format, differenceInDays } from 'date-fns';
 import { IconAlertTriangle, IconClockHour4 } from '@tabler/icons-react';
 import type { Stats } from '../types';
+import type { ReactNode } from 'react';
 import api from '../api/axios';
+
+const adjustDateForTimezone = (date: Date | string | null): Date | null => {
+  if (!date) return null;
+  const newDate = new Date(date);
+  newDate.setMinutes(newDate.getMinutes() + newDate.getTimezoneOffset());
+  return newDate;
+};
 
 const StatCard = ({ title, value, formatAsCurrency = false }: { title: string, value: number, formatAsCurrency?: boolean }) => {
   const formattedValue = formatAsCurrency 
@@ -48,12 +56,11 @@ function DashboardPage() {
     if (startDate && endDate) {
       setLoading(true);
       const params = {
-        startDate: startDate.toISOString().split('T')[0],
-        endDate: endDate.toISOString().split('T')[0],
+        startDate: format(startDate, 'yyyy-MM-dd'),
+        endDate: format(endDate, 'yyyy-MM-dd'),
       };
       api.get('/dashboard/stats', { params })
       .then(response => { setStats(response.data); })
-      .catch(error => console.error("Erro ao buscar dados do dashboard", error))
       .finally(() => setLoading(false));
     }
   }, [dateRange]);
@@ -68,7 +75,7 @@ function DashboardPage() {
       setDateRange([startOfMonth(lastMonth), endOfMonth(lastMonth)]);
     }
   }, [period]);
-
+  
   if (loading || !stats) {
     return (
     <Container>
@@ -104,8 +111,10 @@ function DashboardPage() {
   <Container>
     <Group justify="space-between" mb="xl">
       <Title order={1}>Dashboard</Title>
-      <SegmentedControl value={period} onChange={setPeriod} data={[ { label: 'Hoje', value: 'today' }, { label: 'Últimos 7 dias', value: 'last_7_days' }, { label: 'Este Mês', value: 'this_month' }, { label: 'Mês Passado', value: 'last_month' }, ]} />
+      <SegmentedControl value={period} onChange={setPeriod} data={[ { label: 'Hoje', value: 'today' }, { label: 'Últimos 7 dias', value: 'last_7_days' }, { label: 'Este Mês', value: 'this_month' }, { label: 'Mês Passado', value: 'last_month' }, { label: 'Customizado', value: 'custom' } ]} />
     </Group>
+
+    {period === 'custom' && (<DatePickerInput type="range" label="Selecione o período" placeholder="De - Até" value={dateRange} valueFormat="DD/MM/YYYY" onChange={(value: DatesRangeValue) => { const [start, end] = value; setDateRange([adjustDateForTimezone(start), adjustDateForTimezone(end)]); }} mb="xl" />)}
 
     {can('quotes.view') && (
       <SimpleGrid cols={{ base: 1, sm: 3 }} mb="xl">
@@ -114,46 +123,56 @@ function DashboardPage() {
         <StatCard title="Ticket Médio" value={kpis.averageTicket} formatAsCurrency />
       </SimpleGrid>
     )}
-      
-    {can('quotes.view') && (
-    <Paper withBorder p="lg" mb="xl">
-      <Title order={3} mb="md">Resumo de Orçamentos</Title>
-      <BarChart h={300} data={quoteStatusData} dataKey="status" series={[{ name: 'Orçamentos' }]} tooltipProps={{ content: ({ label, payload }) => <ChartTooltip label={label} payload={payload} />, cursor: false }} xAxisProps={{ angle: 0, textAnchor: 'end', fontSize: 11 }}>
-      {quoteStatusData.map((item) => (<Cell key={item.status} fill={item.color} />))}
-      </BarChart>
-    </Paper>
-    )}
-    
-    {(can('production_orders.view') || can('production_orders.view_all')) && (
-    <Paper withBorder p="lg" mb="xl">
-      <Title order={3} mb="md">Resumo de Pedidos</Title>
-      <BarChart h={300} data={orderStatusData} dataKey="status" series={[{ name: 'Pedidos' }]} tooltipProps={{ content: ({ label, payload }) => <ChartTooltip label={label} payload={payload} />, cursor: false }} xAxisProps={{ angle: 0, textAnchor: 'end', fontSize: 11 }}>
-      {orderStatusData.map((item) => (<Cell key={item.status} fill={item.color} />))}
-      </BarChart>
-    </Paper>
-    )}
 
-    {can('quotes.view_all') && topSellingProducts.length > 0 && (
-      <Paper withBorder p="lg" mb="xl">
-        <Title order={3} mb="md">Top 5 Produtos Mais Vendidos</Title>
-        <Table>
-          <Table.Thead>
-            <Table.Tr>
-              <Table.Th>Produto</Table.Th>
-              <Table.Th align="right">Qtd. Vendida</Table.Th>
-            </Table.Tr>
-          </Table.Thead>
-          <Table.Tbody>{topProductsRows}</Table.Tbody>
-        </Table>
-      </Paper>
-    )}
-    
-    {can('quotes.view') && stats.quotesOverTime.length > 0 && (
-    <Paper withBorder p="lg" mb="xl">
-      <Title order={3} mb="md">Orçamentos Criados</Title>
-      <AreaChart h={300} data={stats.quotesOverTime} dataKey="date" series={[{ name: 'count', color: 'blue.6' }]} curveType="natural" tooltipProps={{ content: ({ label, payload }) => <ChartTooltip label={label} payload={payload} /> }} />
-    </Paper>
-    )}
+    <Grid>
+      {can('quotes.view') && (
+        <Grid.Col span={{ base: 12, md: 6, lg: 4 }}>
+          <Paper withBorder p="lg" h="100%">
+            <Title order={3} mb="md">Resumo de Orçamentos</Title>
+            <BarChart h={300} data={quoteStatusData} dataKey="status" series={[{ name: 'Orçamentos' }]} tooltipProps={{ content: ({ label, payload }) => <ChartTooltip label={label} payload={payload} />, cursor: false }} xAxisProps={{ angle: 0, textAnchor: 'end', fontSize: 11 }}>
+            {quoteStatusData.map((item) => (<Cell key={item.status} fill={item.color} />))}
+            </BarChart>
+          </Paper>
+        </Grid.Col>
+      )}
+      
+      {(can('production_orders.view') || can('production_orders.view_all')) && (
+        <Grid.Col span={{ base: 12, md: 6, lg: 4 }}>
+          <Paper withBorder p="lg" h="100%">
+            <Title order={3} mb="md">Resumo de Pedidos</Title>
+            <BarChart h={300} data={orderStatusData} dataKey="status" series={[{ name: 'Pedidos' }]} tooltipProps={{ content: ({ label, payload }) => <ChartTooltip label={label} payload={payload} />, cursor: false }} xAxisProps={{ angle: 0, textAnchor: 'end', fontSize: 11 }}>
+            {orderStatusData.map((item) => (<Cell key={item.status} fill={item.color} />))}
+            </BarChart>
+          </Paper>
+        </Grid.Col>
+      )}
+
+      {can('quotes.view_all') && topSellingProducts.length > 0 && (
+        <Grid.Col span={{ base: 12, md: 6, lg: 4 }}>
+          <Paper withBorder p="lg" h="100%">
+            <Title order={3} mb="md">Produtos Mais Vendidos</Title>
+            <Table>
+              <Table.Thead>
+                <Table.Tr>
+                  <Table.Th>Produto</Table.Th>
+                  <Table.Th align="right">Qtd. Vendida</Table.Th>
+                </Table.Tr>
+              </Table.Thead>
+              <Table.Tbody>{topProductsRows}</Table.Tbody>
+            </Table>
+          </Paper>
+        </Grid.Col>
+      )}
+
+      {can('quotes.view') && stats.quotesOverTime.length > 0 && (
+        <Grid.Col span={12}>
+          <Paper withBorder p="lg" mb="xl">
+            <Title order={3} mb="md">Orçamentos Criados</Title>
+            <AreaChart h={300} data={stats.quotesOverTime} dataKey="date" series={[{ name: 'count', color: 'blue.6' }]} curveType="natural" tooltipProps={{ content: ({ label, payload }) => <ChartTooltip label={label} payload={payload} /> }} />
+          </Paper>
+        </Grid.Col>
+      )}
+    </Grid>
     
     {(can('stock.manage') && lowStockProducts.length > 0) || (can('quotes.view') && staleQuotes.length > 0) ? (
       <Paper withBorder p="lg" mb="xl">

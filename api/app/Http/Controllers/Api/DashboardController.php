@@ -132,7 +132,7 @@ class DashboardController extends Controller
                 ->select('quote_items.product_name', DB::raw('SUM(quote_items.quantity) as total_quantity'))
                 ->groupBy('quote_items.product_name')
                 ->orderBy('total_quantity', 'desc')
-                ->limit(5)
+                ->limit(6)
                 ->get();
         }
 

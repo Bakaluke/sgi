@@ -28,7 +28,6 @@ const formatPhone = (phone: string = '') => {
 };
 
 const groupTranslations: { [key: string]: string } = {
-    'users': 'Usuários',
     'settings': 'Configurações',
     'products': 'Produtos',
     'customers': 'Clientes',
@@ -37,6 +36,8 @@ const groupTranslations: { [key: string]: string } = {
     'stock': 'Estoque',
     'categories': 'Categorias',
     'finance': 'Financeiro',
+    'reports': 'Relatórios',
+    'users': 'Usuários',
 };
 
 const permissionTranslations: { [key: string]: string } = {
@@ -66,6 +67,7 @@ const permissionTranslations: { [key: string]: string } = {
     'finance.register_payment': 'Dar Baixa em Pagamentos',
     'finance.view_payables': 'Ver Contas a Pagar',
     'finance.manage_payables': 'Gerenciar Contas',
+    'reports.view': 'Ver Relatórios',
 };
 
 function SettingsPage() {

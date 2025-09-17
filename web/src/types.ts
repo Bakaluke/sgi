@@ -273,8 +273,8 @@ export interface AccountReceivable {
 }
 
 export interface AccountPayable {
-  quote: any;
-  customer: any;
+  quote: number;
+  customer: { name: string; };
   id: number;
   description: string;
   supplier: string | null;
@@ -284,4 +284,23 @@ export interface AccountPayable {
   paid_at: string | null;
   status: string;
   created_at: string;
+}
+
+export interface ReportData {
+  total_revenue: number;
+  quote_count: number;
+  average_ticket: number;
+}
+
+export interface CustomerSalesReport {
+  id: number;
+  name: string;
+  total_sold: number;
+  quote_count: number;
+}
+
+export interface ItemSalesReport {
+  product_name: string;
+  sale_date: string;
+  total_quantity: number;
 }
