@@ -95,6 +95,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/accounts-payable/{accountPayable}/register-payment', [AccountPayableController::class, 'registerPayment']);
 
     Route::get('/reports/sales-by-customer/export', [ReportController::class, 'exportSalesByCustomer']);
+    Route::get('/reports/items-sold-by-day/export', [ReportController::class, 'exportItemsSoldByDay']);
     Route::get('/reports/sales-by-period', [ReportController::class, 'salesByPeriod']);
     Route::get('/reports/sales-by-customer', [ReportController::class, 'salesByCustomer']);
     Route::get('/reports/items-sold-by-day', [ReportController::class, 'itemsSoldByDay']);
