@@ -537,6 +537,7 @@ function SettingsPage() {
                     <Tabs defaultValue="payment">
                         <Tabs.List>
                             <Tabs.Tab value="payment">Formas de Pagamento</Tabs.Tab>
+                            <Tabs.Tab value="payment_modes">Condições de Pagamento</Tabs.Tab>
                             <Tabs.Tab value="delivery">Formas de Entrega</Tabs.Tab>
                             <Tabs.Tab value="statuses">Status do Orçamento</Tabs.Tab>
                             <Tabs.Tab value="sources">Origens da Negociação</Tabs.Tab>
@@ -573,6 +574,10 @@ function SettingsPage() {
                                     </Table.Tr>))}
                                 </Table.Tbody>
                             </Table>
+                        </Tabs.Panel>
+
+                        <Tabs.Panel value="payment_modes" pt="md">
+                            <Group justify="flex-end" mb="md"><Button onClick={handleOpenCreateNsModal} leftSection={<IconPlus size={16}/>}>Adicionar</Button></Group>
                         </Tabs.Panel>
 
                         <Tabs.Panel value="delivery" pt="md">

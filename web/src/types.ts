@@ -304,3 +304,9 @@ export interface ItemSalesReport {
   sale_date: string;
   total_quantity: number;
 }
+
+export interface CashFlowData {
+  month: string;
+  a_receber: number;
+  a_pagar: number;
+}

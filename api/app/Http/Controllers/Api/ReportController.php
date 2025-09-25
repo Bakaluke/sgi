@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Quote;
 use App\Models\QuoteItem;
+use App\Models\AccountReceivable;
+use App\Models\AccountPayable;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -201,6 +203,46 @@ class ReportController extends Controller
         };
 
         return response()->stream($callback, 200, $headers);
+    }
+
+    public function cashFlow(Request $request)
+    {
+        $this->authorize('reports.view');
+
+        $receivables = AccountReceivable::query()
+            ->where('status', '!=', 'paid')
+            ->select(
+                DB::raw("DATE_FORMAT(due_date, '%Y-%m') as month"),
+                DB::raw("SUM(total_amount - paid_amount) as total")
+            )
+            ->groupBy('month')
+            ->orderBy('month', 'asc')
+            ->get()
+            ->keyBy('month');
+
+        $payables = AccountPayable::query()
+            ->where('status', '!=', 'paid')
+            ->select(
+                DB::raw("DATE_FORMAT(due_date, '%Y-%m') as month"),
+                DB::raw("SUM(total_amount - paid_amount) as total")
+            )
+            ->groupBy('month')
+            ->orderBy('month', 'asc')
+            ->get()
+            ->keyBy('month');
+
+        $months = collect($receivables->keys()->merge($payables->keys())->unique())->sort();
+
+        $data = $months->map(function ($month) use ($receivables, $payables) {
+            $formattedMonth = Carbon::createFromFormat('Y-m', $month)->translatedFormat('M/Y');
+            return [
+                'month' => $formattedMonth,
+                'A Receber' => (float) ($receivables->get($month)->total ?? 0),
+                'A Pagar' => (float) ($payables->get($month)->total ?? 0),
+            ];
+        })->values();
+
+        return response()->json($data);
     }
 
     public function authorize($ability, $arguments = [])
