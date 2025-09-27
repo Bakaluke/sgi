@@ -11,6 +11,7 @@ use App\Models\Setting;
 use App\Models\User;
 use App\Models\Category;
 use App\Models\PaymentMethod;
+use App\Models\PaymentTerm;
 use App\Models\DeliveryMethod;
 use App\Models\QuoteStatus;
 use App\Models\ProductionStatus;
@@ -26,6 +27,7 @@ use App\Policies\SettingPolicy;
 use App\Policies\UserPolicy;
 use App\Policies\CategoryPolicy;
 use App\Policies\PaymentMethodPolicy;
+use App\Policies\PaymentTermPolicy;
 use App\Policies\DeliveryMethodPolicy;
 use App\Policies\QuoteStatusPolicy;
 use App\Policies\ProductionStatusPolicy;
@@ -46,6 +48,7 @@ class AuthServiceProvider extends ServiceProvider
         User::class => UserPolicy::class,
         Category::class => CategoryPolicy::class,
         PaymentMethod::class => PaymentMethodPolicy::class,
+        PaymentTerm::class => PaymentTermPolicy::class,
         DeliveryMethod::class => DeliveryMethodPolicy::class,
         QuoteStatus::class => QuoteStatusPolicy::class,
         ProductionStatus::class => ProductionStatusPolicy::class,

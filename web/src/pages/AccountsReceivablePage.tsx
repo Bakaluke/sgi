@@ -1,8 +1,8 @@
-import { useCallback, useEffect, useState } from 'react';
-import { Table, Title, Container, Pagination, Group, Badge, TextInput, Menu, ActionIcon, Modal, NumberInput, Button } from '@mantine/core';
+import { Fragment, useCallback, useEffect, useState } from 'react';
+import { Table, Title, Container, Pagination, Group, Badge, TextInput, Menu, ActionIcon, Modal, NumberInput, Button, Collapse, Paper, Text } from '@mantine/core';
 import api from '../api/axios';
 import type { AccountReceivable } from '../types';
-import { IconCash, IconDotsVertical, IconFileExport, IconSearch } from '@tabler/icons-react';
+import { IconCash, IconChevronDown, IconDotsVertical, IconFileExport, IconSearch } from '@tabler/icons-react';
 import { notifications } from '@mantine/notifications';
 import { DatePickerInput } from '@mantine/dates';
 import { useForm } from '@mantine/form';
@@ -22,6 +22,7 @@ const getStatusInfo = (status: string) => {
 
 function AccountsReceivablePage() {
     const [receivables, setReceivables] = useState<AccountReceivable[]>([]);
+    const [expandedIds, setExpandedIds] = useState<number[]>([]);
     const [activePage, setActivePage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
     const [searchTerm, setSearchTerm] = useState('');
@@ -39,7 +40,7 @@ function AccountsReceivablePage() {
     });
 
     const fetchReceivables = useCallback((page: number, search: string) => {
-        api.get('/accounts-receivable', { params: { page, search } })
+        api.get('/accounts-receivable', { params: { page, search, with: 'installments' } })
            .then(res => {
                 setReceivables(res.data.data);
                 setTotalPages(res.data.last_page);
@@ -96,29 +97,71 @@ function AccountsReceivablePage() {
     };
     
     const rows = receivables.map((item) => {
+        const isExpanded = expandedIds.includes(item.id);
         const statusInfo = getStatusInfo(item.status);
         return (
-            <Table.Tr key={item.id}>
-                <Table.Td>{item.id}</Table.Td>
-                <Table.Td>{item.customer.name}</Table.Td>
-                <Table.Td>#{item.quote.id}</Table.Td>
-                <Table.Td>{formatCurrency(item.total_amount)}</Table.Td>
-                <Table.Td>{formatCurrency(item.paid_amount)}</Table.Td>
-                <Table.Td>{new Date(item.due_date).toLocaleDateString('pt-BR', { timeZone: 'UTC' })}</Table.Td>
-                <Table.Td><Badge color={statusInfo.color}>{statusInfo.label}</Badge></Table.Td>
-                <Table.Td>
-                    <Menu shadow="md" width={200}>
-                        <Menu.Target>
-                            <ActionIcon variant="subtle">
-                                <IconDotsVertical size={16} />
-                            </ActionIcon>
-                        </Menu.Target>
-                        <Menu.Dropdown>
-                            <Menu.Item leftSection={<IconCash size={14} />} onClick={() => handleOpenPaymentModal(item)} disabled={item.status === 'paid'} >Registrar Pagamento</Menu.Item>
-                        </Menu.Dropdown>
-                    </Menu>
-                </Table.Td>
-            </Table.Tr>
+            <Fragment key={item.id}>
+                <Table.Tr>
+                    <Table.Td>
+                        <ActionIcon onClick={() => setExpandedIds(current => isExpanded ? current.filter(id => id !== item.id) : [...current, item.id])}>
+                            <IconChevronDown style={{ transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)' }} />
+                        </ActionIcon>
+                    </Table.Td>
+                    <Table.Td>{item.id}</Table.Td>
+                    <Table.Td>{item.customer.name}</Table.Td>
+                    <Table.Td>#{item.quote.id}</Table.Td>
+                    <Table.Td>{formatCurrency(item.total_amount)}</Table.Td>
+                    <Table.Td>{formatCurrency(item.paid_amount)}</Table.Td>
+                    <Table.Td>{new Date(item.due_date).toLocaleDateString('pt-BR', { timeZone: 'UTC' })}</Table.Td>
+                    <Table.Td><Badge color={statusInfo.color}>{statusInfo.label}</Badge></Table.Td>
+                    <Table.Td>
+                        <Menu shadow="md" width={200}>
+                            <Menu.Target>
+                                <ActionIcon variant="subtle">
+                                    <IconDotsVertical size={16} />
+                                </ActionIcon>
+                            </Menu.Target>
+                            <Menu.Dropdown>
+                                <Menu.Item leftSection={<IconCash size={14} />} onClick={() => handleOpenPaymentModal(item)} disabled={item.status === 'paid'} >Registrar Pagamento</Menu.Item>
+                            </Menu.Dropdown>
+                        </Menu>
+                    </Table.Td>
+                </Table.Tr>
+                <Table.Tr>
+                    <Table.Td colSpan={9} style={{ padding: 0, border: 0 }}>
+                        <Collapse in={isExpanded}>
+                            <Paper p="md" bg="gray.0">
+                                <Text fw={700} mb="xs">Parcelas</Text>
+                                <Table>
+                                    <Table.Thead>
+                                        <Table.Tr>
+                                            <Table.Th>Nº</Table.Th>
+                                            <Table.Th>Vencimento</Table.Th>
+                                            <Table.Th>Valor</Table.Th>
+                                            <Table.Th>Status</Table.Th>
+                                            <Table.Th>Ações</Table.Th>
+                                        </Table.Tr>
+                                    </Table.Thead>
+                                    <Table.Tbody>
+                                        {item.installments.map(installment => {
+                                            const instStatus = getStatusInfo(installment.status);
+                                            return (
+                                                <Table.Tr key={installment.id}>
+                                                    <Table.Td>{installment.installment_number}</Table.Td>
+                                                    <Table.Td>{new Date(installment.due_date).toLocaleDateString('pt-BR', {timeZone: 'UTC'})}</Table.Td>
+                                                    <Table.Td>{formatCurrency(installment.amount)}</Table.Td>
+                                                    <Table.Td><Badge color={instStatus.color}>{instStatus.label}</Badge></Table.Td>
+                                                    <Table.Td><Button size="xs" variant="light" disabled>Pagar</Button></Table.Td>
+                                                </Table.Tr>
+                                            );
+                                        })}
+                                    </Table.Tbody>
+                                </Table>
+                            </Paper>
+                        </Collapse>
+                    </Table.Td>
+                </Table.Tr>
+            </Fragment>
         );
     });
 

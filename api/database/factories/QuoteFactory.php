@@ -7,6 +7,7 @@ use App\Models\Quote;
 use App\Models\QuoteItem;
 use App\Models\User;
 use App\Models\PaymentMethod;
+use App\Models\PaymentTerm;
 use App\Models\DeliveryMethod;
 use App\Models\QuoteStatus;
 use App\Models\NegotiationSource;
@@ -19,6 +20,7 @@ class QuoteFactory extends Factory
         $customer = Customer::has('addresses')->with('addresses')->inRandomOrder()->first();
         $user = User::whereHas('roles', fn ($query) => $query->where('name', 'vendedor'))->inRandomOrder()->first();
         $paymentMethod = PaymentMethod::inRandomOrder()->first();
+        $paymentTerm = PaymentTerm::inRandomOrder()->first();
         $deliveryMethod = DeliveryMethod::inRandomOrder()->first();
         $negotiationSource = NegotiationSource::inRandomOrder()->first();
 
@@ -47,6 +49,7 @@ class QuoteFactory extends Factory
             'salesperson_name' => $user->name,
             'delivery_method_id' => $deliveryMethod->id,
             'payment_method_id' => $paymentMethod->id,
+            'payment_term_id' => $paymentTerm->id,
             'negotiation_source_id' => $negotiationSource->id,
             'notes' => fake()->sentence(),
         ];

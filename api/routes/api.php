@@ -16,6 +16,7 @@ use App\Http\Controllers\Api\ProfileController;
 use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\RoleController;
 use App\Http\Controllers\Api\PaymentMethodController;
+use App\Http\Controllers\Api\PaymentTermController;
 use App\Http\Controllers\Api\DeliveryMethodController;
 use App\Http\Controllers\Api\QuoteStatusController;
 use App\Http\Controllers\Api\ProductionStatusController;
@@ -77,6 +78,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/permissions', [RoleController::class, 'getPermissions']);
 
     Route::apiResource('payment-methods', PaymentMethodController::class);
+
+    Route::apiResource('payment-terms', PaymentTermController::class);
 
     Route::apiResource('delivery-methods', DeliveryMethodController::class);
     

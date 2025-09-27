@@ -88,6 +88,8 @@ export interface Quote {
   discount_percentage: number;
   payment_method_id: number | null;
   payment_method: PaymentMethod | null;
+  payment_term_id: number | null;
+  payment_term: PaymentTerm | null;
   delivery_method_id: number | null;
   delivery_method: DeliveryMethod | null;
   negotiation_source_id: number | null;
@@ -117,6 +119,14 @@ export interface PaymentMethod {
 export interface DeliveryMethod {
   id: number;
   name: string;
+}
+
+export interface PaymentTerm {
+  id: number;
+  name: string;
+  number_of_installments: number;
+  days_for_first_installment: number;
+  days_between_installments: number;
 }
 
 export interface ProtectedRouteProps {
@@ -257,6 +267,14 @@ export interface SettingsContextType {
   settings: Settings | null;
 }
 
+export interface ReceivableInstallment {
+  id: number;
+  installment_number: number;
+  amount: number;
+  due_date: string;
+  status: string;
+}
+
 export interface AccountReceivable {
   id: number;
   quote_id: number;
@@ -270,6 +288,7 @@ export interface AccountReceivable {
   created_at: string;
   customer: { name: string; };
   quote: { id: number; };
+  installments: ReceivableInstallment[];
 }
 
 export interface AccountPayable {

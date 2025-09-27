@@ -185,6 +185,8 @@ return [
         'delivery_datetime' => 'Data/Hora da Entrega',
         'negotiation_source'=> 'Origem da Negociação',
         'negotiation_source_id'=> 'Origem da Negociação',
+        'payment_term' => 'Condição de Pagamento',
+        'payment_term_id' => 'Condição de Pagamento',
         'notes' => 'Observações',
         'discount_percentage' => 'Desconto',
     ],

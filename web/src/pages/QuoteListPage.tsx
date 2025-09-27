@@ -1,13 +1,12 @@
 import { Fragment, useCallback, useEffect, useState } from 'react';
 import { Table, Title, Container, Button, Group, Badge, Modal, Select, Grid, TextInput, Textarea, ActionIcon, Fieldset, Menu, Collapse, Paper, Pagination, Loader, Tooltip } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
-import { DateTimePicker } from '@mantine/dates';
 import { IconPlus, IconEye, IconPrinter, IconTrash, IconDotsVertical, IconMail, IconBrandWhatsapp, IconChevronDown, IconSearch, IconFileExport } from '@tabler/icons-react';
 import { useDisclosure } from '@mantine/hooks';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../api/axios';
-import type { Customer, Quote, SelectOption, PaymentMethod, DeliveryMethod, NegotiationSource } from '../types';
+import type { Customer, Quote, SelectOption, PaymentMethod, PaymentTerm, DeliveryMethod, NegotiationSource } from '../types';
 import { CustomerForm } from '../components/CustomerForm';
 
 const initialFormData = {
@@ -17,6 +16,7 @@ const initialFormData = {
   customer_email: '',
   customer_address: '',
   payment_method_id: null as number | null,
+  payment_term_id: null as number | null,
   delivery_method_id: null as number | null,
   negotiation_source_id: null as number | null,
   delivery_datetime: '',
@@ -49,6 +49,7 @@ function QuoteListPage() {
   const [isSearchingCustomers, setIsSearchingCustomers] = useState(false);
   const [customerModalOpened, { open: openCustomerModal, close: closeCustomerModal }] = useDisclosure(false);
   const [paymentMethods, setPaymentMethods] = useState<SelectOption[]>([]);
+  const [paymentTerms, setPaymentTerms] = useState<SelectOption[]>([]);
   const [deliveryMethods, setDeliveryMethods] = useState<SelectOption[]>([]);
   const [negotiationSources, setNegotiationSources] = useState<SelectOption[]>([]);
   const [isExporting, setIsExporting] = useState(false);
@@ -106,6 +107,12 @@ function QuoteListPage() {
         label: ns.name
       })))
     );
+    api.get('/payment-terms').then(res =>
+      setPaymentTerms(res.data.map((pt: PaymentTerm) => ({
+        value: String(pt.id),
+        label: pt.name
+      })))
+    );
   }, []);
   
   const handleCustomerSelect = (customerId: string | null) => {
@@ -137,6 +144,7 @@ function QuoteListPage() {
     const payload = {
       customer_id: formData.customer_id,
       payment_method_id: formData.payment_method_id,
+      payment_term_id: formData.payment_term_id,
       delivery_method_id: formData.delivery_method_id,
       negotiation_source_id: formData.negotiation_source_id,
       notes: formData.notes,
@@ -308,8 +316,8 @@ function QuoteListPage() {
         <Fieldset legend="Dados do Orçamento" mt="md">
           <Grid>
             <Grid.Col span={{ base: 12, md: 6 }}><Select label="Forma de Pagamento" placeholder="Selecione..." data={paymentMethods} value={String(formData.payment_method_id || '')} onChange={(value) => setFormData(p => ({ ...p, payment_method_id: value ? Number(value) : null }))} /></Grid.Col>
+            <Grid.Col span={{ base: 12, md: 6 }}><Select label="Condições de Pagamento" placeholder="Selecione..." data={paymentTerms} value={String(formData.payment_term_id || '')} onChange={(value) => setFormData(p => ({ ...p, payment_term_id: value ? Number(value) : null }))} /></Grid.Col>
             <Grid.Col span={{ base: 12, md: 6 }}><Select label="Opção de Entrega" placeholder="Selecione..." data={deliveryMethods} value={String(formData.delivery_method_id || '')} onChange={(value) => setFormData(p => ({ ...p, delivery_method_id: value ? Number(value) : null }))} /></Grid.Col>
-            <Grid.Col span={{ base: 12, md: 6 }}><DateTimePicker label="Data/Hora da Entrega" value={formData.delivery_datetime ? new Date(formData.delivery_datetime) : null} onChange={(value) => setFormData(p => ({ ...p, delivery_datetime: value || '' }))} placeholder="Selecione a data e hora" clearable minDate={new Date()} /></Grid.Col>
             <Grid.Col span={{ base: 12, md: 6 }}><Select label="Origem da Negociação" placeholder="Selecione..." data={negotiationSources} value={String(formData.negotiation_source_id || '')} onChange={(value) => setFormData(p => ({ ...p, negotiation_source_id: value ? Number(value) : null }))} clearable /></Grid.Col>
             <Grid.Col span={12}><Textarea label="Observações" onChange={(e) => setFormData(p => ({ ...p, notes: e.target.value }))} /></Grid.Col>
           </Grid>

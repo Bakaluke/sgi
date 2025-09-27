@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react';
-import { Container, Title, Paper, Grid, TextInput, Button, Group, FileInput, Image, Loader, Tabs, Table, ActionIcon, Tooltip, Modal, Checkbox, ColorInput, Badge } from '@mantine/core';
+import { Container, Title, Paper, Grid, TextInput, Button, Group, FileInput, Image, Loader, Tabs, Table, ActionIcon, Tooltip, Modal, Checkbox, ColorInput, Badge, NumberInput } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
 import { useDisclosure } from '@mantine/hooks';
 import { useForm } from '@mantine/form';
 import { IconUpload, IconPencil, IconTrash, IconPlus } from '@tabler/icons-react';
 import api from '../api/axios';
 import axios from 'axios';
-import type { SettingsData, Permission, Role, QuoteStatus, ProductionStatus, NegotiationSource, DeliveryMethod, PaymentMethod } from '../types';
+import type { SettingsData, Permission, Role, QuoteStatus, ProductionStatus, NegotiationSource, DeliveryMethod, PaymentMethod, PaymentTerm } from '../types';
 
 const formatCnpj = (cnpj: string = '') => {
     return cnpj
@@ -81,10 +81,10 @@ function SettingsPage() {
     const [modalOpened, { open: openModal, close: closeModal }] = useDisclosure(false);
     const [editingRole, setEditingRole] = useState<Role | null>(null);
     const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
-    const [deliveryMethods, setDeliveryMethods] = useState<DeliveryMethod[]>([]);
     const [pmModalOpened, { open: openPmModal, close: closePmModal }] = useDisclosure(false);
-    const [dmModalOpened, { open: openDmModal, close: closeDmModal }] = useDisclosure(false);
     const [editingPm, setEditingPm] = useState<PaymentMethod | null>(null);
+    const [deliveryMethods, setDeliveryMethods] = useState<DeliveryMethod[]>([]);
+    const [dmModalOpened, { open: openDmModal, close: closeDmModal }] = useDisclosure(false);
     const [editingDm, setEditingDm] = useState<DeliveryMethod | null>(null);
     const [quoteStatuses, setQuoteStatuses] = useState<QuoteStatus[]>([]);
     const [qsModalOpened, { open: openQsModal, close: closeQsModal }] = useDisclosure(false);
@@ -95,12 +95,16 @@ function SettingsPage() {
     const [negotiationSources, setNegotiationSources] = useState<NegotiationSource[]>([]);
     const [nsModalOpened, { open: openNsModal, close: closeNsModal }] = useDisclosure(false);
     const [editingNs, setEditingNs] = useState<NegotiationSource | null>(null);
+    const [paymentTerms, setPaymentTerms] = useState<PaymentTerm[]>([]);
+    const [ptModalOpened, { open: openPtModal, close: closePtModal }] = useDisclosure(false);
+    const [editingPt, setEditingPt] = useState<PaymentTerm | null>(null);
     
     const pmForm = useForm({ initialValues: { name: '' }, validate: { name: (value: string) => (value.trim().length < 2 ? 'O nome é obrigatório.' : null) } });
     const dmForm = useForm({ initialValues: { name: '' }, validate: { name: (value: string) => (value.trim().length < 2 ? 'O nome é obrigatório.' : null) } });
     const qsForm = useForm({ initialValues: { name: '', color: '#868e96' }, validate: { name: (value: string) => (value.trim().length < 2 ? 'O nome é obrigatório.' : null) }, });
     const psForm = useForm({ initialValues: { name: '', color: '#868e96' }, validate: { name: (value: string) => (value.trim().length < 2 ? 'O nome é obrigatório.' : null) }, });
     const nsForm = useForm({ initialValues: { name: '' }, validate: { name: (value: string) => (value.trim().length < 2 ? 'O nome é obrigatório.' : null) } });
+    const ptForm = useForm({ initialValues: { name: '', number_of_installments: 1, days_for_first_installment: 0, days_between_installments: 30, }, validate: { name: (value: string) => (value.trim().length < 2 ? 'O nome é obrigatório.' : null) }, });
 
     const roleForm = useForm({
         initialValues: { display_name: '', permissions: [] as string[] },
@@ -116,6 +120,7 @@ function SettingsPage() {
         fetchQuoteStatuses();
         fetchProductionStatuses();
         fetchNegotiationSources();
+        fetchPaymentTerms();
     }, []);
 
     const fetchRoles = () => {
@@ -140,6 +145,10 @@ function SettingsPage() {
     
     const fetchNegotiationSources = () => {
         api.get('/negotiation-sources').then(res => setNegotiationSources(res.data));
+    };
+
+    const fetchPaymentTerms = () => {
+        api.get('/payment-terms').then(res => setPaymentTerms(res.data));
     };
     
     const handleCnpjBlur = () => {
@@ -424,6 +433,41 @@ function SettingsPage() {
             notifications.show({ title: 'Ação Bloqueada', message: message, color: 'red' });
         })
     };
+
+    const handleOpenCreatePtModal = () => {
+        setEditingPt(null);
+        ptForm.reset();
+        openPtModal();
+    };
+
+    const handleOpenEditPtModal = (pt: PaymentTerm) => {
+        setEditingPt(pt);
+        ptForm.setValues(pt);
+        openPtModal();
+    };
+
+    const handlePtSubmit = (values: typeof ptForm.values) => {
+        const promise = editingPt ? api.put(`/payment-terms/${editingPt.id}`, values) : api.post('/payment-terms', values);
+        promise.then(() => {
+            closePtModal();
+            notifications.show({ title: 'Sucesso!', message: 'Condição de pagamento salva.', color: 'green' });
+            fetchPaymentTerms();
+        });
+    };
+
+    const handlePtDelete = (id: number) => {
+        if (window.confirm('Tem certeza?'))
+            api.delete(`/payment-terms/${id}`)
+        .then(() => {
+            notifications.show({ title: 'Sucesso', message: 'Excluído.', color: 'green' });
+            fetchPaymentTerms();
+        })
+        .catch(error => {
+            const message = error.response?.data?.message || 'Não foi possível excluir.';
+            notifications.show({ title: 'Ação Bloqueada', message: message, color: 'red' });
+        })
+    };
+    
     
     const roleRows = roles.map((role) => (
         <Table.Tr key={role.id}>
@@ -537,7 +581,7 @@ function SettingsPage() {
                     <Tabs defaultValue="payment">
                         <Tabs.List>
                             <Tabs.Tab value="payment">Formas de Pagamento</Tabs.Tab>
-                            <Tabs.Tab value="payment_modes">Condições de Pagamento</Tabs.Tab>
+                            <Tabs.Tab value="payment_terms">Condições de Pagamento</Tabs.Tab>
                             <Tabs.Tab value="delivery">Formas de Entrega</Tabs.Tab>
                             <Tabs.Tab value="statuses">Status do Orçamento</Tabs.Tab>
                             <Tabs.Tab value="sources">Origens da Negociação</Tabs.Tab>
@@ -576,8 +620,44 @@ function SettingsPage() {
                             </Table>
                         </Tabs.Panel>
 
-                        <Tabs.Panel value="payment_modes" pt="md">
-                            <Group justify="flex-end" mb="md"><Button onClick={handleOpenCreateNsModal} leftSection={<IconPlus size={16}/>}>Adicionar</Button></Group>
+                        <Tabs.Panel value="payment_terms" pt="md">
+                            <Modal opened={ptModalOpened} onClose={closePtModal} title={editingPt ? 'Editar Condição' : 'Nova Condição de Pagamento'}>
+                                <form onSubmit={ptForm.onSubmit(handlePtSubmit)}>
+                                    <TextInput label="Nome da Condição" placeholder="Ex: 30/60/90 Dias" required {...ptForm.getInputProps('name')} />
+                                    <NumberInput label="Nº de Parcelas" mt="md" min={1} required {...ptForm.getInputProps('number_of_installments')} />
+                                    <NumberInput label="Dias para 1ª Parcela" mt="md" min={0} placeholder="0 para entrada/ato" required {...ptForm.getInputProps('days_for_first_installment')} />
+                                    <NumberInput label="Dias entre Parcelas" mt="md" min={0} required {...ptForm.getInputProps('days_between_installments')} />
+                                    <Group justify="flex-end" mt="lg"><Button type="submit">Salvar</Button></Group>
+                                </form>
+                            </Modal>
+                            <Group justify="flex-end" mb="md"><Button onClick={handleOpenCreatePtModal} leftSection={<IconPlus size={16}/>}>Adicionar Condição</Button></Group>
+                            <Table>
+                                <Table.Thead>
+                                    <Table.Tr>
+                                        <Table.Th>Nome</Table.Th>
+                                        <Table.Th>Parcelas</Table.Th>
+                                        <Table.Th>1º Venc.</Table.Th>
+                                        <Table.Th>Intervalo</Table.Th>
+                                        <Table.Th w={120}>Ações</Table.Th>
+                                        </Table.Tr>
+                                    </Table.Thead>
+                                <Table.Tbody>
+                                    {paymentTerms.map(pt => (
+                                        <Table.Tr key={pt.id}>
+                                            <Table.Td>{pt.name}</Table.Td>
+                                            <Table.Td>{pt.number_of_installments}x</Table.Td>
+                                            <Table.Td>{pt.days_for_first_installment} dias</Table.Td>
+                                            <Table.Td>{pt.days_between_installments} dias</Table.Td>
+                                            <Table.Td>
+                                                <Group gap="xs">
+                                                    <ActionIcon onClick={() => handleOpenEditPtModal(pt)}><IconPencil size={16}/></ActionIcon>
+                                                    <ActionIcon color="red" onClick={() => handlePtDelete(pt.id)}><IconTrash size={16}/></ActionIcon>
+                                                </Group>
+                                            </Table.Td>
+                                        </Table.Tr>
+                                    ))}
+                                </Table.Tbody>
+                            </Table>
                         </Tabs.Panel>
 
                         <Tabs.Panel value="delivery" pt="md">

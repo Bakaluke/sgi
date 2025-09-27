@@ -13,6 +13,7 @@ class DatabaseSeeder extends Seeder
             ProductSeeder::class,
             CustomerSeeder::class,
             PaymentMethodSeeder::class,
+            PaymentTermSeeder::class,
             DeliveryMethodSeeder::class,
             NegotiationSourceSeeder::class,
             ProductionStatusSeeder::class,

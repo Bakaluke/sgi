@@ -9,34 +9,40 @@ use Illuminate\Support\Facades\Log;
 
 class CreateAccountReceivable
 {
-    public function __construct()
-    {
-        //
-    }
-
     public function handle(OrderCompleted $event): void
     {
         $order = $event->productionOrder;
 
-        if (AccountReceivable::where('production_order_id', $order->id)->exists()) {
-            Log::warning('Tentativa de criar conta a receber duplicada para a Ordem de Produção ID: ' . $order->id);
-            return;
-        }
-
-        $order->load('quote');
-
-        if (!$order->quote) {
-            Log::error('Orçamento relacionado não foi encontrado ao tentar criar conta a receber para a Ordem de Produção ID: ' . $order->id);
+        $order->load('quote.paymentTerm');
+        
+        if (AccountReceivable::where('production_order_id', $order->id)->exists()) { return; }
+        if (!$order->quote || !$order->quote->paymentTerm) {
+            Log::error('Condição de Pagamento não encontrada para o Orçamento ID: ' . $order->quote_id);
             return;
         }
         
-        AccountReceivable::create([
+        $paymentTerm = $order->quote->paymentTerm;
+        
+        $accountReceivable = AccountReceivable::create([
             'quote_id' => $order->quote_id,
             'customer_id' => $order->customer_id,
             'production_order_id' => $order->id,
             'total_amount' => $order->quote->total_amount,
-            'due_date' => Carbon::now()->addDays(30),
+            'due_date' => Carbon::now()->addDays($paymentTerm->days_for_first_installment),
             'status' => 'pending',
         ]);
+
+        $installmentAmount = round($order->quote->total_amount / $paymentTerm->number_of_installments, 2);
+        
+        $dueDate = Carbon::now()->addDays($paymentTerm->days_for_first_installment);
+
+        for ($i = 1; $i <= $paymentTerm->number_of_installments; $i++) {
+            $accountReceivable->installments()->create([
+                'installment_number' => $i,
+                'amount' => $installmentAmount,
+                'due_date' => $dueDate,
+            ]);
+            $dueDate->addDays($paymentTerm->days_between_installments);
+        }
     }
 }

@@ -8,13 +8,24 @@ use Illuminate\Http\Request;
 
 class AccountReceivableController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $this->authorize('viewAny', AccountReceivable::class);
 
-        $receivables = AccountReceivable::with(['customer', 'quote'])
-            ->latest()
-            ->paginate(30);
+        $query = AccountReceivable::query();
+
+        if ($request->has('search') && $request->input('search') != '') {
+            $searchTerm = $request->input('search');
+            $query->whereHas('customer', function($q) use ($searchTerm) {
+                $q->where('name', 'like', "%{$searchTerm}%");
+            })->orWhereHas('quote', function($q) use ($searchTerm) {
+                $q->where('id', 'like', "%{$searchTerm}%");
+            });
+        }
+
+        $query->with(['customer', 'quote', 'installments']);
+
+        $receivables = $query->latest()->paginate(30);
 
         return $receivables;
     }

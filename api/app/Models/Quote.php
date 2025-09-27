@@ -21,6 +21,7 @@ class Quote extends Model
         'salesperson_name',
         'delivery_datetime',
         'payment_method_id',
+        'payment_term_id',
         'delivery_method_id',
         'negotiation_source_id',
         'subtotal',
@@ -55,6 +56,11 @@ class Quote extends Model
     public function paymentMethod(): BelongsTo
     {
         return $this->belongsTo(PaymentMethod::class);
+    }
+
+    public function paymentTerm(): BelongsTo
+    {
+        return $this->belongsTo(PaymentTerm::class);
     }
 
     public function deliveryMethod(): BelongsTo

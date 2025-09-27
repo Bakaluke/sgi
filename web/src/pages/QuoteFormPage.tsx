@@ -7,7 +7,7 @@ import { notifications } from '@mantine/notifications';
 import { useParams } from 'react-router-dom';
 import { IconTrash, IconPrinter, IconPencil, IconUpload, IconFile, IconX } from '@tabler/icons-react';
 import api from '../api/axios';
-import type { SelectOption, Status, Customer, Product, Quote, QuoteItem } from '../types';
+import type { SelectOption, Status, Customer, Product, Quote, QuoteItem, PaymentTerm, PaymentMethod, DeliveryMethod, NegotiationSource } from '../types';
 
 const formatPhone = (phone: string = '') => {
   const cleaned = phone.replace(/\D/g, '').substring(0, 11);
@@ -45,6 +45,7 @@ function QuoteFormPage() {
   const [selectedProduct, setSelectedProduct] = useState<string | null>(null);
   const [quantity, setQuantity] = useState<number | string>(1);
   const [paymentMethods, setPaymentMethods] = useState<SelectOption[]>([]);
+  const [paymentTerms, setPaymentTerms] = useState<SelectOption[]>([]);
   const [deliveryMethods, setDeliveryMethods] = useState<SelectOption[]>([]);
   const [quoteStatuses, setQuoteStatuses] = useState<SelectOption[]>([]);
   const [negotiationSources, setNegotiationSources] = useState<SelectOption[]>([]);
@@ -78,10 +79,11 @@ function QuoteFormPage() {
     api.get('/products', { params: { per_page: 1000 } }).then(res => {
       setProducts(res.data.data);
     });
-    api.get('/payment-methods').then(res => setPaymentMethods(res.data.map((pm: {id: number, name: string}) => ({ value: String(pm.id), label: pm.name }))));
-    api.get('/delivery-methods').then(res => setDeliveryMethods(res.data.map((dm: {id: number, name: string}) => ({ value: String(dm.id), label: dm.name }))));
+    api.get('/payment-methods').then(res => setPaymentMethods(res.data.map((pm: PaymentMethod) => ({ value: String(pm.id), label: pm.name }))));
+    api.get('/delivery-methods').then(res => setDeliveryMethods(res.data.map((dm: DeliveryMethod) => ({ value: String(dm.id), label: dm.name }))));
     api.get('/quote-statuses').then(res => setQuoteStatuses(res.data.map((qs: Status) => ({ value: String(qs.id), label: qs.name }))));
-    api.get('/negotiation-sources').then(res => setNegotiationSources(res.data.map((ns: {id: number, name: string}) => ({ value: String(ns.id), label: ns.name }))));
+    api.get('/negotiation-sources').then(res => setNegotiationSources(res.data.map((ns: NegotiationSource) => ({ value: String(ns.id), label: ns.name }))));
+    api.get('/payment-terms').then(res => setPaymentTerms(res.data.map((pt: PaymentTerm) => ({ value: String(pt.id), label: pt.name, }))));
   }, []);
   
   useEffect(() => {
@@ -145,6 +147,7 @@ function QuoteFormPage() {
     setIsSavingHeader(true);
     api.put(`/quotes/${quoteId}`, {
       payment_method_id: quote.payment_method_id,
+      payment_term_id: quote.payment_term_id,
       delivery_method_id: quote.delivery_method_id,
       status_id: quote.status_id,
       negotiation_source_id: quote.negotiation_source_id,
@@ -300,12 +303,13 @@ function QuoteFormPage() {
 
         <Fieldset legend="Dados Gerais do Orçamento" mt="md">
           <Grid>
-            <Grid.Col span={{ base: 12, md: 6 }}><Select label="Status" value={String(quote.status_id || '')} onChange={(value) => updateQuoteField('status_id', value ? Number(value) : null)} data={quoteStatuses} disabled={isLocked} required /></Grid.Col>
-            <Grid.Col span={{ base: 12, md: 6 }}><Select label="Forma de Pagamento" value={String(quote.payment_method_id || '')} onChange={(value) => updateQuoteField('payment_method_id', value ? Number(value) : null)} data={paymentMethods} disabled={isLocked} required /></Grid.Col>
-            <Grid.Col span={{ base: 12, md: 6 }}><NumberInput label="Desconto Geral (%)" value={quote.discount_percentage || 0} onChange={(value) => updateQuoteField('discount_percentage', Number(value) || 0)} min={0} max={99} allowDecimal={false} rightSection="%" disabled={isLocked} /></Grid.Col>
-            <Grid.Col span={{ base: 12, md: 6 }}><Select label="Opção de Entrega" value={String(quote.delivery_method_id || '')} onChange={(value) => updateQuoteField('delivery_method_id', value ? Number(value) : null)} data={deliveryMethods} disabled={isLocked} required /></Grid.Col>
+            <Grid.Col span={{ base: 12, md: 4 }}><Select label="Status" value={String(quote.status_id || '')} onChange={(value) => updateQuoteField('status_id', value ? Number(value) : null)} data={quoteStatuses} disabled={isLocked} required /></Grid.Col>
+            <Grid.Col span={{ base: 12, md: 4 }}><Select label="Forma de Pagamento" placeholder="Selecione..." value={String(quote.payment_method_id || '')} onChange={(value) => updateQuoteField('payment_method_id', value ? Number(value) : null)} data={paymentMethods} disabled={isLocked} required /></Grid.Col>
+            <Grid.Col span={{ base: 12, md: 4 }}><Select label="Condição de Pagamento" placeholder="Selecione..." data={paymentTerms} value={String(quote.payment_term_id || '')} onChange={(value) => updateQuoteField('payment_term_id', value ? Number(value) : null)} disabled={isLocked} clearable required /></Grid.Col>
+            <Grid.Col span={{ base: 12, md: 6 }}><Select label="Opção de Entrega" placeholder="Selecione..." value={String(quote.delivery_method_id || '')} onChange={(value) => updateQuoteField('delivery_method_id', value ? Number(value) : null)} data={deliveryMethods} disabled={isLocked} required /></Grid.Col>
             <Grid.Col span={{ base: 12, md: 6 }}><DateTimePicker label="Data/Hora da Entrega" placeholder="Selecione data e hora" value={quote.delivery_datetime ? new Date(quote.delivery_datetime) : null} onChange={(date) => updateQuoteField('delivery_datetime', date?.toString() || null)} disabled={isLocked} clearable required minDate={new Date()} /></Grid.Col>
             <Grid.Col span={{ base: 12, md: 6 }}><Select label="Origem da Negociação" placeholder="Selecione..." value={String(quote.negotiation_source_id || '')} onChange={(value) => updateQuoteField('negotiation_source_id', value ? Number(value) : null)} data={negotiationSources} disabled={isLocked} required clearable /></Grid.Col>
+            <Grid.Col span={{ base: 12, md: 6 }}><NumberInput label="Desconto Geral (%)" value={quote.discount_percentage || 0} onChange={(value) => updateQuoteField('discount_percentage', Number(value) || 0)} min={0} max={99} allowDecimal={false} rightSection="%" disabled={isLocked} /></Grid.Col>
             <Grid.Col span={12}><Textarea label="Observações" placeholder="Adicione observações sobre o pedido..." value={quote.notes || ''} onChange={(event) => updateQuoteField('notes', event.currentTarget.value)} disabled={isLocked} autosize minRows={2} /></Grid.Col>
           </Grid>
         </Fieldset>

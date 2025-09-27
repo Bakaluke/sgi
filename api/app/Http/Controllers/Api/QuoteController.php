@@ -53,6 +53,7 @@ class QuoteController extends Controller
         $validated = $request->validate([
             'customer_id' => 'required|exists:customers,id',
             'payment_method_id' => 'nullable|exists:payment_methods,id',
+            'payment_term_id' => 'nullable|exists:payment_terms,id',
             'delivery_method_id' => 'nullable|exists:delivery_methods,id',
             'negotiation_source_id' => 'nullable|exists:negotiation_sources,id',
             'delivery_datetime' => 'nullable|date',
@@ -92,6 +93,7 @@ class QuoteController extends Controller
             'delivery_datetime' => $validated['delivery_datetime'] ?? null,
             'delivery_method_id' => $validated['delivery_method_id'],
             'payment_method_id' => $validated['payment_method_id'],
+            'payment_term_id' => $validated['payment_term_id'] ?? null,
             'negotiation_source_id' => $validated['negotiation_source_id'] ?? null,
         ]);
         
@@ -113,6 +115,7 @@ class QuoteController extends Controller
 
         $validated = $request->validate([
             'payment_method_id' => 'required|exists:payment_methods,id',
+            'payment_term_id' => 'required|exists:payment_terms,id',
             'delivery_method_id' => 'required|exists:delivery_methods,id',
             'status_id' => 'required|exists:quote_statuses,id',
             'negotiation_source_id' => 'required|exists:negotiation_sources,id',
