@@ -22,6 +22,11 @@ class ProductionOrder extends Model
         'notes',
     ];
 
+    public function getTranslatedStatus(): string
+    {
+        return $this->status?->name ?? 'N/A';
+    }
+
     public function status(): BelongsTo
     {
         return $this->belongsTo(ProductionStatus::class);

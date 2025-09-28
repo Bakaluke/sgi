@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\AccountReceivable;
+use App\Models\ReceivableInstallment;
 use Illuminate\Http\Request;
 
 class AccountReceivableController extends Controller
@@ -59,34 +60,34 @@ class AccountReceivableController extends Controller
     {
         $this->authorize('viewAny', AccountReceivable::class);
 
-        $fileName = 'contas_a_receber.csv';
-        $receivables = AccountReceivable::with(['customer', 'quote'])->get();
+        $fileName = 'contas_a_receber_detalhado.csv';
+
+        $installments = ReceivableInstallment::with(['accountReceivable.customer', 'accountReceivable.quote'])->get();
 
         $headers = [
-            "Content-type"        => "text/csv",
+            "Content-type"        => "text/csv; charset=UTF-8",
             "Content-Disposition" => "attachment; filename=$fileName",
             "Pragma"              => "no-cache",
             "Cache-Control"       => "must-revalidate, post-check=0, pre-check=0",
             "Expires"             => "0"
         ];
 
-        $callback = function() use($receivables) {
+        $callback = function() use($installments) {
             $file = fopen('php://output', 'w');
             fputs($file, $bom =( chr(0xEF) . chr(0xBB) . chr(0xBF) ));
 
-            $columns = ['ID', 'Cliente', 'Orçamento Nº', 'Valor Total', 'Valor Pago', 'Vencimento', 'Data Pagamento', 'Status'];
+            $columns = ['ID Venda', 'Cliente', 'Parcela', 'Vencimento', 'Valor da Parcela', 'Status', 'Data Pagamento'];
             fputcsv($file, $columns, ';');
 
-            foreach ($receivables as $item) {
+            foreach ($installments as $item) {
                 $row = [
-                    $item->id,
-                    $item->customer->name,
-                    $item->quote->id,
-                    number_format($item->total_amount, 2, ',', '.'),
-                    number_format($item->paid_amount, 2, ',', '.'),
+                    $item->accountReceivable->quote_id,
+                    $item->accountReceivable->customer->name,
+                    "'" . $item->installment_number . '/' . $item->accountReceivable->installments->count(),
                     (new \DateTime($item->due_date))->format('d/m/Y'),
+                    number_format($item->amount, 2, ',', '.'),
+                    $item->getTranslatedStatus(),
                     $item->paid_at ? (new \DateTime($item->paid_at))->format('d/m/Y') : 'N/A',
-                    $item->status,
                 ];
                 fputcsv($file, $row, ';');
             }

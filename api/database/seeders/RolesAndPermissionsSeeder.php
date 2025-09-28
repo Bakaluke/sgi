@@ -20,7 +20,7 @@ class RolesAndPermissionsSeeder extends Seeder
             'quotes.view', 'quotes.view_all', 'quotes.create', 'quotes.edit', 'quotes.delete', 'quotes.approve',
             'production_orders.view', 'production_orders.view_all', 'production_orders.update_status', 'production_orders.delete',
             'stock.manage', 'categories.manage',
-            'finance.view_receivables', 'finance.register_payment', 'finance.view_payables', 'finance.manage_payables',
+            'finance.manage_payables', 'finance.register_payment', 'finance.register_installment_payment', 'finance.view_receivables', 'finance.view_payables',
             'reports.view',
         ];
 

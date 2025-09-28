@@ -201,7 +201,7 @@ class QuoteController extends Controller
                     $quote->id,
                     $quote->customer->name,
                     $quote->user->name,
-                    $quote->status?->name ?? 'N/A',
+                    $quote->getTranslatedStatus(),
                     (new \DateTime($quote->created_at))->format('d/m/Y'),
                     number_format($quote->total_amount, 2, ',', '.'),
                 ];

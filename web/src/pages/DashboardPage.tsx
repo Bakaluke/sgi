@@ -118,7 +118,7 @@ function DashboardPage() {
 
     {can('quotes.view') && (
       <SimpleGrid cols={{ base: 1, sm: 3 }} mb="xl">
-        <StatCard title="Valor Aprovado no Período" value={kpis.approvedValue} formatAsCurrency />
+        <StatCard title="Faturamento (Orç. Aprovados)" value={kpis.approvedValue} formatAsCurrency />
         <StatCard title="Previsão de Faturamento" value={kpis.forecastValue} formatAsCurrency />
         <StatCard title="Ticket Médio" value={kpis.averageTicket} formatAsCurrency />
       </SimpleGrid>

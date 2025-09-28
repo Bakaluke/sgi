@@ -7,6 +7,7 @@ import { notifications } from '@mantine/notifications';
 import { IconSearch, IconDotsVertical, IconCash, IconPlus, IconPencil, IconTrash, IconFileExport } from '@tabler/icons-react';
 import api from '../api/axios';
 import type { AccountPayable } from '../types';
+import { format } from 'date-fns';
 
 const formatCurrency = (value: number) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
 
@@ -141,6 +142,7 @@ function AccountsPayablePage() {
                 <Table.Td>{formatCurrency(item.paid_amount)}</Table.Td>
                 <Table.Td>{new Date(item.due_date).toLocaleDateString('pt-BR', { timeZone: 'UTC' })}</Table.Td>
                 <Table.Td><Badge color={statusInfo.color}>{statusInfo.label}</Badge></Table.Td>
+                <Table.Td>{item.paid_at ? format(new Date(item.paid_at), 'dd/MM/yyyy') : 'N/A'}</Table.Td>
                 <Table.Td>
                     <Menu shadow="md" width={200}>
                         <Menu.Target><ActionIcon variant="subtle"><IconDotsVertical size={16} /></ActionIcon></Menu.Target>
@@ -200,10 +202,15 @@ function AccountsPayablePage() {
                         <Table.Th>Valor Pago</Table.Th>
                         <Table.Th>Vencimento</Table.Th>
                         <Table.Th>Status</Table.Th>
+                        <Table.Th>Pago em</Table.Th>
                         <Table.Th>Ações</Table.Th>
                     </Table.Tr>
                 </Table.Thead>
-                <Table.Tbody>{payables.length > 0 ? rows : <Table.Tr><Table.Td colSpan={7} align="center">Nenhuma conta a pagar encontrada.</Table.Td></Table.Tr>}</Table.Tbody>
+                <Table.Tbody>{payables.length > 0 ? rows : 
+                    <Table.Tr>
+                        <Table.Td colSpan={7} align="center">Nenhuma conta a pagar encontrada.</Table.Td>
+                    </Table.Tr>}
+                </Table.Tbody>
             </Table>
             
             <Group justify="center" mt="xl">

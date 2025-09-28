@@ -115,7 +115,7 @@ class AccountPayableController extends Controller
                     number_format($item->paid_amount, 2, ',', '.'),
                     $item->due_date->format('d/m/Y'),
                     $item->paid_at ? $item->paid_at->format('d/m/Y') : 'N/A',
-                    $item->status,
+                    $item->getTranslatedStatus(),
                 ];
                 fputcsv($file, $row, ';');
             }

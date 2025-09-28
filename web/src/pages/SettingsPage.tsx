@@ -63,10 +63,11 @@ const permissionTranslations: { [key: string]: string } = {
     'production_orders.delete': 'Excluir Ordens de Produção',
     'stock.manage': 'Gerenciar Estoque',
     'categories.manage': 'Gerenciar Categorias',
-    'finance.view_receivables': 'Ver Contas a Receber',
-    'finance.register_payment': 'Dar Baixa em Pagamentos',
-    'finance.view_payables': 'Ver Contas a Pagar',
     'finance.manage_payables': 'Gerenciar Contas',
+    'finance.register_payment': 'Dar Baixa em Pagamentos',
+    'finance.register_installment_payment': 'Dar Baixa em Parcelas',
+    'finance.view_receivables': 'Ver Contas a Receber',
+    'finance.view_payables': 'Ver Contas a Pagar',
     'reports.view': 'Ver Relatórios',
 };
 

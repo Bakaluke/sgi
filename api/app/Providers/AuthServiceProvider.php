@@ -18,6 +18,7 @@ use App\Models\ProductionStatus;
 use App\Models\NegotiationSource;
 use App\Models\AccountReceivable;
 use App\Models\AccountPayable;
+use App\Models\ReceivableInstallment;
 use App\Policies\ProductPolicy;
 use App\Policies\CustomerPolicy;
 use App\Policies\QuotePolicy;
@@ -34,6 +35,7 @@ use App\Policies\ProductionStatusPolicy;
 use App\Policies\NegotiationSourcePolicy;
 use App\Policies\AccountReceivablePolicy;
 use App\Policies\AccountPayablePolicy;
+use App\Policies\ReceivableInstallmentPolicy;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 
 class AuthServiceProvider extends ServiceProvider
@@ -55,6 +57,7 @@ class AuthServiceProvider extends ServiceProvider
         NegotiationSource::class => NegotiationSourcePolicy::class,
         AccountReceivable::class => AccountReceivablePolicy::class,
         AccountPayable::class => AccountPayablePolicy::class,
+        ReceivableInstallment::class => ReceivableInstallmentPolicy::class,
     ];
 
     public function boot(): void

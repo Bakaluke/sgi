@@ -269,9 +269,11 @@ export interface SettingsContextType {
 
 export interface ReceivableInstallment {
   id: number;
+  account_receivable_id: number;
   installment_number: number;
   amount: number;
   due_date: string;
+  paid_at: string | null;
   status: string;
 }
 
@@ -326,6 +328,6 @@ export interface ItemSalesReport {
 
 export interface CashFlowData {
   month: string;
-  a_receber: number;
-  a_pagar: number;
+  'A Receber': number;
+  'A Pagar': number;
 }

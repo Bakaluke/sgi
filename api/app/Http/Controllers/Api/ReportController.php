@@ -7,6 +7,7 @@ use App\Models\Quote;
 use App\Models\QuoteItem;
 use App\Models\AccountReceivable;
 use App\Models\AccountPayable;
+use App\Models\ReceivableInstallment;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -234,11 +235,51 @@ class ReportController extends Controller
         $months = collect($receivables->keys()->merge($payables->keys())->unique())->sort();
 
         $data = $months->map(function ($month) use ($receivables, $payables) {
-            $formattedMonth = Carbon::createFromFormat('Y-m', $month)->translatedFormat('M/Y');
+            $formattedMonth = Carbon::createFromFormat('Y-m', $month)->translatedFormat('m/Y');
             return [
                 'month' => $formattedMonth,
-                'A Receber' => (float) ($receivables->get($month)->total ?? 0),
-                'A Pagar' => (float) ($payables->get($month)->total ?? 0),
+                'A Receber' => $receivables->get($month)->total ?? 0,
+                'A Pagar' => $payables->get($month)->total ?? 0,
+            ];
+        })->values();
+
+        return response()->json($data);
+    }
+    
+    public function realizedCashFlow(Request $request)
+    {
+        $this->authorize('reports.view');
+
+        $receivables = ReceivableInstallment::query()
+            ->where('status', 'paid')
+            ->select(
+                DB::raw("DATE_FORMAT(paid_at, '%Y-%m') as month"),
+                DB::raw("SUM(amount) as total")
+            )
+            ->groupBy('month')
+            ->orderBy('month', 'asc')
+            ->get()
+            ->keyBy('month');
+
+        $payables = AccountPayable::query()
+            ->where('status', 'paid')
+            ->select(
+                DB::raw("DATE_FORMAT(paid_at, '%Y-%m') as month"),
+                DB::raw("SUM(paid_amount) as total")
+            )
+            ->groupBy('month')
+            ->orderBy('month', 'asc')
+            ->get()
+            ->keyBy('month');
+
+        $months = collect($receivables->keys()->merge($payables->keys())->unique())->sort();
+
+        $data = $months->map(function ($month) use ($receivables, $payables) {
+            $formattedMonth = Carbon::createFromFormat('Y-m', $month)->translatedFormat('m/Y');
+            return [
+                'month' => $formattedMonth,
+                'A Receber' => $receivables->get($month)->total ?? 0,
+                'A Pagar' => $payables->get($month)->total ?? 0,
             ];
         })->values();
 

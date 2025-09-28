@@ -145,7 +145,7 @@ class ProductionOrderController extends Controller
                     $order->quote_id,
                     $order->customer->name,
                     $order->user->name,
-                    $order->status?->name ?? 'N/A',
+                    $order->getTranslatedStatus(),
                     (new \DateTime($order->created_at))->format('d/m/Y'),
                 ];
                 fputcsv($file, $row, ';');

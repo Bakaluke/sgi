@@ -32,7 +32,7 @@ function ReportsPage() {
     return (
         <Container>
             <Group justify="space-between" mb="xl">
-                <Title order={1}>Relatórios</Title>
+                <Title order={1}>Relatórios Gerenciais</Title>
                 <SegmentedControl value={period} onChange={(value) => { setPeriod(value); if (value !== 'custom') { const today = new Date(); if (value === 'this_month') setDateRange([startOfMonth(today), endOfMonth(today)]); }}} data={[ { label: 'Hoje', value: 'today' }, { label: 'Últimos 7 dias', value: 'last_7_days' },{ label: 'Este Mês', value: 'this_month' }, { label: 'Mês Passado', value: 'last_month' }, { label: 'Customizado', value: 'custom' }, ]} />
             </Group>
             

@@ -38,6 +38,11 @@ class Quote extends Model
         );
     }
 
+    public function getTranslatedStatus(): string
+    {
+        return $this->status?->name ?? 'N/A';
+    }
+
     public function customer(): BelongsTo
     {
         return $this->belongsTo(Customer::class);

@@ -24,6 +24,7 @@ use App\Http\Controllers\Api\NegotiationSourceController;
 use App\Http\Controllers\Api\AccountReceivableController;
 use App\Http\Controllers\Api\AccountPayableController;
 use App\Http\Controllers\Api\ReportController;
+use App\Http\Controllers\Api\ReceivableInstallmentController;
 
 Route::post('/login', [LoginController::class, 'login']);
 
@@ -103,4 +104,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/reports/sales-by-customer', [ReportController::class, 'salesByCustomer']);
     Route::get('/reports/items-sold-by-day', [ReportController::class, 'itemsSoldByDay']);
     Route::get('/reports/cash-flow', [ReportController::class, 'cashFlow']);
+    Route::get('/reports/realized-cash-flow', [ReportController::class, 'realizedCashFlow']);
+
+    Route::post('/receivable-installments/{installment}/register-payment', [ReceivableInstallmentController::class, 'registerPayment']);
 });

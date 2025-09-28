@@ -12,7 +12,7 @@ class QuoteStatusController extends Controller
     public function index()
     {
         $this->authorize('viewAny', QuoteStatus::class);
-        return QuoteStatus::orderBy('name', 'asc')->get();
+        return QuoteStatus::orderBy('id', 'asc')->get();
     }
 
     public function store(Request $request)

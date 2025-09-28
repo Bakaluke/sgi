@@ -12,7 +12,7 @@ class ProductionStatusController extends Controller
     public function index()
     {
         $this->authorize('viewAny', ProductionStatus::class);
-        return ProductionStatus::orderBy('name', 'asc')->get();
+        return ProductionStatus::orderBy('id', 'asc')->get();
     }
 
     public function store(Request $request)
