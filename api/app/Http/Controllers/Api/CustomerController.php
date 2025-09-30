@@ -39,7 +39,7 @@ class CustomerController extends Controller
 
         $validatedData = $request->validate([
             'type' => ['required', Rule::in(['fisica', 'juridica'])],
-            'document' => 'required|string|unique:customers,document',
+            'document' => 'nullable|string|unique:customers,document',
             'name' => 'required|string|max:255',
             'legal_name' => 'required_if:type,juridica|nullable|string|max:255',
             'email' => 'required|email|unique:customers,email',
@@ -78,7 +78,7 @@ class CustomerController extends Controller
 
         $validatedData = $request->validate([
             'type' => ['required', Rule::in(['fisica', 'juridica'])],
-            'document' => ['required', 'string', Rule::unique('customers')->ignore($customer->id)],
+            'document' => ['nullable', 'string', Rule::unique('customers')->ignore($customer->id)],
             'name' => 'required|string|max:255',
             'legal_name' => 'required_if:type,juridica|nullable|string|max:255',
             'email' => ['required', 'email', Rule::unique('customers')->ignore($customer->id)],
@@ -105,6 +105,19 @@ class CustomerController extends Controller
         });
 
         return response()->json($customer->load('addresses'));
+    }
+
+    public function updateDocument(Request $request, Customer $customer)
+    {
+        $this->authorize('update', $customer);
+
+        $validated = $request->validate([
+            'document' => ['required', 'string', 'max:14', Rule::unique('customers')->ignore($customer->id)],
+        ]);
+
+        $customer->update($validated);
+        
+        return response()->json($customer);
     }
 
     public function destroy(Customer $customer)

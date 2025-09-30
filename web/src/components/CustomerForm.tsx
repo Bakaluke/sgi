@@ -113,7 +113,7 @@ export function CustomerForm({ customer, onSuccess, onCancel }: CustomerFormProp
                     <Select label="Tipo de Cliente" value={formData.type} onChange={(value) => setFormData(p => ({ ...p, type: value as 'fisica' | 'juridica', document: '' }))} data={[{ value: 'fisica', label: 'Pessoa Física' }, { value: 'juridica', label: 'Pessoa Jurídica' }]} required />
                 </Grid.Col>
                 <Grid.Col span={{ base: 12, md: 6 }}>
-                    <TextInput label={formData.type === 'fisica' ? 'CPF' : 'CNPJ'} value={formatDocument(formData.document, formData.type)} onChange={(e) => setFormData(p => ({ ...p, document: e.target.value.replace(/\D/g, '') }))} required onBlur={handleDocumentBlur} rightSection={isCnpjLoading ? <Loader size="xs" /> : null} />
+                    <TextInput label={formData.type === 'fisica' ? 'CPF' : 'CNPJ'} value={formatDocument(formData.document, formData.type)} onChange={(e) => setFormData(p => ({ ...p, document: e.target.value.replace(/\D/g, '') }))} onBlur={handleDocumentBlur} rightSection={isCnpjLoading ? <Loader size="xs" /> : null} />
                 </Grid.Col>
                 <Grid.Col span={12}>
                     <TextInput label={formData.type === 'fisica' ? 'Nome Completo' : 'Nome Fantasia'} value={formData.name} onChange={(e) => setFormData(p => ({ ...p, name: e.target.value }))} required />

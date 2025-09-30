@@ -28,7 +28,7 @@ class QuoteController extends Controller
             return response()->json(['data' => []]);
         }
 
-        $query->with(['customer', 'user', 'items.product', 'status', 'paymentMethod', 'deliveryMethod', 'negotiationSource']);
+        $query->with(['customer', 'user', 'items.product', 'status', 'paymentMethod', 'deliveryMethod', 'negotiationSource', 'paymentTerm']);
 
         if ($request->has('search') && $request->input('search') != '') {
             $searchTerm = $request->input('search');
@@ -97,14 +97,14 @@ class QuoteController extends Controller
             'negotiation_source_id' => $validated['negotiation_source_id'] ?? null,
         ]);
         
-        return $quote->load(['customer.addresses', 'user', 'items.product', 'status', 'paymentMethod', 'deliveryMethod', 'negotiationSource']);
+        return $quote->load(['customer.addresses', 'user', 'items.product', 'status', 'paymentMethod', 'deliveryMethod', 'negotiationSource', 'paymentTerm']);
     }
 
     public function show(Quote $quote)
     {
         $this->authorize('view', $quote);
 
-        return $quote->load(['customer.addresses', 'user', 'items.product', 'status', 'paymentMethod', 'deliveryMethod', 'negotiationSource']);
+        return $quote->load(['customer.addresses', 'user', 'items.product', 'status', 'paymentMethod', 'deliveryMethod', 'negotiationSource', 'paymentTerm']);
     }
 
     public function update(Request $request, Quote $quote)
@@ -123,10 +123,23 @@ class QuoteController extends Controller
             'discount_percentage' => 'nullable|numeric|min:0|max:100',
             'notes' => 'nullable|string',
         ]);
+
+        $newStatus = QuoteStatus::find($validated['status_id']);
+        
+        $customer = $quote->customer;
+
+        if ($newStatus && $newStatus->name === 'Aprovado' && $customer->type === 'fisica' && empty($customer->document)) {
+            return response()->json([
+                'message' => 'CPF do cliente é obrigatório para aprovar o orçamento.',
+                'action_required' => 'COLLECT_DOCUMENT',
+                'customer_id' => $customer->id,
+            ], 422);
+        }
         
         $quote->update($validated);
         
         $quote->refresh();
+
         $newStatusName = $quote->status?->name;
 
         if ($oldStatusName !== 'Aprovado' && $newStatusName === 'Aprovado') {
@@ -141,7 +154,7 @@ class QuoteController extends Controller
         $quote->total_amount = $totalAmount;
         $quote->save();
 
-        return $quote->load(['customer.addresses', 'user', 'items.product', 'status', 'paymentMethod', 'deliveryMethod', 'negotiationSource']);
+        return $quote->load(['customer.addresses', 'user', 'items.product', 'status', 'paymentMethod', 'deliveryMethod', 'negotiationSource', 'paymentTerm']);
     }
 
     public function destroy(Quote $quote)
@@ -155,7 +168,7 @@ class QuoteController extends Controller
 
     public function generatePdf(Quote $quote)
     {
-        $quote->load(['customer.addresses', 'user', 'items.product', 'status', 'paymentMethod', 'deliveryMethod', 'negotiationSource']);
+        $quote->load(['customer.addresses', 'user', 'items.product', 'status', 'paymentMethod', 'deliveryMethod', 'negotiationSource', 'paymentTerm']);
 
         $settings = Setting::first();
 

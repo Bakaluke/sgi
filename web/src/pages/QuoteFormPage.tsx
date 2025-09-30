@@ -36,6 +36,14 @@ const calculateProfitMargin = (cost: number, sale: number): number => {
   return parseFloat((((sale - cost) / sale) * 100).toFixed(2));
 };
 
+const formatDocument = (doc: string = '', type: 'fisica' | 'juridica' = 'fisica') => {
+  const cleaned = doc.replace(/\D/g, '');
+  if (type === 'fisica') {
+    return cleaned.substring(0, 11).replace(/(\d{3})(\d)/, '$1.$2').replace(/(\d{3})(\d)/, '$1.$2').replace(/(\d{3})(\d{1,2})/, '$1-$2');
+  }
+  return cleaned.substring(0, 14).replace(/(\d{2})(\d)/, '$1.$2').replace(/(\d{3})(\d)/, '$1.$2').replace(/(\d{3})(\d)/, '$1/$2').replace(/(\d{4})(\d)/, '$1-$2');
+};
+
 function QuoteFormPage() {
   const { quoteId } = useParams();
   const [quote, setQuote] = useState<Quote | null>(null);
@@ -51,6 +59,8 @@ function QuoteFormPage() {
   const [negotiationSources, setNegotiationSources] = useState<SelectOption[]>([]);
   const [itemModalOpened, { open: openItemModal, close: closeItemModalHook }] = useDisclosure(false);
   const [editingItem, setEditingItem] = useState<QuoteItem | null>(null);
+  const [docModalOpened, { open: openDocModal, close: closeDocModal }] = useDisclosure(false);
+  const [customerToUpdate, setCustomerToUpdate] = useState<{ id: number; document: string; type: 'fisica' | 'juridica' } | null>(null);
   const isLocked = initialStatus === 'Aprovado' || initialStatus === 'Cancelado';
   
   const _dummyCustomer: Customer | null = null;
@@ -157,32 +167,25 @@ function QuoteFormPage() {
       notes: quote.notes,
     })
     .then(res => {
-      const enrichedQuote = res.data;
-      setQuote(enrichedQuote);
-      setInitialStatus(enrichedQuote.status?.name || null);
+      setQuote(res.data);
+      setInitialStatus(res.data.status?.name || null);
       notifications.show({ title: 'Sucesso!', message: 'Alterações salvas.', color: 'green' });
     })
     .catch((error) => {
-      if (error.response && error.response.status === 422) {
-        const validationErrors = error.response.data.errors;
-        const errorMessages = Object.values(validationErrors).flat().join('\n');
-        notifications.show({
-          title: 'Por favor, corrija os seguintes erros:',
-          message: errorMessages,
-          color: 'red',
-        });
+      if (error.response?.data?.action_required === 'COLLECT_DOCUMENT') {
+        notifications.show({ title: 'Ação Necessária', message: error.response.data.message, color: 'yellow' });
+        setCustomerToUpdate({ id: error.response.data.customer_id, document: '', type: quote.customer.type });
+        openDocModal();
       } else {
         console.error("Erro ao salvar alterações:", error);
-        notifications.show({ 
-          title: 'Erro!', 
-          message: 'Não foi possível salvar as alterações.', 
+        notifications.show({
+          title: 'Erro!',
+          message: 'Não foi possível salvar as alterações.',
           color: 'red' 
         });
       }
     })
-    .finally(() => {
-      setIsSavingHeader(false);
-    });
+    .finally(() => setIsSavingHeader(false));
   };
   
   const handleItemUpdate = (values: typeof itemForm.values) => {
@@ -227,6 +230,17 @@ function QuoteFormPage() {
       .catch(() => notifications.show({ title: 'Erro!', message: 'Não foi possível remover o anexo.', color: 'red'}));
     }
   };
+
+  const handleDocumentSubmit = () => {
+    if (!customerToUpdate) return;
+    api.patch(`/customers/${customerToUpdate.id}/document`, { document: customerToUpdate.document })
+    .then(() => {
+      notifications.show({ title: 'Sucesso!', message: 'Documento do cliente atualizado.', color: 'green' });
+      closeDocModal();
+      handleUpdateHeader();
+    })
+    .catch(() => notifications.show({ title: 'Erro!', message: 'Documento inválido ou já cadastrado.', color: 'red' }));
+  };
   
   const itemRows = quote?.items?.map((item) => (
   <Table.Tr key={item.id}>
@@ -259,6 +273,14 @@ function QuoteFormPage() {
 
   return (
     <Container size="xl">
+      <Modal opened={docModalOpened} onClose={closeDocModal} title="Documento Obrigatório para Aprovação">
+        <Text size="sm" mb="md">Para aprovar este orçamento, é necessário informar o documento do cliente.</Text>
+        <TextInput label={customerToUpdate?.type === 'fisica' ? 'CPF' : 'CNPJ'} placeholder="000.000.000-00" value={customerToUpdate ? formatDocument(customerToUpdate.document, customerToUpdate.type) : ''} onChange={(e) => setCustomerToUpdate(c => c ? { ...c, document: e.target.value.replace(/\D/g, '') } : null)} required />
+        <Group justify="flex-end" mt="lg">
+          <Button variant="default" onClick={closeDocModal}>Cancelar</Button>
+          <Button onClick={handleDocumentSubmit}>Salvar e Aprovar</Button>
+        </Group>
+      </Modal>
       <Modal opened={itemModalOpened} onClose={handleCloseItemModal} title={`Editar Item: ${editingItem?.product.name}`}>
         <form onSubmit={itemForm.onSubmit(handleItemUpdate)}>
           <Grid>

@@ -84,13 +84,11 @@ class ReportController extends Controller
         $endDate = Carbon::parse($validated['endDate'])->endOfDay();
 
         $salesData = Quote::query()
-            ->join('customers', 'quotes.customer_id', '=', 'customers.id')
-            ->join('quote_statuses', 'quotes.status_id', '=', 'quote_statuses.id')
-            ->where('quote_statuses.name', 'Aprovado')
-            ->whereBetween('quotes.updated_at', [$startDate, $endDate])
-            ->groupBy('customers.id', 'customers.name')
-            ->orderBy('total_sold', 'desc')
-            ->select( 'customers.name', DB::raw('SUM(quotes.total_amount) as total_sold'), DB::raw('COUNT(quotes.id) as quote_count') )
+            ->with('customer')
+            ->whereHas('status', fn($query) => $query->where('name', 'Aprovado'))
+            ->whereBetween('updated_at', [$startDate, $endDate])
+            ->orderBy('customer_id')
+            ->orderBy('updated_at')
             ->get();
 
         $fileName = 'vendas_por_cliente.csv';
@@ -106,13 +104,14 @@ class ReportController extends Controller
         $callback = function() use($salesData) {
             $file = fopen('php://output', 'w');
             fputs($file, $bom =( chr(0xEF) . chr(0xBB) . chr(0xBF) ));
-            $columns = ['Cliente', 'Nº de Compras', 'Valor Total Comprado'];
+            $columns = ['Cliente', 'Data da Venda', 'Valor da Venda'];
             fputcsv($file, $columns, ';');
-            foreach ($salesData as $row) {
+
+            foreach ($salesData as $quote) {
                 fputcsv($file, [
-                    $row->name,
-                    $row->quote_count,
-                    number_format($row->total_sold, 2, ',', '.'),
+                    $quote->customer->name,
+                    (new \DateTime($quote->updated_at))->format('d/m/Y'),
+                    number_format($quote->total_amount, 2, ',', '.'),
                 ], ';');
             }
             fclose($file);

@@ -47,6 +47,7 @@ Route::middleware('auth:sanctum')->group(function () {
     
     Route::get('/customers/export', [CustomerController::class, 'export']);
     Route::apiResource('customers', CustomerController::class);
+    Route::patch('/customers/{customer}/document', [CustomerController::class, 'updateDocument']);
 
     Route::get('/quotes/export', [QuoteController::class, 'export']);
     Route::apiResource('quotes', QuoteController::class);

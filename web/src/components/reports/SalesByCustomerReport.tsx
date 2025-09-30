@@ -26,11 +26,11 @@ export function SalesByCustomerReport({ dateRange }: { dateRange: [Date | null, 
                 page 
             };
             api.get('/reports/sales-by-customer', { params })
-                .then(response => {
-                    setSalesData(response.data.data);
-                    setTotalPages(response.data.last_page);
-                })
-                .finally(() => setLoading(false));
+            .then(response => {
+                setSalesData(response.data.data);
+                setTotalPages(response.data.last_page);
+            })
+            .finally(() => setLoading(false));
         }
     }, [dateRange]);
 
@@ -42,16 +42,16 @@ export function SalesByCustomerReport({ dateRange }: { dateRange: [Date | null, 
         setIsExporting(true);
         const params = { startDate: format(startDate, 'yyyy-MM-dd'), endDate: format(endDate, 'yyyy-MM-dd') };
         api.get('/reports/sales-by-customer/export', { params, responseType: 'blob' })
-            .then(response => {
-                const url = window.URL.createObjectURL(new Blob([response.data]));
-                const link = document.createElement('a');
-                link.href = url;
-                link.setAttribute('download', 'vendas_por_cliente.csv');
-                document.body.appendChild(link);
-                link.click();
-                link.parentNode?.removeChild(link);
-            })
-            .finally(() => setIsExporting(false));
+        .then(response => {
+            const url = window.URL.createObjectURL(new Blob([response.data]));
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', 'vendas_por_cliente.csv');
+            document.body.appendChild(link);
+            link.click();
+            link.parentNode?.removeChild(link);
+        })
+        .finally(() => setIsExporting(false));
     };
     
     const rows = salesData.map(row => (

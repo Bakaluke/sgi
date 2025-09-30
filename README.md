@@ -68,9 +68,6 @@ O SGI conta com um conjunto completo de módulos integrados para gerenciar as op
 
 ## 🔮 Roadmap de Futuras Implementações
 
-- **Refinamentos de Fluxo de Trabalho:**
-  - Exigir o CPF do cliente apenas na aprovação do orçamento.
-  - Otimizar a UI de criação de orçamento com seções retráteis.
 - **Testes Automatizados:**
   - Escrever testes de API (com Pest) para garantir a estabilidade do backend a longo prazo.
 - **Melhorias de Comunicação:**
