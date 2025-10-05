@@ -96,6 +96,7 @@ export interface Quote {
   negotiation_source: NegotiationSource | null;
   delivery_datetime: string | null;
   notes: string | null;
+  cancellation_reason: string | null;
   customer_data: CustomerDataSnapshot;
 }
 
@@ -248,10 +249,12 @@ export interface User {
   roles: Role[];
   permissions: string[];
   role: string;
+  settings?: SettingsData;
 }
 
 export interface AuthContextType {
   user: User | null;
+  settings: SettingsData | null;
   token: string | null;
   isLoading: boolean;
   login: (userData: User, token: string) => void;

@@ -28,6 +28,7 @@ return new class extends Migration
             $table->decimal('total_amount', 10, 2)->default(0);
             
             $table->text('notes')->nullable();
+            $table->text('cancellation_reason')->nullable();
             $table->timestamps();
         });
     }

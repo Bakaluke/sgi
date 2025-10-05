@@ -28,6 +28,7 @@ class Quote extends Model
         'discount_percentage',
         'total_amount',
         'notes',
+        'cancellation_reason',
     ];
 
     protected function customerData(): Attribute

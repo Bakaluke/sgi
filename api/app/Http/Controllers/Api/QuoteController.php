@@ -8,10 +8,12 @@ use App\Models\Customer;
 use App\Models\Quote;
 use App\Models\QuoteStatus;
 use App\Models\Setting;
+use App\Mail\QuoteSent;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\Mail;
 use Barryvdh\DomPDF\Facade\Pdf;
 
 class QuoteController extends Controller
@@ -58,6 +60,7 @@ class QuoteController extends Controller
             'negotiation_source_id' => 'nullable|exists:negotiation_sources,id',
             'delivery_datetime' => 'nullable|date',
             'notes' => 'nullable|string',
+            'cancellation_reason' => 'nullable|string|max:500',
         ]);
 
         $defaultStatus = QuoteStatus::where('name', 'Aberto')->first();
@@ -113,21 +116,34 @@ class QuoteController extends Controller
 
         $oldStatusName = $quote->status?->name;
 
-        $validated = $request->validate([
-            'payment_method_id' => 'required|exists:payment_methods,id',
-            'payment_term_id' => 'required|exists:payment_terms,id',
-            'delivery_method_id' => 'required|exists:delivery_methods,id',
-            'status_id' => 'required|exists:quote_statuses,id',
-            'negotiation_source_id' => 'required|exists:negotiation_sources,id',
-            'delivery_datetime' => 'required|date',
-            'discount_percentage' => 'nullable|numeric|min:0|max:100',
-            'notes' => 'nullable|string',
-        ]);
+        $statusId = $request->validate(['status_id' => 'required|exists:quote_statuses,id'])['status_id'];
+        $newStatus = QuoteStatus::find($statusId);
 
-        $newStatus = QuoteStatus::find($validated['status_id']);
+        $rules = match ($newStatus?->name) {
+            'Cancelado' => [
+                'status_id' => 'required|exists:quote_statuses,id',
+                'cancellation_reason' => 'required|string|max:500',
+            ],
+            'Aberto', 'Negociação' => [
+                'status_id' => 'required|exists:quote_statuses,id',
+                'notes' => 'nullable|string',
+            ],
+            'Aprovado' => [
+                'payment_method_id' => 'required|exists:payment_methods,id',
+                'payment_term_id' => 'required|exists:payment_terms,id',
+                'delivery_method_id' => 'required|exists:delivery_methods,id',
+                'status_id' => 'required|exists:quote_statuses,id',
+                'negotiation_source_id' => 'required|exists:negotiation_sources,id',
+                'delivery_datetime' => 'required|date',
+                'discount_percentage' => 'nullable|numeric|min:0|max:100',
+                'notes' => 'nullable|string',
+            ],
+            default => [],
+        };
+
+        $validated = $request->validate($rules);
         
         $customer = $quote->customer;
-
         if ($newStatus && $newStatus->name === 'Aprovado' && $customer->type === 'fisica' && empty($customer->document)) {
             return response()->json([
                 'message' => 'CPF do cliente é obrigatório para aprovar o orçamento.',
@@ -137,12 +153,9 @@ class QuoteController extends Controller
         }
         
         $quote->update($validated);
-        
         $quote->refresh();
-
-        $newStatusName = $quote->status?->name;
-
-        if ($oldStatusName !== 'Aprovado' && $newStatusName === 'Aprovado') {
+        
+        if ($oldStatusName !== 'Aprovado' && $newStatus?->name === 'Aprovado') {
             QuoteApproved::dispatch($quote);
         }
 
@@ -224,5 +237,20 @@ class QuoteController extends Controller
         };
 
         return response()->stream($callback, 200, $headers);
+    }
+
+    public function sendEmail(Request $request, Quote $quote)
+    {
+        $this->authorize('view', $quote);
+
+        $validated = $request->validate([
+            'email_body' => 'required|string',
+        ]);
+
+        $quote->load(['customer.addresses', 'user', 'items.product', 'status', 'paymentMethod', 'deliveryMethod', 'negotiationSource', 'paymentTerm']);
+
+        Mail::to($quote->customer->email)->send(new QuoteSent($quote, $validated['email_body']));
+
+        return response()->json(['message' => 'E-mail enviado com sucesso!']);
     }
 }

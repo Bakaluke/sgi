@@ -2,6 +2,7 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Models\Setting;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\CustomerController;
@@ -39,6 +40,8 @@ Route::middleware('auth:sanctum')->group(function () {
         $user->role = $user->getRoleNames()->first();
         unset($user->roles);
 
+        $user->settings = Setting::first();
+
         return $user;
     });
 
@@ -54,6 +57,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('quotes/{quote}/items', [QuoteItemController::class, 'store']);
     Route::put('quotes/{quote}/items/{quote_item}', [QuoteItemController::class, 'update']);
     Route::delete('quotes/{quote}/items/{quote_item}', [QuoteItemController::class, 'destroy']);
+    Route::post('/quotes/{quote}/send-email', [QuoteController::class, 'sendEmail']);
 
     Route::delete('quote-items/{quote_item}/file', [QuoteItemController::class, 'destroyFile']);
 

@@ -62,6 +62,8 @@ function QuoteFormPage() {
   const [docModalOpened, { open: openDocModal, close: closeDocModal }] = useDisclosure(false);
   const [customerToUpdate, setCustomerToUpdate] = useState<{ id: number; document: string; type: 'fisica' | 'juridica' } | null>(null);
   const isLocked = initialStatus === 'Aprovado' || initialStatus === 'Cancelado';
+  const [cancelModalOpened, { open: openCancelModal, close: closeCancelModal }] = useDisclosure(false);
+  const [cancellationReason, setCancellationReason] = useState('');
   
   const _dummyCustomer: Customer | null = null;
   // eslint-disable-next-line no-constant-condition
@@ -110,6 +112,56 @@ function QuoteFormPage() {
       if (!currentQuote) return null;
       return { ...currentQuote, [field]: value };
     });
+  };
+
+  const handleStatusChange = (value: string | null) => {
+    if (!value) {
+      updateQuoteField('status_id', null);
+      return;
+    }
+    const selectedStatus = quoteStatuses.find(s => s.value === value);
+    if (selectedStatus?.label === 'Cancelado') {
+      openCancelModal();
+    } else {
+      updateQuoteField('status_id', Number(value));
+    }
+  };
+  
+  const handleConfirmCancellation = () => {
+    if (!quote || cancellationReason.trim() === '') {
+      notifications.show({ title: 'Atenção', message: 'O motivo do cancelamento é obrigatório.', color: 'yellow' });
+      return;
+    }
+    const canceledStatus = quoteStatuses.find(s => s.label === 'Cancelado');
+    if (!canceledStatus) {
+      notifications.show({ title: 'Erro de Configuração', message: 'Status "Cancelado" não encontrado.', color: 'red' });
+      return;
+    }
+    const payload = {
+      payment_method_id: quote.payment_method_id,
+      payment_term_id: quote.payment_term_id,
+      delivery_method_id: quote.delivery_method_id,
+      status_id: Number(canceledStatus.value),
+      negotiation_source_id: quote.negotiation_source_id,
+      delivery_datetime: quote.delivery_datetime,
+      discount_percentage: quote.discount_percentage,
+      notes: quote.notes,
+      cancellation_reason: cancellationReason,
+    };
+    setIsSavingHeader(true);
+    api.put(`/quotes/${quote.id}`, payload)
+    .then(res => {
+      setQuote(res.data);
+      setInitialStatus(res.data.status?.name || null);
+      notifications.show({ title: 'Sucesso!', message: 'Orçamento cancelado com sucesso.', color: 'green' });
+      closeCancelModal();
+      setCancellationReason('');
+    })
+    .catch((error) => {
+      console.error("Erro ao cancelar orçamento:", error);
+      notifications.show({ title: 'Erro!', message: 'Não foi possível cancelar o orçamento.', color: 'red' });
+    })
+    .finally(() => setIsSavingHeader(false));
   };
 
   const handleCloseItemModal = () => {
@@ -176,11 +228,20 @@ function QuoteFormPage() {
         notifications.show({ title: 'Ação Necessária', message: error.response.data.message, color: 'yellow' });
         setCustomerToUpdate({ id: error.response.data.customer_id, document: '', type: quote.customer.type });
         openDocModal();
+      } else if (error.response && error.response.status === 422) {
+        const validationErrors = error.response.data.errors;
+        const errorMessages = Object.values(validationErrors).flat().join('\n');
+        notifications.show({
+          title: 'Campos Obrigatórios Pendentes',
+          message: errorMessages,
+          color: 'red',
+          autoClose: 10000,
+        });
       } else {
         console.error("Erro ao salvar alterações:", error);
-        notifications.show({
-          title: 'Erro!',
-          message: 'Não foi possível salvar as alterações.',
+        notifications.show({ 
+          title: 'Erro!', 
+          message: 'Não foi possível salvar as alterações.', 
           color: 'red' 
         });
       }
@@ -281,6 +342,15 @@ function QuoteFormPage() {
           <Button onClick={handleDocumentSubmit}>Salvar e Aprovar</Button>
         </Group>
       </Modal>
+
+      <Modal opened={cancelModalOpened} onClose={closeCancelModal} title="Cancelar Orçamento">
+        <Textarea label="Motivo do Cancelamento" placeholder="Descreva por que este orçamento está sendo cancelado..." required autosize minRows={3} value={cancellationReason} onChange={(event) => setCancellationReason(event.currentTarget.value)} />
+        <Group justify="flex-end" mt="lg">
+          <Button variant="default" onClick={closeCancelModal}>Voltar</Button>
+          <Button color="red" onClick={handleConfirmCancellation} loading={isSavingHeader}>Confirmar Cancelamento</Button>
+        </Group>
+      </Modal>
+
       <Modal opened={itemModalOpened} onClose={handleCloseItemModal} title={`Editar Item: ${editingItem?.product.name}`}>
         <form onSubmit={itemForm.onSubmit(handleItemUpdate)}>
           <Grid>
@@ -325,7 +395,7 @@ function QuoteFormPage() {
 
         <Fieldset legend="Dados Gerais do Orçamento" mt="md">
           <Grid>
-            <Grid.Col span={{ base: 12, md: 4 }}><Select label="Status" value={String(quote.status_id || '')} onChange={(value) => updateQuoteField('status_id', value ? Number(value) : null)} data={quoteStatuses} disabled={isLocked} required /></Grid.Col>
+            <Grid.Col span={{ base: 12, md: 4 }}><Select label="Status" value={String(quote.status_id || '')} onChange={handleStatusChange} data={quoteStatuses} disabled={isLocked} required /></Grid.Col>
             <Grid.Col span={{ base: 12, md: 4 }}><Select label="Forma de Pagamento" placeholder="Selecione..." value={String(quote.payment_method_id || '')} onChange={(value) => updateQuoteField('payment_method_id', value ? Number(value) : null)} data={paymentMethods} disabled={isLocked} required /></Grid.Col>
             <Grid.Col span={{ base: 12, md: 4 }}><Select label="Condição de Pagamento" placeholder="Selecione..." data={paymentTerms} value={String(quote.payment_term_id || '')} onChange={(value) => updateQuoteField('payment_term_id', value ? Number(value) : null)} disabled={isLocked} required /></Grid.Col>
             <Grid.Col span={{ base: 12, md: 6 }}><Select label="Opção de Entrega" placeholder="Selecione..." value={String(quote.delivery_method_id || '')} onChange={(value) => updateQuoteField('delivery_method_id', value ? Number(value) : null)} data={deliveryMethods} disabled={isLocked} required /></Grid.Col>
