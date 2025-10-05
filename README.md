@@ -1,4 +1,4 @@
-# SGI Cake Web Dev - Sistema de Gestão Integrado
+# SGI Cake Web Dev - Sistema de Gestão Integrado (v1.0)
 
 Um Sistema de Gestão Integrado (ERP/CRM) moderno, construído do zero com uma stack full-stack, projetado para ser flexível e atender às necessidades de pequenas e médias empresas. Este projeto, desenvolvido como parte do portfólio da **Cake Web Dev**, demonstra a criação de uma aplicação robusta, segura e com uma experiência de usuário rica.
 
@@ -6,72 +6,85 @@ O sistema foi modelado para ser altamente customizável, com um foco inicial nas
 
 ---
 
-## ✨ Funcionalidades Principais
+## ✨ Funcionalidades Principais (v1.0)
 
 O SGI conta com um conjunto completo de módulos integrados para gerenciar as operações de um negócio do início ao fim.
 
-### 🔑 **Autenticação & Permissões Dinâmicas**
-- Sistema de login seguro com autenticação via API (Laravel Sanctum).
-- **Sistema de Funções e Permissões** dinâmico (baseado em Spatie), permitindo que o administrador crie novos cargos e defina permissões granulares para cada ação no sistema.
+- **🔑 Autenticação & Permissões Dinâmicas:** Sistema de login seguro e um painel de controle onde o administrador pode criar Funções (cargos) e definir permissões granulares para cada ação no sistema.
 
-### 📊 **Dashboard Inteligente e Interativo**
-- Painel de controle com visão geral do negócio, incluindo KPIs financeiros, gráficos de performance e alertas operacionais (ex: estoque baixo, orçamentos parados).
-- Filtros de período de tempo interativos para análise de dados.
-- Gráficos e dados se adaptam automaticamente ao perfil do usuário logado.
+- **📊 Dashboard Inteligente:** Painel com KPIs financeiros, gráficos de performance e alertas operacionais (estoque baixo, orçamentos parados). Os dados são filtráveis por período e se adaptam ao perfil do usuário logado.
 
-### 📦 **Módulo de Produtos (Produtos & Serviços)**
-- CRUD completo para **produtos físicos** (com controle de estoque) e **serviços** (sem controle de estoque).
-- Gestão de **Categorias de Produtos** e upload de imagem de mostruário.
-- Lógica de busca "live" (com debounce) e paginação.
+- **📦 Módulo de Produtos & Serviços:** CRUD completo que diferencia **produtos físicos** (com controle de estoque) e **serviços** (sem estoque), com gestão de categorias e imagens.
 
-### 👥 **Módulo de Clientes**
-- CRUD completo para clientes (Pessoa Física e Jurídica).
-- Formulário inteligente com busca automática de CNPJ e CEP via API externa.
-- Funcionalidade de **"Cadastro Rápido"** diretamente do fluxo de criação de orçamentos.
+- **👥 Módulo de Clientes:** CRUD para Pessoas Físicas e Jurídicas, com busca de dados por CNPJ/CEP e um fluxo de **Cadastro Rápido** no momento da venda.
 
-### 📝 **Módulo de Orçamentos**
-- Fluxo de criação e edição moderno via modal.
-- **Personalização por Item:** Adição de observações detalhadas e upload de arquivos de referência para cada item.
-- Edição de itens em modal com recálculo automático de totais e margem de lucro.
-- Geração de **PDFs profissionais** (Orçamento, Ordem de Serviço, Protocolo de Entrega).
-- Dados de negócio (Status, Pagamento, Entrega, etc.) totalmente customizáveis pelo administrador.
+- **📝 Módulo de Orçamentos:**
+  - Fluxo de criação ágil com seções retráteis.
+  - Exigência de CPF/CNPJ apenas no momento da **aprovação**, reduzindo o atrito inicial.
+  - **Personalização por Item:** Adição de observações e upload de arquivos para cada item do orçamento.
+  - Geração de PDFs profissionais e envio por **E-mail** ou **WhatsApp**.
 
-### 🏭 **Módulo de Produção**
-- Geração **automática** de Ordens de Produção a partir de orçamentos aprovados.
-- Tela dedicada para a equipe de produção gerenciar o fluxo de trabalho com status customizáveis.
+- **🏭 Módulo de Produção:** Geração **automática** de Ordens de Produção a partir de orçamentos aprovados, com tela de gerenciamento de status para a equipe de produção.
 
-### 📈 **Módulo de Estoque**
-- Sistema de **movimentações de estoque** (entradas, saídas, vendas, estornos) para rastreabilidade total.
-- **Baixa de estoque automática** apenas para produtos físicos em vendas aprovadas.
-- Atualização automática do **preço de custo** do produto baseada na última compra.
+- **📈 Módulo de Estoque:** Sistema de movimentações para rastreabilidade, com baixa **automática** em vendas e atualização do preço de custo na compra.
 
-### 💰 **Módulo Financeiro**
-- Geração **automática** de **Contas a Receber** a partir de pedidos concluídos, com lógica para criação de **parcelas** baseada em Condições de Pagamento customizáveis.
-- CRUD completo para **Contas a Pagar**.
-- Lógica para registro de **pagamentos parciais e totais**.
-- **Automação de Status:** Um comando agendado (cron job) que marca contas como "Vencidas" automaticamente.
+- **💰 Módulo Financeiro:**
+  - **Contas a Pagar e a Receber** com CRUD completo.
+  - Geração **automática** de Contas a Receber a partir de pedidos concluídos.
+  - **Gestão de Parcelas:** O sistema lê a "Condição de Pagamento" e cria as parcelas automaticamente.
+  - Lógica para registro de **pagamentos parciais e totais** em parcelas individuais.
+  - **Automação de Status:** Um comando agendado que marca contas como "Vencidas" diariamente.
 
-### 📈 **Módulo de Relatórios Gerenciais**
-- Página dedicada com múltiplos relatórios em abas.
-- Filtros de data para análises de performance em períodos customizados.
-- Relatórios implementados: **Resumo de Vendas (KPIs)**, **Vendas por Cliente** e **Fluxo de Caixa (Previsto vs. Realizado)**.
-- Exportação de dados operacionais e gerenciais para **CSV**.
+- **📈 Módulo de Relatórios Gerenciais:**
+  - Página dedicada com análises de negócio em abas e com filtros de data.
+  - Relatórios de **Resumo de Vendas**, **Vendas por Cliente** e **Fluxo de Caixa (Previsto vs. Realizado)**.
+  - Exportação de todos os relatórios operacionais e gerenciais para **CSV**.
 
-### 👤 **Módulo de Usuários e Perfil**
-- Painel para o administrador gerenciar funcionários e atribuir Funções.
-- Página de **"Meu Perfil"** para cada usuário alterar suas próprias informações.
-
-### ⚙️ **Módulo de Configurações (Painel do Admin)**
-- Painel de Controle completo para gerenciar todas as opções customizáveis do sistema, incluindo Funções, Permissões, Status, Formas e Condições de Pagamento, etc.
+- **👤 Módulo de Usuários e ⚙️ Configurações:** Painéis completos para o administrador gerenciar usuários, cargos, permissões e todas as opções customizáveis do sistema.
 
 ---
 
-## 🔮 Roadmap de Futuras Implementações
+## 📸 Telas do Sistema
 
-- **Testes Automatizados:**
-  - Escrever testes de API (com Pest) para garantir a estabilidade do backend a longo prazo.
-- **Melhorias de Comunicação:**
-  - Implementar a funcionalidade de envio de documentos diretamente por **E-mail** e/ou **WhatsApp**.
+*Uma visão geral da interface limpa e funcional do SGI.*
+
+**Dashboard Principal**
+![Dashboard](docs/images/1.png)
+
+**Página de Orçamentos**
+![Orçamentos](docs/images/2.png)
+
+**Página de Produção**
+![Produção](docs/images/3.png)
+
+**Página de Produtos**
+![Produtos](docs/images/4.png)
+
+**Página de Estoque**
+![Estoque](docs/images/5.png)
+
+**Página de Clientes**
+![Clientes](docs/images/6.png)
+
+**Módulo Financeiro (Contas a Receber com Parcelas)**
+![Financeiro](docs/images/7.png)
+
+**Página de Configurações**
+![Configurações](docs/images/8.png)
+
+**Página de Funções**
+![Funções](docs/images/9.png)
+
+**Página de Gestão de Usuários**
+![Usuários](docs/images/10.png)
+
+---
+
+## 🔮 Roadmap de Futuras Melhorias
+
+- **Testes Automatizados:** Escrever uma suíte de testes para a API (com Pest) para garantir a estabilidade e a manutenibilidade do sistema a longo prazo.
+- **Refinamentos no Financeiro:** Criar mais relatórios gerenciais e explorar a possibilidade de conciliação bancária.
+- **Dashboard 2.0:** Adicionar novas métricas, como "Ranking de Vendedores" e um "Funil de Vendas".
 
 ---
 
