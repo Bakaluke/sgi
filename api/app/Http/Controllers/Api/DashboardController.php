@@ -34,6 +34,7 @@ class DashboardController extends Controller
             'lowStockProducts' => [],
             'staleQuotes' => [],
             'topSellingProducts' => [],
+            'salespersonRanking' => [],
         ];
 
         $formatCounts = function ($queryResult) {
@@ -133,6 +134,22 @@ class DashboardController extends Controller
                 ->groupBy('quote_items.product_name')
                 ->orderBy('total_quantity', 'desc')
                 ->limit(6)
+                ->get();
+        }
+
+        if ($user->can('quotes.view_all')) {
+            $response['salespersonRanking'] = Quote::query()
+                ->join('users', 'quotes.user_id', '=', 'users.id')
+                ->join('quote_statuses', 'quotes.status_id', '=', 'quote_statuses.id')
+                ->where('quote_statuses.name', 'Aprovado')
+                ->whereBetween('quotes.updated_at', [$startDate, $endDate])
+                ->select('users.name as salesperson_name', 
+                    DB::raw('COUNT(quotes.id) as total_sales'), 
+                    DB::raw('SUM(quotes.total_amount) as total_value')
+                )
+                ->groupBy('users.id', 'users.name')
+                ->orderBy('total_value', 'desc')
+                ->limit(10)
                 ->get();
         }
 

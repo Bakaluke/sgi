@@ -158,6 +158,12 @@ export interface ProductStat {
   total_quantity: number;
 }
 
+export interface SalespersonStat {
+  salesperson_name: string;
+  total_sales: number;
+  total_value: number;
+}
+
 export interface Stats {
   quoteStats: { counts: { [key: string]: number }, statuses: StatusInfo[] } | null;
   orderStats: { counts: { [key: string]: number }, statuses: StatusInfo[] } | null;
@@ -166,6 +172,7 @@ export interface Stats {
   lowStockProducts: ProductAlert[];
   staleQuotes: QuoteAlert[];
   topSellingProducts: ProductStat[];
+  salespersonRanking: SalespersonStat[];
 }
 
 export interface ProductionOrder {
