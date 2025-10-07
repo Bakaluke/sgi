@@ -15,6 +15,7 @@ class ProductFactory extends Factory
         return [
             'name' => fake()->words(3, true),
             'sku' => fake()->unique()->ean8(),
+            'type' => 'produto',
             'description' => fake()->sentence(),
             'cost_price' => fake()->randomFloat(2, 10, 100),
             'sale_price' => fake()->randomFloat(2, 100, 500),

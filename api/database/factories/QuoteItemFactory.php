@@ -9,8 +9,8 @@ class QuoteItemFactory extends Factory
 {
     public function definition(): array
     {
-        $product = Product::inRandomOrder()->first();
-        $quantity = fake()->numberBetween(1, 5);
+        $product = Product::factory()->create();
+        $quantity = $this->faker->numberBetween(1, 5);
         $costPrice = $product->isService() ? 0 : $product->cost_price;
         $salePrice = $product->sale_price;
         $lucro = $salePrice - $costPrice;

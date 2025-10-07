@@ -17,12 +17,13 @@ class QuoteFactory extends Factory
 {
     public function definition(): array
     {
-        $customer = Customer::has('addresses')->with('addresses')->inRandomOrder()->first();
-        $user = User::whereHas('roles', fn ($query) => $query->where('name', 'vendedor'))->inRandomOrder()->first();
-        $paymentMethod = PaymentMethod::inRandomOrder()->first();
-        $paymentTerm = PaymentTerm::inRandomOrder()->first();
-        $deliveryMethod = DeliveryMethod::inRandomOrder()->first();
-        $negotiationSource = NegotiationSource::inRandomOrder()->first();
+        $customer = Customer::factory()->create();
+        $user = User::factory()->create();
+        $status = QuoteStatus::inRandomOrder()->first() ?? QuoteStatus::factory()->create(['name' => 'Aberto']);
+        $paymentMethod = PaymentMethod::inRandomOrder()->first() ?? PaymentMethod::factory()->create();
+        $paymentTerm = PaymentTerm::inRandomOrder()->first() ?? PaymentTerm::factory()->create();
+        $deliveryMethod = DeliveryMethod::inRandomOrder()->first() ?? DeliveryMethod::factory()->create();
+        $negotiationSource = NegotiationSource::inRandomOrder()->first() ?? NegotiationSource::factory()->create();
 
         $primaryAddress = $customer->addresses->first();
         $addressString = $primaryAddress ? implode(', ', array_filter([
@@ -51,6 +52,7 @@ class QuoteFactory extends Factory
             'payment_method_id' => $paymentMethod->id,
             'payment_term_id' => $paymentTerm->id,
             'negotiation_source_id' => $negotiationSource->id,
+            'total_amount' => $this->faker->randomFloat(2, 100, 5000),
             'notes' => fake()->sentence(),
         ];
     }
