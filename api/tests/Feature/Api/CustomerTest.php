@@ -11,7 +11,7 @@ use Tests\TestCase;
 class CustomerTest extends TestCase
 {
     use RefreshDatabase;
-
+    
     protected function setUp(): void
     {
         parent::setUp();

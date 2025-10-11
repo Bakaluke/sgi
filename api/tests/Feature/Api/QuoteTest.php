@@ -12,16 +12,11 @@ use Tests\TestCase;
 class QuoteTest extends TestCase
 {
     use RefreshDatabase;
-
+    
     protected function setUp(): void
     {
         parent::setUp();
-        $this->seed(\Database\Seeders\RolesAndPermissionsSeeder::class);
-        $this->seed(\Database\Seeders\QuoteStatusSeeder::class);
-        $this->seed(\Database\Seeders\PaymentMethodSeeder::class);
-        $this->seed(\Database\Seeders\PaymentTermSeeder::class);
-        $this->seed(\Database\Seeders\DeliveryMethodSeeder::class);
-        $this->seed(\Database\Seeders\NegotiationSourceSeeder::class);
+        $this->seed();
     }
 
     public function test_um_usuario_nao_autenticado_nao_pode_listar_orcamentos(): void
