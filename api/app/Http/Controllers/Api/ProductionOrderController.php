@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Events\OrderCompleted;
 use App\Http\Controllers\Controller;
 use App\Models\ProductionOrder;
+use App\Models\ProductionStatus;
 use App\Models\Setting;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -52,20 +53,37 @@ class ProductionOrderController extends Controller
 
     public function update(Request $request, ProductionOrder $productionOrder)
     {
+        if (in_array($productionOrder->status?->name, ['Cancelado', 'Concluído'])) {
+            abort(403, 'Ordens finalizadas ou canceladas não podem ser modificadas.');
+        }
+        
         $this->authorize('update', $productionOrder);
 
         $oldStatusName = $productionOrder->status?->name;
 
-        $validated = $request->validate([
+        $statusValidation = $request->validate([
             'status_id' => 'required|exists:production_statuses,id',
         ]);
+        $newStatus = ProductionStatus::find($statusValidation['status_id']);
+
+        if ($newStatus && $newStatus->name === 'Cancelado') {
+            $validated = $request->validate([
+                'status_id' => 'required|exists:production_statuses,id',
+                'cancellation_reason' => 'required|string|max:500',
+            ]);
+        } else {
+            $validated = $request->validate([
+                'status_id' => 'required|exists:production_statuses,id',
+            ]);
+        }
 
         $productionOrder->update($validated);
 
         $productionOrder->refresh();
+
         $newStatusName = $productionOrder->status?->name;
 
-        if ($productionOrder->status->name === 'Concluído' && is_null($productionOrder->completed_at)) {
+        if ($newStatusName === 'Concluído' && is_null($productionOrder->completed_at)) {
             $productionOrder->completed_at = now();
             $productionOrder->save();
         }

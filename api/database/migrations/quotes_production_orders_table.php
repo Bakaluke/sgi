@@ -17,6 +17,7 @@ return new class extends Migration
 
             $table->timestamp('completed_at')->nullable();
             $table->text('notes')->nullable();
+            $table->text('cancellation_reason')->nullable();
 
             $table->timestamps();
         });

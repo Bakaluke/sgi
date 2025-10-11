@@ -1,9 +1,10 @@
 import { Fragment, useCallback, useEffect, useState } from 'react';
-import { Table, Title, Container, Group, Pagination, TextInput, Select, ActionIcon, Collapse, Paper, Text, Menu, Anchor, Tooltip, ThemeIcon, Button } from '@mantine/core';
+import { Table, Title, Container, Group, Pagination, TextInput, Select, ActionIcon, Collapse, Paper, Text, Menu, Anchor, Tooltip, ThemeIcon, Button, Modal, Textarea } from '@mantine/core';
 import { IconAlertTriangle, IconChevronDown, IconDotsVertical, IconFile, IconFileExport, IconFileText, IconPrinter, IconSearch, IconTrash } from '@tabler/icons-react';
 import { notifications } from '@mantine/notifications';
-import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
+import { useDisclosure } from '@mantine/hooks';
+import api from '../api/axios';
 import type { ProductionOrder, ProductionStatus, SelectOption, QuoteItem } from '../types';
 
 function ProductionPage() {
@@ -16,6 +17,10 @@ function ProductionPage() {
   const [expandedOrderIds, setExpandedOrderIds] = useState<number[]>([]);
   const [productionStatuses, setProductionStatuses] = useState<SelectOption[]>([]);
   const [isExporting, setIsExporting] = useState(false);
+  const [cancelModalOpened, { open: openCancelModal, close: closeCancelModal }] = useDisclosure(false);
+  const [orderToCancel, setOrderToCancel] = useState<ProductionOrder | null>(null);
+  const [cancellationReason, setCancellationReason] = useState('');
+  const [isCancelling, setIsCancelling] = useState(false);
   
   const fetchOrders = useCallback((page: number, search: string) => {
     api.get('/production-orders', { params: { page, search } })
@@ -25,6 +30,13 @@ function ProductionPage() {
     })
     .catch(error => console.error('Houve um erro!', error));
   }, []);
+
+  useEffect(() => {
+    fetchOrders(activePage, searchQuery);
+    api.get('/production-statuses').then(res => {
+      setProductionStatuses(res.data.map((ps: ProductionStatus) => ({ value: String(ps.id), label: ps.name })));
+    });
+  }, [activePage, searchQuery, fetchOrders]);
   
   useEffect(() => {
     const debounceTimer = setTimeout(() => {
@@ -33,29 +45,42 @@ function ProductionPage() {
     return () => clearTimeout(debounceTimer);
   }, [searchTerm]);
 
-  useEffect(() => {
-    fetchOrders(activePage, searchQuery);
-    api.get('/production-statuses').then(res => {
-      setProductionStatuses(res.data.map((ps: ProductionStatus) => ({ value: String(ps.id), label: ps.name })));
-    });
-  }, [activePage, searchQuery, fetchOrders]);
-
-  const handleStatusChange = (orderId: number, newStatusId: string | null) => {
+  const handleStatusChange = (order: ProductionOrder, newStatusId: string | null) => {
     if (!newStatusId) return;
-    const statusObj = productionStatuses.find(s => s.value === newStatusId);
-    const newStatusName = statusObj ? statusObj.label : newStatusId;
-    api.put(`/production-orders/${orderId}`, { status_id: newStatusId })
-    .then(response => {
-      setOrders(currentOrders => currentOrders.map(order => 
-        order.id === orderId ? response.data : order
-      ));
-      notifications.show({
-        title: 'Sucesso!',
-        message: `Status do Pedido Nº ${orderId} atualizado para "${newStatusName}".`,
-        color: 'green',
-      });
+    const selectedStatus = productionStatuses.find(s => s.value === newStatusId);
+    if (selectedStatus?.label === 'Cancelado') {
+      setOrderToCancel(order);
+      setCancellationReason('');
+      openCancelModal();
+    } else {
+      api.put(`/production-orders/${order.id}`, { status_id: newStatusId })
+      .then(res => {
+        setOrders(current => current.map(o => (o.id === order.id ? res.data : o)));
+        notifications.show({ title: 'Sucesso!', message: 'Status do pedido atualizado.', color: 'green' });
+      })
+      .catch(() => notifications.show({ title: 'Erro!', message: 'Não foi possível atualizar o status.', color: 'red' }));
+    }
+  };
+
+  const handleConfirmCancellation = () => {
+    if (!orderToCancel || cancellationReason.trim() === '') {
+      notifications.show({ title: 'Atenção', message: 'O motivo do cancelamento é obrigatório.', color: 'yellow' });
+      return;
+    }
+    const canceledStatus = productionStatuses.find(s => s.label === 'Cancelado');
+    if (!canceledStatus) return;
+    setIsCancelling(true);
+    api.put(`/production-orders/${orderToCancel.id}`, {
+      status_id: canceledStatus.value,
+      cancellation_reason: cancellationReason
     })
-    .catch(() => notifications.show({ title: 'Erro!', message: 'Não foi possível atualizar o status.', color: 'red' }));
+    .then(res => {
+      setOrders(current => current.map(o => (o.id === orderToCancel.id ? res.data : o)));
+      notifications.show({ title: 'Sucesso!', message: 'Ordem de produção cancelada.', color: 'green' });
+      closeCancelModal();
+    })
+    .catch(() => notifications.show({ title: 'Erro!', message: 'Não foi possível cancelar o pedido.', color: 'red' }))
+    .finally(() => setIsCancelling(false));
   };
 
   const handleDelete = (orderId: number) => {
@@ -110,7 +135,7 @@ function ProductionPage() {
         <Table.Td>{order.customer?.name || 'N/A'}</Table.Td>
         {can('production_orders.view_all') && <Table.Td>{order.user?.name || 'N/A'}</Table.Td>}
         <Table.Td style={{ width: 200 }}>
-          <Select value={String(order.status_id || '')} onChange={(value) => handleStatusChange(order.id, value)} data={productionStatuses} variant="unstyled" styles={(theme) => { const color = order.status?.color || 'gray'; if (!theme.colors[color]) return {}; return { input: { backgroundColor: theme.colors[color][1], color: theme.colors[color][9], fontWeight: 700, textAlign: 'center', border: `1px solid ${theme.colors[color][2]}`, paddingRight: '1.75rem', }, }; }} />
+          <Select value={String(order.status_id || '')} onChange={(value) => handleStatusChange(order, value)} data={productionStatuses} disabled={order.status?.name === 'Cancelado' || order.status?.name === 'Concluído'} variant="unstyled" styles={(theme) => { const color = order.status?.color || 'gray'; if (!theme.colors[color]) return {}; return { input: { backgroundColor: theme.colors[color][1], color: theme.colors[color][9], fontWeight: 700, textAlign: 'center', border: `1px solid ${theme.colors[color][2]}`, paddingRight: '1.75rem', }, }; }} />
         </Table.Td>
         <Table.Td>{order.created_at ? new Date(order.created_at).toLocaleDateString('pt-BR') : 'N/A'}</Table.Td>
         <Table.Td>
@@ -175,6 +200,13 @@ function ProductionPage() {
   
   return (
   <Container>
+    <Modal opened={cancelModalOpened} onClose={closeCancelModal} title={`Cancelar Pedido #${orderToCancel?.id}`}>
+      <Textarea label="Motivo do Cancelamento" placeholder="Descreva por que este pedido está sendo cancelado..." required autosize minRows={3} value={cancellationReason} onChange={(event) => setCancellationReason(event.currentTarget.value)} />
+      <Group justify="flex-end" mt="lg">
+        <Button variant="default" onClick={closeCancelModal}>Voltar</Button>
+        <Button color="red" onClick={handleConfirmCancellation} loading={isCancelling}>Confirmar Cancelamento</Button>
+      </Group>
+    </Modal>
     <Group justify="space-between" my="lg">
       <Title order={1}>Ordens de Produção</Title>
       <Group>

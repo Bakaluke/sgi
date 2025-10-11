@@ -176,14 +176,19 @@ export interface Stats {
 }
 
 export interface ProductionOrder {
-  user: { name: string };
   id: number;
   quote_id: number;
-  customer: { name: string };
-  status: Status | null;
-  status_id: number | null;
+  user_id: number;
+  customer_id: number;
+  status_id: number;
+  completed_at: string | null;
   created_at: string;
-  quote: { items: QuoteItem[]; };
+  notes: string | null;
+  cancellation_reason: string | null;
+  customer: { name: string; };
+  user: { name: string; };
+  quote: Quote;
+  status: ProductionStatus | null;
 }
 
 export interface SettingsData {

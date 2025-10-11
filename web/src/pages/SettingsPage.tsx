@@ -515,20 +515,20 @@ function SettingsPage() {
                         <Grid>
                             <Grid.Col span={{ base: 12, md: 8 }}>
                                 <Grid>
-                                    <Grid.Col span={{ base: 12, md: 6 }}><TextInput label="CNPJ" value={formatCnpj(settings.cnpj)} onChange={(e) => setSettings({...settings, cnpj: e.currentTarget.value})} onBlur={handleCnpjBlur} rightSection={isCnpjLoading ? <Loader size="xs" /> : null} /></Grid.Col>
-                                    <Grid.Col span={{ base: 12, md: 6 }}><TextInput label="Nome Fantasia" value={settings.company_fantasy_name} onChange={(e) => setSettings({...settings, company_fantasy_name: e.currentTarget.value})} /></Grid.Col>
-                                    <Grid.Col span={12}><TextInput label="Razão Social" value={settings.legal_name} onChange={(e) => setSettings({...settings, legal_name: e.currentTarget.value})} /></Grid.Col>
-                                    <Grid.Col span={{ base: 12, md: 6 }}><TextInput label="Telefone" value={formatPhone(settings.phone)} onChange={(e) => setSettings({...settings, phone: e.currentTarget.value})} /></Grid.Col>
-                                    <Grid.Col span={{ base: 12, md: 6 }}><TextInput label="E-mail de Contato" value={settings.email} onChange={(e) => setSettings({...settings, email: e.currentTarget.value})} /></Grid.Col>
+                                    <Grid.Col span={{ base: 12, md: 6 }}><TextInput label="CNPJ" required value={formatCnpj(settings.cnpj)} onChange={(e) => setSettings({...settings, cnpj: e.currentTarget.value})} onBlur={handleCnpjBlur} rightSection={isCnpjLoading ? <Loader size="xs" /> : null} /></Grid.Col>
+                                    <Grid.Col span={{ base: 12, md: 6 }}><TextInput label="Nome Fantasia" required value={settings.company_fantasy_name} onChange={(e) => setSettings({...settings, company_fantasy_name: e.currentTarget.value})} /></Grid.Col>
+                                    <Grid.Col span={12}><TextInput label="Razão Social" required value={settings.legal_name} onChange={(e) => setSettings({...settings, legal_name: e.currentTarget.value})} /></Grid.Col>
+                                    <Grid.Col span={{ base: 12, md: 6 }}><TextInput label="Telefone" required value={formatPhone(settings.phone)} onChange={(e) => setSettings({...settings, phone: e.currentTarget.value})} /></Grid.Col>
+                                    <Grid.Col span={{ base: 12, md: 6 }}><TextInput label="E-mail de Contato" required value={settings.email} onChange={(e) => setSettings({...settings, email: e.currentTarget.value})} /></Grid.Col>
                                     <Grid.Col span={{ base: 12, md: 6 }}><TextInput label="Site" placeholder="https://www.suaempresa.com" value={settings.website || ''} onChange={(e) => setSettings({...settings, website: e.currentTarget.value})} /></Grid.Col>
                                     <Grid.Col span={12}><Title order={5} mt="sm">Endereço</Title></Grid.Col>
-                                    <Grid.Col span={{ base: 12, md: 4 }}><TextInput label="CEP" value={settings.cep} onChange={(e) => setSettings({...settings, cep: e.currentTarget.value})} onBlur={handleCepBlur} rightSection={isCepLoading ? <Loader size="xs" /> : null} /></Grid.Col>
-                                    <Grid.Col span={{ base: 12, md: 8 }}><TextInput label="Rua / Logradouro" value={settings.street} onChange={(e) => setSettings({...settings, street: e.currentTarget.value})} /></Grid.Col>
-                                    <Grid.Col span={{ base: 12, md: 4 }}><TextInput label="Número" value={settings.number} onChange={(e) => setSettings({...settings, number: e.currentTarget.value})} /></Grid.Col>
+                                    <Grid.Col span={{ base: 12, md: 4 }}><TextInput label="CEP" required value={settings.cep} onChange={(e) => setSettings({...settings, cep: e.currentTarget.value})} onBlur={handleCepBlur} rightSection={isCepLoading ? <Loader size="xs" /> : null} /></Grid.Col>
+                                    <Grid.Col span={{ base: 12, md: 8 }}><TextInput label="Rua / Logradouro" required value={settings.street} onChange={(e) => setSettings({...settings, street: e.currentTarget.value})} /></Grid.Col>
+                                    <Grid.Col span={{ base: 12, md: 4 }}><TextInput label="Número" required value={settings.number} onChange={(e) => setSettings({...settings, number: e.currentTarget.value})} /></Grid.Col>
                                     <Grid.Col span={{ base: 12, md: 8 }}><TextInput label="Complemento" value={settings.complement || ''} onChange={(e) => setSettings({...settings, complement: e.currentTarget.value})} /></Grid.Col>
-                                    <Grid.Col span={{ base: 12, md: 5 }}><TextInput label="Bairro" value={settings.neighborhood} onChange={(e) => setSettings({...settings, neighborhood: e.currentTarget.value})} /></Grid.Col>
-                                    <Grid.Col span={{ base: 12, md: 5 }}><TextInput label="Cidade" value={settings.city} onChange={(e) => setSettings({...settings, city: e.currentTarget.value})} /></Grid.Col>
-                                    <Grid.Col span={{ base: 12, md: 2 }}><TextInput label="UF" value={settings.state} onChange={(e) => setSettings({...settings, state: e.currentTarget.value})} /></Grid.Col>
+                                    <Grid.Col span={{ base: 12, md: 5 }}><TextInput label="Bairro" required value={settings.neighborhood} onChange={(e) => setSettings({...settings, neighborhood: e.currentTarget.value})} /></Grid.Col>
+                                    <Grid.Col span={{ base: 12, md: 5 }}><TextInput label="Cidade" required value={settings.city} onChange={(e) => setSettings({...settings, city: e.currentTarget.value})} /></Grid.Col>
+                                    <Grid.Col span={{ base: 12, md: 2 }}><TextInput label="UF" required value={settings.state} onChange={(e) => setSettings({...settings, state: e.currentTarget.value})} /></Grid.Col>
                                 </Grid>
                             </Grid.Col>
                             <Grid.Col span={{ base: 12, md: 4 }}>

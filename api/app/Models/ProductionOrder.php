@@ -20,6 +20,7 @@ class ProductionOrder extends Model
         'status_id',
         'completed_at',
         'notes',
+        'cancellation_reason',
     ];
 
     public function getTranslatedStatus(): string
