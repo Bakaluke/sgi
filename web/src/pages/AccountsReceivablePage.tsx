@@ -134,7 +134,7 @@ function AccountsReceivablePage() {
                                                     <Table.Td>{formatCurrency(installment.amount)}</Table.Td>
                                                     <Table.Td><Badge color={instStatus.color}>{instStatus.label}</Badge></Table.Td>
                                                     <Table.Td>{installment.paid_at ? format(new Date(installment.paid_at), 'dd/MM/yyyy') : 'N/A'}</Table.Td>
-                                                    <Table.Td><Button size="xs" variant="light" leftSection={<IconCash size={14}/>} onClick={() => handleOpenPaymentModal(installment)} disabled={installment.status === 'paid'}>Pagar</Button></Table.Td>
+                                                    <Table.Td><Button size="xs" variant="light" leftSection={<IconCash size={14}/>} onClick={() => handleOpenPaymentModal(installment)} disabled={installment.status === 'paid'}>Confirmar Pagamento</Button></Table.Td>
                                                 </Table.Tr>
                                             );
                                         })}

@@ -209,27 +209,21 @@ class ReportController extends Controller
     {
         $this->authorize('reports.view');
 
-        $receivables = AccountReceivable::query()
+        $isSqlite = DB::connection()->getDriverName() === 'sqlite';
+
+        $dateFormat = $isSqlite ? "strftime('%Y-%m', due_date)" : "DATE_FORMAT(due_date, '%Y-%m')";
+
+        $receivables = ReceivableInstallment::query()
             ->where('status', '!=', 'paid')
-            ->select(
-                DB::raw("DATE_FORMAT(due_date, '%Y-%m') as month"),
-                DB::raw("SUM(total_amount - paid_amount) as total")
-            )
-            ->groupBy('month')
-            ->orderBy('month', 'asc')
-            ->get()
-            ->keyBy('month');
+            ->select( DB::raw("$dateFormat as month"), DB::raw("SUM(amount) as total") )
+            ->groupBy(DB::raw($dateFormat))
+            ->orderBy('month', 'asc')->get()->keyBy('month');
 
         $payables = AccountPayable::query()
             ->where('status', '!=', 'paid')
-            ->select(
-                DB::raw("DATE_FORMAT(due_date, '%Y-%m') as month"),
-                DB::raw("SUM(total_amount - paid_amount) as total")
-            )
-            ->groupBy('month')
-            ->orderBy('month', 'asc')
-            ->get()
-            ->keyBy('month');
+            ->select( DB::raw("$dateFormat as month"), DB::raw("SUM(total_amount - paid_amount) as total") )
+            ->groupBy(DB::raw($dateFormat))
+            ->orderBy('month', 'asc')->get()->keyBy('month');
 
         $months = collect($receivables->keys()->merge($payables->keys())->unique())->sort();
 
@@ -249,27 +243,21 @@ class ReportController extends Controller
     {
         $this->authorize('reports.view');
 
+        $isSqlite = DB::connection()->getDriverName() === 'sqlite';
+
+        $dateFormat = $isSqlite ? "strftime('%Y-%m', paid_at)" : "DATE_FORMAT(paid_at, '%Y-%m')";
+
         $receivables = ReceivableInstallment::query()
             ->where('status', 'paid')
-            ->select(
-                DB::raw("DATE_FORMAT(paid_at, '%Y-%m') as month"),
-                DB::raw("SUM(amount) as total")
-            )
-            ->groupBy('month')
-            ->orderBy('month', 'asc')
-            ->get()
-            ->keyBy('month');
+            ->select( DB::raw("$dateFormat as month"), DB::raw("SUM(amount) as total") )
+            ->groupBy(DB::raw($dateFormat))
+            ->orderBy('month', 'asc')->get()->keyBy('month');
 
         $payables = AccountPayable::query()
             ->where('status', 'paid')
-            ->select(
-                DB::raw("DATE_FORMAT(paid_at, '%Y-%m') as month"),
-                DB::raw("SUM(paid_amount) as total")
-            )
-            ->groupBy('month')
-            ->orderBy('month', 'asc')
-            ->get()
-            ->keyBy('month');
+            ->select( DB::raw("$dateFormat as month"), DB::raw("SUM(paid_amount) as total") )
+            ->groupBy(DB::raw($dateFormat))
+            ->orderBy('month', 'asc')->get()->keyBy('month');
 
         $months = collect($receivables->keys()->merge($payables->keys())->unique())->sort();
 
