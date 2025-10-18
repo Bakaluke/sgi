@@ -8,6 +8,11 @@ return new class extends Migration
 {
     public function up(): void
     {
+        Schema::dropIfExists('settings');
+    }
+
+    public function down(): void
+    {
         Schema::create('settings', function (Blueprint $table) {
             $table->id();
             $table->string('legal_name')->nullable();
@@ -26,10 +31,5 @@ return new class extends Migration
             $table->string('logo_path')->nullable();
             $table->timestamps();
         });
-    }
-
-    public function down(): void
-    {
-        Schema::dropIfExists('settings');
     }
 };

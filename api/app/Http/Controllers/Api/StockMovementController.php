@@ -12,9 +12,7 @@ class StockMovementController extends Controller
 {
     public function store(Request $request)
     {
-        if (!in_array($request->user()->role, ['admin', 'producao'])) {
-            abort(403, 'Ação não autorizada.');
-        }
+        $this->authorize('stock.manage');
 
         $validated = $request->validate([
             'product_id' => 'required|exists:products,id',
@@ -42,6 +40,7 @@ class StockMovementController extends Controller
         }
 
         $movement = StockMovement::create([
+            'tenant_id' => $request->user()->tenant_id,
             'product_id' => $validated['product_id'],
             'quantity' => $quantity,
             'type' => $type,
@@ -54,7 +53,7 @@ class StockMovementController extends Controller
 
     public function history(Request $request, Product $product)
     {
-        $this->authorize('viewStockHistory', $product);
+        $this->authorize('stock.manage');
 
         $movements = $product->stockMovements()->latest()->get();
 

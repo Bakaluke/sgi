@@ -12,22 +12,31 @@ class PaymentTermController extends Controller
     public function index()
     {
         $this->authorize('viewAny', PaymentTerm::class);
+
         return PaymentTerm::orderBy('name', 'asc')->get();
     }
 
     public function store(Request $request)
     {
         $this->authorize('create', PaymentTerm::class);
+
         $validated = $request->validate(['name' => 'required|string|unique:payment_terms,name']);
+
+        $validated['tenant_id'] = $request->user()->tenant_id;
+
         $paymentTerm = PaymentTerm::create($validated);
+
         return response()->json($paymentTerm, 201);
     }
 
     public function update(Request $request, PaymentTerm $paymentTerm)
     {
         $this->authorize('update', $paymentTerm);
+
         $validated = $request->validate(['name' => ['required','string', Rule::unique('payment_terms')->ignore($paymentTerm->id)]]);
+
         $paymentTerm->update($validated);
+
         return response()->json($paymentTerm);
     }
 

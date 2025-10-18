@@ -10,6 +10,7 @@ return new class extends Migration
     {
         Schema::create('payment_terms', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('tenant_id')->constrained('tenants')->onDelete('cascade');
             $table->string('name')->unique();
             $table->integer('number_of_installments')->default(1);
             $table->integer('days_for_first_installment')->default(0);

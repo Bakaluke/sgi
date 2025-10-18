@@ -2,6 +2,8 @@
 
 namespace Database\Seeders;
 
+use App\Models\Plan;
+use App\Models\Tenant;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
@@ -9,12 +11,29 @@ class TenantSeeder extends Seeder
 {
     public function run(): void
     {
-        $proPlan = \App\Models\Plan::first();
+        $proPlan = Plan::first();
 
-        \App\Models\Tenant::create([
+        if (!$proPlan) {
+            $this->command->error('Nenhum plano encontrado. Rode o PlanSeeder primeiro.');
+            return;
+        }
+
+        Tenant::create([
             'plan_id' => $proPlan->id,
-            'name' => 'Drav Dev (Master)',
+            'name' => 'Drav Dev',
             'status' => 'active',
+            'legal_name' => 'Drav Desenvolvimento de Sistemas Ltda',
+            'company_fantasy_name' => 'Drav Dev',
+            'cnpj' => '12345678000199',
+            'email' => 'contato@dravdev.com.br',
+            'phone' => '86999998888',
+            'website' => 'https://dravdev.com.br',
+            'cep' => '64000000',
+            'street' => 'Rua dos Programadores',
+            'number' => '1024',
+            'neighborhood' => 'Centro',
+            'city' => 'Teresina',
+            'state' => 'PI',
         ]);
     }
 }

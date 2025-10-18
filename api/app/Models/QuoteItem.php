@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Scopes\TenantScope;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -11,6 +12,7 @@ class QuoteItem extends Model
     use HasFactory;
 
     protected $fillable = [
+        'tenant_id',
         'quote_id',
         'product_id',
         'product_name',
@@ -24,6 +26,16 @@ class QuoteItem extends Model
         'file_path',
         'commission_percentage',
     ];
+
+    protected static function booted(): void
+    {
+        static::addGlobalScope(new TenantScope);
+    }
+
+    public function tenant(): BelongsTo
+    {
+        return $this->belongsTo(Tenant::class);
+    }
 
     public function quote(): BelongsTo
     {

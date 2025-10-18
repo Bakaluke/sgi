@@ -10,6 +10,7 @@ return new class extends Migration
     {
         Schema::create('quotes', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('tenant_id')->constrained('tenants')->onDelete('cascade');
             $table->foreignId('customer_id')->constrained('customers')->onDelete('restrict');
             $table->foreignId('user_id')->constrained('users')->onDelete('restrict');
             $table->foreignId('status_id')->nullable()->constrained('quote_statuses')->onDelete('restrict');

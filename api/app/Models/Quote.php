@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Scopes\TenantScope;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -14,6 +15,7 @@ class Quote extends Model
     use HasFactory;
 
     protected $fillable = [
+        'tenant_id',
         'customer_id',
         'user_id',
         'status_id',
@@ -30,6 +32,16 @@ class Quote extends Model
         'notes',
         'cancellation_reason',
     ];
+
+    protected static function booted(): void
+    {
+        static::addGlobalScope(new TenantScope);
+    }
+
+    public function tenant(): BelongsTo
+    {
+        return $this->belongsTo(Tenant::class);
+    }
 
     protected function customerData(): Attribute
     {

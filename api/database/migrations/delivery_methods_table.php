@@ -10,6 +10,7 @@ return new class extends Migration
     {
         Schema::create('delivery_methods', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('tenant_id')->constrained('tenants')->onDelete('cascade');
             $table->string('name')->unique();
             $table->boolean('is_active')->default(true);
             $table->timestamps();

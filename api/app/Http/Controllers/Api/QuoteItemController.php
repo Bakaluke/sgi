@@ -37,6 +37,7 @@ class QuoteItemController extends Controller
             }
             
             $item = $quote->items()->create([
+                'tenant_id' => $quote->tenant_id,
                 'product_id' => $product->id,
                 'product_name' => $product->name,
                 'quantity' => $validated['quantity'],

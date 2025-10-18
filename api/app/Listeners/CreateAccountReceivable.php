@@ -24,6 +24,7 @@ class CreateAccountReceivable
         $paymentTerm = $order->quote->paymentTerm;
         
         $accountReceivable = AccountReceivable::create([
+            'tenant_id' => $order->tenant_id,
             'quote_id' => $order->quote_id,
             'customer_id' => $order->customer_id,
             'production_order_id' => $order->id,
@@ -38,6 +39,7 @@ class CreateAccountReceivable
 
         for ($i = 1; $i <= $paymentTerm->number_of_installments; $i++) {
             $accountReceivable->installments()->create([
+                'tenant_id' => $order->tenant_id,
                 'installment_number' => $i,
                 'amount' => $installmentAmount,
                 'due_date' => $dueDate,

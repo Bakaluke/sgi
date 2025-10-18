@@ -12,10 +12,10 @@ class CategorySeeder extends Seeder
     {
         Category::query()->delete();
         
-        $masterTenant = Tenant::where('name', 'Drav Dev (Master)')->first();
+        $masterTenant = Tenant::where('name', 'Drav Dev')->first();
 
         if (!$masterTenant) {
-            $this.command->error('Tenant Master "Drav Dev (Master)" não encontrado. Rode o TenantSeeder primeiro.');
+            $this.command->error('Tenant Master "Drav Dev" não encontrado. Rode o TenantSeeder primeiro.');
             return;
         }
 

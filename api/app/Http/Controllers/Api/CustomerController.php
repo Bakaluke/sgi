@@ -56,9 +56,11 @@ class CustomerController extends Controller
         $tenantId = $request->user()->tenant_id;
 
         $customerData = Arr::except($validatedData, ['address']);
+
         $customerData['tenant_id'] = $tenantId;
 
         $addressData = $validatedData['address'];
+
         $addressData['tenant_id'] = $tenantId;
 
         $customer = DB::transaction(function () use ($customerData, $addressData) {
@@ -98,6 +100,7 @@ class CustomerController extends Controller
         ]);
         
         $customerData = Arr::except($validatedData, ['address']);
+
         $addressData = $validatedData['address'];
 
         DB::transaction(function () use ($customerData, $addressData, $customer) {
@@ -139,6 +142,7 @@ class CustomerController extends Controller
         $this->authorize('viewAny', Customer::class);
 
         $fileName = 'clientes.csv';
+
         $customers = Customer::with('addresses')->get();
 
         $headers = [
@@ -155,6 +159,7 @@ class CustomerController extends Controller
             fputs($file, $bom =( chr(0xEF) . chr(0xBB) . chr(0xBF) ));
 
             $columns = ['ID', 'Nome', 'Tipo', 'Documento', 'E-mail', 'Telefone', 'Endereço'];
+            
             fputcsv($file, $columns, ';');
 
             foreach ($customers as $customer) {

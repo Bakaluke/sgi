@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Scopes\TenantScope;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -14,6 +15,7 @@ class AccountReceivable extends Model
     protected $table = 'accounts_receivables';
 
     protected $fillable = [
+        'tenant_id',
         'quote_id',
         'customer_id',
         'production_order_id',
@@ -28,6 +30,15 @@ class AccountReceivable extends Model
         'due_date' => 'date',
         'paid_at' => 'date',
     ];
+
+    protected static function booted(): void
+    {
+        static::addGlobalScope(new TenantScope);
+    }
+    public function tenant(): BelongsTo
+    {
+        return $this->belongsTo(Tenant::class);
+    }
 
     public function quote(): BelongsTo
     {

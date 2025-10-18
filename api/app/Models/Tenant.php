@@ -11,10 +11,27 @@ class Tenant extends Model
 {
     use HasFactory;
 
+    /**
+     * @var array<int, string>
+     */
     protected $fillable = [
         'plan_id',
         'name',
-        'status'
+        'status',
+        'legal_name',
+        'company_fantasy_name',
+        'cnpj',
+        'email',
+        'phone',
+        'website',
+        'cep',
+        'street',
+        'number',
+        'complement',
+        'neighborhood',
+        'city',
+        'state',
+        'logo_path',
     ];
 
     public function plan(): BelongsTo

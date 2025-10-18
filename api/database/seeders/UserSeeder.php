@@ -12,7 +12,7 @@ class UserSeeder extends Seeder
     {
         User::query()->delete();
 
-        $masterTenant = Tenant::where('name', 'Drav Dev (Master)')->first();
+        $masterTenant = Tenant::where('name', 'Drav Dev')->first();
 
         User::factory()->create([
             'tenant_id' => $masterTenant->id,

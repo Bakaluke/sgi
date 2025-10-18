@@ -35,6 +35,8 @@ class AccountPayableController extends Controller
             'due_date' => 'required|date',
         ]);
 
+        $validated['tenant_id'] = $request->user()->tenant_id;
+
         $accountPayable = AccountPayable::create($validated);
 
         return response()->json($accountPayable, 201);

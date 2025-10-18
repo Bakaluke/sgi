@@ -10,6 +10,7 @@ return new class extends Migration
     {
         Schema::create('accounts_receivables', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('tenant_id')->constrained('tenants')->onDelete('cascade');
             $table->foreignId('quote_id')->constrained('quotes');
             $table->foreignId('customer_id')->constrained('customers');
             $table->foreignId('production_order_id')->constrained('production_orders');

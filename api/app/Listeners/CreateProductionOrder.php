@@ -19,17 +19,15 @@ class CreateProductionOrder
     {
         $quote = $event->quote;
 
-        if (ProductionOrder::where('quote_id', $quote->id)->exists()) {
-            return;
-        }
-
         $pendingStatus = ProductionStatus::where('name', 'Pendente')->first();
 
         if (!$pendingStatus) {
+            Log::error('Status de produção "Pendente" não encontrado.');
             return;
         }
 
         ProductionOrder::create([
+            'tenant_id' => $quote->tenant_id,
             'quote_id' => $quote->id,
             'customer_id' => $quote->customer_id,
             'user_id' => $quote->user_id,

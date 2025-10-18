@@ -15,6 +15,7 @@ class CustomerFactory extends Factory
         $tenant = Tenant::first();
 
         $type = $this->faker->randomElement(['fisica', 'juridica']);
+        
         $isFisica = $type === 'fisica';
 
         return [

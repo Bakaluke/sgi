@@ -22,7 +22,6 @@ class DatabaseSeeder extends Seeder
             ProductionStatusSeeder::class,
             QuoteStatusSeeder::class,
             QuoteSeeder::class,
-            SettingsSeeder::class,
         ]);
     }
 }

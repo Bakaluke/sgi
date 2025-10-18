@@ -87,6 +87,7 @@ class QuoteController extends Controller
         ];
 
         $quote = Quote::create([
+            'tenant_id' => $user->tenant_id,
             'customer_id' => $customer->id,
             'user_id' => $user->id,
             'status_id' => $defaultStatus->id,

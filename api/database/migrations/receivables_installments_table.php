@@ -10,6 +10,7 @@ return new class extends Migration
     {
         Schema::create('receivable_installments', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('tenant_id')->constrained('tenants')->onDelete('cascade');
             $table->foreignId('account_receivable_id')->constrained('accounts_receivables')->onDelete('cascade');
             $table->integer('installment_number');
             $table->decimal('amount', 10, 2);

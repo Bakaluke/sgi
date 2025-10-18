@@ -32,6 +32,7 @@ class UserController extends Controller
         ]);
 
         $userData = [
+            'tenant_id' => $request->user()->tenant_id,
             'name' => $validatedData['name'],
             'email' => $validatedData['email'],
             'phone' => $validatedData['phone'],
@@ -88,7 +89,9 @@ class UserController extends Controller
     public function destroy(User $user)
     {
         $this->authorize('delete', $user);
+
         $user->delete();
+        
         return response()->noContent();
     }
 }

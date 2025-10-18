@@ -41,6 +41,7 @@ class QuoteFactory extends Factory
         ];
 
         return [
+            'tenant_id' => $customer->tenant_id,
             'customer_id' => $customer->id,
             'user_id' => $user->id,
             'status_id' => $status->id,
@@ -55,10 +56,13 @@ class QuoteFactory extends Factory
         ];
     }
 
-     public function configure()
+    public function configure()
     {
         return $this->afterCreating(function (Quote $quote) {
-            QuoteItem::factory(rand(1, 5))->create(['quote_id' => $quote->id]);
+            QuoteItem::factory(rand(1, 5))->create([
+                'quote_id' => $quote->id,
+                'tenant_id' => $quote->tenant_id,
+            ]);
             $quote->recalculateTotals();
         });
     }

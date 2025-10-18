@@ -14,19 +14,18 @@ class ProductSeeder extends Seeder
     {
         Product::query()->delete();
         
-        $masterTenant = Tenant::where('name', 'Drav Dev (Master)')->first();
+        $masterTenant = Tenant::where('name', 'Drav Dev')->first();
 
         if (!$masterTenant) {
-            $this.command->error('Tenant Master "Drav Dev (Master)" não encontrado. Rode o TenantSeeder primeiro.');
+            $this.command->error('Tenant Master "Drav Dev" não encontrado. Rode o TenantSeeder primeiro.');
             return;
         }
 
-        $products = Product::factory()->count(50)->create([
-            'tenant_id' => $masterTenant->id,
-        ]);
+        $products = Product::factory()->count(50)->create(['tenant_id' => $masterTenant->id,]);
 
         foreach ($products as $product) {
             StockMovement::create([
+                'tenant_id' => $masterTenant->id,
                 'product_id' => $product->id,
                 'quantity' => $product->quantity_in_stock,
                 'cost_price' => $product->cost_price,

@@ -63,7 +63,7 @@ const permissionTranslations: { [key: string]: string } = {
     'production_orders.delete': 'Excluir Ordens de Produção',
     'stock.manage': 'Gerenciar Estoque',
     'categories.manage': 'Gerenciar Categorias',
-    'finance.manage_payables': 'Gerenciar Contas',
+    'finance.manage_payables': 'Gerenciar Financeiro',
     'finance.register_payment': 'Dar Baixa em Pagamentos',
     'finance.register_installment_payment': 'Dar Baixa em Parcelas',
     'finance.view_receivables': 'Ver Contas a Receber',
@@ -597,7 +597,7 @@ function SettingsPage() {
                             </Modal>
 
                             <Group justify="flex-end" mb="md">
-                                <Button onClick={handleOpenCreatePmModal} leftSection={<IconPlus size={16}/>}>Adicionar</Button>
+                                <Button onClick={handleOpenCreatePmModal} leftSection={<IconPlus size={16}/>}>Adicionar Forma</Button>
                             </Group>
 
                             <Table>
@@ -668,7 +668,7 @@ function SettingsPage() {
                                     <Group justify="flex-end" mt="lg"><Button type="submit">Salvar</Button></Group>
                                 </form>
                             </Modal>
-                            <Group justify="flex-end" mb="md"><Button onClick={handleOpenCreateDmModal} leftSection={<IconPlus size={16}/>}>Adicionar</Button></Group>
+                            <Group justify="flex-end" mb="md"><Button onClick={handleOpenCreateDmModal} leftSection={<IconPlus size={16}/>}>Adicionar Entrega</Button></Group>
                             <Table>
                                 <Table.Thead>
                                     <Table.Tr>
@@ -730,7 +730,7 @@ function SettingsPage() {
                                     <Group justify="flex-end" mt="lg"><Button type="submit">Salvar</Button></Group>
                                 </form>
                             </Modal>
-                            <Group justify="flex-end" mb="md"><Button onClick={handleOpenCreateNsModal} leftSection={<IconPlus size={16}/>}>Adicionar</Button></Group>
+                            <Group justify="flex-end" mb="md"><Button onClick={handleOpenCreateNsModal} leftSection={<IconPlus size={16}/>}>Adicionar Origem</Button></Group>
                             <Table>
                                 <Table.Thead>
                                     <Table.Tr>
