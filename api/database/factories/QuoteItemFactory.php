@@ -9,7 +9,7 @@ class QuoteItemFactory extends Factory
 {
     public function definition(): array
     {
-        $product = Product::factory()->create();
+        $product = Product::inRandomOrder()->first() ?? Product::factory()->create();
         $quantity = $this->faker->numberBetween(1, 5);
         $costPrice = $product->isService() ? 0 : $product->cost_price;
         $salePrice = $product->sale_price;

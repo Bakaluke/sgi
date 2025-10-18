@@ -1,6 +1,6 @@
-# SGI Cake Web Dev - Sistema de Gestão Integrado (v1.0)
+# SGI Drav Dev - Sistema de Gestão Integrado (v1.0)
 
-Um Sistema de Gestão Integrado (ERP/CRM) moderno, construído do zero com uma stack full-stack, projetado para ser flexível e atender às necessidades de pequenas e médias empresas. Este projeto, desenvolvido como parte do portfólio da **Cake Web Dev**, demonstra a criação de uma aplicação robusta, segura e com uma experiência de usuário rica.
+Um Sistema de Gestão Integrado (ERP/CRM) moderno, construído do zero com uma stack full-stack, projetado para ser flexível e atender às necessidades de pequenas e médias empresas. Este projeto, desenvolvido como parte do portfólio da **Drav Dev**, demonstra a criação de uma aplicação robusta, segura e com uma experiência de usuário rica.
 
 O sistema foi modelado para ser altamente customizável, com um foco inicial nas necessidades de uma **gráfica**, lidando com produtos físicos, serviços e um fluxo de produção e financeiro completo.
 
@@ -82,9 +82,7 @@ O SGI conta com um conjunto completo de módulos integrados para gerenciar as op
 
 ## 🔮 Roadmap de Futuras Melhorias
 
-- **Testes Automatizados:** Escrever uma suíte de testes para a API (com Pest) para garantir a estabilidade e a manutenibilidade do sistema a longo prazo.
 - **Refinamentos no Financeiro:** Criar mais relatórios gerenciais e explorar a possibilidade de conciliação bancária.
-- **Dashboard 2.0:** Adicionar novas métricas, como "Ranking de Vendedores" e um "Funil de Vendas".
 
 ---
 
@@ -120,8 +118,8 @@ O SGI conta com um conjunto completo de módulos integrados para gerenciar as op
 
 1.  **Clonar o Repositório:**
     ```bash
-    git clone [https://github.com/CakeWebDev/sgi-cakewebdev.git](https://github.com/CakeWebDev/sgi-cakewebdev.git)
-    cd sgi-cakewebdev
+    git clone [https://github.com/Bakaluke/sgi.git](https://github.com/Bakaluke/sgi.git)
+    cd sgi
     ```
 
 2.  **Configurar o Backend (API):**
@@ -170,6 +168,6 @@ O SGI conta com um conjunto completo de módulos integrados para gerenciar as op
 
 ---
 
-## 🍰 Sobre a Cake Web Dev
+## 🍰 Sobre a Drav Dev
 
-Este projeto foi desenvolvido com dedicação pela **Cake Web Dev** como parte do nosso portfólio de soluções de software customizadas. Ele demonstra nossa capacidade de construir aplicações full-stack complexas, seguras e com foco na experiência do usuário.
+Este projeto foi desenvolvido com dedicação pela **Drav Dev** como parte do nosso portfólio de soluções de software customizadas. Ele demonstra nossa capacidade de construir aplicações full-stack complexas, seguras e com foco na experiência do usuário.

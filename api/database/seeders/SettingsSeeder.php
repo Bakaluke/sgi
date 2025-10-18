@@ -9,10 +9,10 @@ class SettingsSeeder extends Seeder
     public function run(): void
     {
         Setting::create([
-            'legal_name' => 'Cake Web Desenvolvimento de Sistemas Ltda',
-            'company_fantasy_name' => 'Cake Web Dev',
+            'legal_name' => 'Drav Desenvolvimento de Sistemas Ltda',
+            'company_fantasy_name' => 'Drav Dev',
             'cnpj' => '12345678000199',
-            'email' => 'contato@cakewebdev.com.br',
+            'email' => 'contato@dravdev.com.br',
             'phone' => '86999998888',
             'cep' => '64000000',
             'street' => 'Rua dos Programadores',
@@ -20,7 +20,7 @@ class SettingsSeeder extends Seeder
             'neighborhood' => 'Centro',
             'city' => 'Teresina',
             'state' => 'PI',
-            'website' => 'https://cakewebdev.com.br',
+            'website' => 'https://dravdev.com.br',
         ]);
     }
 }

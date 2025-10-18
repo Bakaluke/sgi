@@ -1,22 +1,30 @@
 <?php
 namespace Database\Factories;
 
+use App\Models\Tenant;
 use App\Models\Customer;
 use App\Models\Address;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class CustomerFactory extends Factory
 {
+    protected $model = Customer::class;
+
     public function definition(): array
     {
-        $type = fake()->randomElement(['fisica', 'juridica']);
+        $tenant = Tenant::first();
+
+        $type = $this->faker->randomElement(['fisica', 'juridica']);
+        $isFisica = $type === 'fisica';
+
         return [
+            'tenant_id' => $tenant->id,
             'type' => $type,
-            'document' => $type === 'fisica' ? fake()->unique()->numerify('###########') : fake()->unique()->numerify('##############'),
-            'name' => $type === 'fisica' ? fake()->name() : fake()->company(),
-            'legal_name' => $type === 'juridica' ? fake()->company() . ' LTDA' : null,
-            'email' => fake()->unique()->safeEmail(),
-            'phone' => str_replace(['(', ')', '-', ' '], '', fake()->phoneNumber()),
+            'document' => $isFisica ? $this->faker->unique()->cpf(false) : $this->faker->unique()->cnpj(false),
+            'name' => $isFisica ? $this->faker->name() : $this->faker->company(),
+            'legal_name' => $isFisica ? null : $this->faker->company() . ' Ltda.',
+            'email' => $this->faker->unique()->safeEmail(),
+            'phone' => $this->faker->numerify('###########'),
         ];
     }
 
@@ -25,6 +33,7 @@ class CustomerFactory extends Factory
         return $this->afterCreating(function (Customer $customer) {
             Address::factory()->create([
                 'customer_id' => $customer->id,
+                'tenant_id' => $customer->tenant_id,
             ]);
         });
     }

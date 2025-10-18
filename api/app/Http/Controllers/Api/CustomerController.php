@@ -53,8 +53,13 @@ class CustomerController extends Controller
             'address.state' => 'required|string|max:2',
         ]);
 
+        $tenantId = $request->user()->tenant_id;
+
         $customerData = Arr::except($validatedData, ['address']);
+        $customerData['tenant_id'] = $tenantId;
+
         $addressData = $validatedData['address'];
+        $addressData['tenant_id'] = $tenantId;
 
         $customer = DB::transaction(function () use ($customerData, $addressData) {
             $customer = Customer::create($customerData);

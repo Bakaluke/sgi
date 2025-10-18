@@ -5,13 +5,25 @@ namespace Database\Seeders;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use App\Models\Product;
+use App\Models\Tenant;
 use App\Models\StockMovement;
 
 class ProductSeeder extends Seeder
 {
     public function run(): void
     {
-        $products = Product::factory()->count(50)->create();
+        Product::query()->delete();
+        
+        $masterTenant = Tenant::where('name', 'Drav Dev (Master)')->first();
+
+        if (!$masterTenant) {
+            $this.command->error('Tenant Master "Drav Dev (Master)" não encontrado. Rode o TenantSeeder primeiro.');
+            return;
+        }
+
+        $products = Product::factory()->count(50)->create([
+            'tenant_id' => $masterTenant->id,
+        ]);
 
         foreach ($products as $product) {
             StockMovement::create([

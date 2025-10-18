@@ -26,7 +26,7 @@ export function Layout() {
 
   useEffect(() => {
     if (settings?.company_fantasy_name) {
-      document.title = `${settings.company_fantasy_name} - SGI`;
+      document.title = `${settings.company_fantasy_name} - SGI by Drav Dev`;
     }
   }, [settings]);
 
@@ -41,7 +41,7 @@ export function Layout() {
       <AppShell.Header>
         <Group h="100%" px="md" justify="space-between">
           <Burger opened={opened} onClick={toggle} hiddenFrom="sm" size="sm" />
-          <Title order={3}>{settings?.company_fantasy_name || 'SGI Cake Web Dev'}</Title>
+          <Title order={3}>{settings?.company_fantasy_name || 'SGI'}</Title>
           <Menu shadow="md" width={200}>
             <Menu.Target>
               <Group gap="xs" style={{ cursor: 'pointer' }}>
@@ -80,7 +80,7 @@ export function Layout() {
       <AppShell.Footer p="xs" style={{ background: 'var(--mantine-color-body)' }}>
         <Group justify="space-between">
           <Text size="xs" c="dimmed"></Text>
-          <Text size="xs" c="dimmed">{settings?.company_fantasy_name || 'SGI'} &copy; {new Date().getFullYear()} Feito com ❤️ por Cake Web Dev.</Text>
+          <Text size="xs" c="dimmed">{settings?.company_fantasy_name || 'SGI'} &copy; {new Date().getFullYear()} Feito por Drav Dev.</Text>
         </Group>
       </AppShell.Footer>
 

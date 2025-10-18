@@ -8,16 +8,17 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('categories', function (Blueprint $table) {
+        Schema::create('tenants', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('tenant_id')->constrained('tenants')->onDelete('cascade');
+            $table->foreignId('plan_id')->nullable()->constrained('plans');
             $table->string('name')->unique();
+            $table->string('status')->default('active');
             $table->timestamps();
         });
     }
-
+    
     public function down(): void
     {
-        Schema::dropIfExists('categories');
+        Schema::dropIfExists('tenants');
     }
 };

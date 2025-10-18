@@ -10,6 +10,7 @@ return new class extends Migration
     {
         Schema::create('products', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('tenant_id')->constrained('tenants')->onDelete('cascade');
             $table->string('name');
             $table->string('sku')->unique();
             $table->enum('type', ['produto', 'servico'])->default('produto');

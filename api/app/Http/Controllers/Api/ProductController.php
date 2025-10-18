@@ -55,6 +55,8 @@ class ProductController extends Controller
             $validatedData['image_path'] = $path;
         }
 
+        $validatedData['tenant_id'] = $request->user()->tenant_id;
+
         $product = Product::create($validatedData);
 
         return response()->json($product, 201);
