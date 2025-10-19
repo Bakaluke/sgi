@@ -265,19 +265,19 @@ function QuoteListPage() {
   };
   
   const handlePrintPdf = (quoteId: number) => {
-	setIsPrintingId(quoteId);
-	api.get(`/quotes/${quoteId}/pdf`, {
-		responseType: 'blob',
-	}).then(response => {
-		const file = new Blob([response.data], { type: 'application/pdf' });
-		const fileURL = URL.createObjectURL(file);
-		window.open(fileURL, '_blank');
-	}).catch(error => {
-		console.error("Erro ao gerar PDF:", error);
-		notifications.show({ title: 'Erro!', message: 'Não foi possível gerar o PDF.', color: 'red' });
-	}).finally(() => {
-	setIsPrintingId(null);
-	});
+    setIsPrintingId(quoteId);
+    api.get(`/quotes/${quoteId}/pdf`, {
+      responseType: 'blob',
+    }).then(response => {
+      const file = new Blob([response.data], { type: 'application/pdf' });
+      const fileURL = URL.createObjectURL(file);
+      window.open(fileURL, '_blank');
+    }).catch(error => {
+      console.error("Erro ao gerar PDF:", error);
+      notifications.show({ title: 'Erro!', message: 'Não foi possível gerar o PDF.', color: 'red' });
+    }).finally(() => {
+      setIsPrintingId(null);
+    });
   };
   
   const rows = quotes.map((quote) => {
@@ -304,7 +304,7 @@ function QuoteListPage() {
               <Menu.Dropdown>
                 <Menu.Label>Ações do Orçamento</Menu.Label>
                 <Menu.Item leftSection={<IconEye size={14} />} onClick={() => navigate(`/quotes/${quote.id}`)} >Ver / Editar</Menu.Item>
-                <Menu.Item leftSection={<IconPrinter size={14} />} onClick={() => handlePrintPdf(quote.id)} loading={isPrintingId === quote.id} disabled={isPrintingId !== null} >Imprimir Orçamento</Menu.Item>
+                <Menu.Item leftSection={isPrintingId === quote.id ? <Loader size={14} /> : <IconPrinter size={14} />} onClick={() => handlePrintPdf(quote.id)} disabled={isPrintingId !== null} >Imprimir Orçamento</Menu.Item>
                 <Menu.Divider />
                 <Menu.Item leftSection={<IconMail size={14} />} onClick={() => handleOpenEmailModal(quote)}>Enviar por E-mail</Menu.Item>
                 <Menu.Item leftSection={<IconBrandWhatsapp size={14} />} onClick={() => handleSendWhatsApp(quote)}>Enviar por WhatsApp</Menu.Item>

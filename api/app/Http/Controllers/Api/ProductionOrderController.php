@@ -18,9 +18,9 @@ class ProductionOrderController extends Controller
 
         $user = $request->user();
         
-        $query = ProductionOrder::with(['customer', 'user', 'quote.items.product', 'status']);
+        $query = ProductionOrder::query();
 
-        if ($user->role === 'vendedor') {
+        if (!$user->can('production_orders.view_all')) {
             $query->where('user_id', $user->id);
         }
 
@@ -28,13 +28,15 @@ class ProductionOrderController extends Controller
             $searchTerm = $request->input('search');
             $query->where(function ($q) use ($searchTerm) {
                 $q->where('id', 'like', "%{$searchTerm}%")
-                ->orWhere('status', 'like', "%{$searchTerm}%")
-                ->orWhereHas('customer', function ($subQ) use ($searchTerm) {
-                    $subQ->where('name', 'like', "%{$searchTerm}%");
-                });
+                  ->orWhere('quote_id', 'like', "%{$searchTerm}%")
+                  ->orWhereHas('customer', function ($subQ) use ($searchTerm) {
+                      $subQ->where('name', 'like', "%{$searchTerm}%");
+                  });
             });
         }
 
+        $query->with(['customer', 'user', 'quote.items.product', 'status']);
+        
         $query->latest();
 
         return $query->paginate(15);
@@ -108,7 +110,6 @@ class ProductionOrderController extends Controller
         $productionOrder->load(['customer', 'user', 'quote.items.product', 'status']);
         
         $settings = $request->user()->tenant; 
-
         $pdf = Pdf::loadView('pdf.work_order', [
             'order' => $productionOrder,
             'settings' => $settings
@@ -123,7 +124,6 @@ class ProductionOrderController extends Controller
         $productionOrder->load(['customer', 'user', 'quote.items.product', 'status']);
         
         $settings = $request->user()->tenant;
-
         $pdf = Pdf::loadView('pdf.delivery_protocol', [
             'order' => $productionOrder,
             'settings' => $settings

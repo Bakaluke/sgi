@@ -1,5 +1,5 @@
 import { Fragment, useCallback, useEffect, useState } from 'react';
-import { Table, Title, Container, Group, Pagination, TextInput, Select, ActionIcon, Collapse, Paper, Text, Menu, Anchor, Tooltip, ThemeIcon, Button, Modal, Textarea } from '@mantine/core';
+import { Table, Title, Container, Group, Pagination, TextInput, Select, ActionIcon, Collapse, Paper, Text, Menu, Anchor, Tooltip, ThemeIcon, Button, Modal, Textarea, Loader } from '@mantine/core';
 import { IconAlertTriangle, IconChevronDown, IconDotsVertical, IconFile, IconFileExport, IconFileText, IconPrinter, IconSearch, IconTrash } from '@tabler/icons-react';
 import { notifications } from '@mantine/notifications';
 import { useAuth } from '../context/AuthContext';
@@ -122,21 +122,21 @@ function ProductionPage() {
   };
   
   const handlePrintPdf = (orderId: number, type: 'work-order' | 'delivery-protocol') => {
-	setIsPrintingId(orderId);
-	const url = type === 'work-order'
-		? `/production-orders/${orderId}/work-order-pdf`
-		: `/production-orders/${orderId}/delivery-protocol-pdf`;
-	api.get(url, { responseType: 'blob' })
-	.then(response => {
-		const file = new Blob([response.data], { type: 'application/pdf' });
-		const fileURL = URL.createObjectURL(file);
-		window.open(fileURL, '_blank');
-	})
-	.catch(error => {
-		console.error(`Erro ao gerar PDF (${type}):`, error);
-		notifications.show({ title: 'Erro!', message: 'Não foi possível gerar o PDF.', color: 'red' });
-	})
-	.finally(() => setIsPrintingId(null));
+    setIsPrintingId(orderId);
+    const url = type === 'work-order'
+    ? `/production-orders/${orderId}/work-order-pdf`
+    : `/production-orders/${orderId}/delivery-protocol-pdf`;
+    api.get(url, { responseType: 'blob' })
+    .then(response => {
+      const file = new Blob([response.data], { type: 'application/pdf' });
+      const fileURL = URL.createObjectURL(file);
+      window.open(fileURL, '_blank');
+    })
+    .catch(error => {
+      console.error(`Erro ao gerar PDF (${type}):`, error);
+      notifications.show({ title: 'Erro!', message: 'Não foi possível gerar o PDF.', color: 'red' });
+    })
+    .finally(() => setIsPrintingId(null));
   };
 
   const rows = orders.map((order) => {
@@ -166,8 +166,8 @@ function ProductionPage() {
             </Menu.Target>
             <Menu.Dropdown>
               <Menu.Label>Ações do Pedido</Menu.Label>
-              <Button size="xs" variant="default" leftSection={<IconPrinter size={14} />} onClick={() => handlePrintPdf(order.id, 'work-order')} loading={isPrintingId === order.id} >Ordem de Serviço</Button>
-              <Button size="xs" variant="default" leftSection={<IconPrinter size={14} />} onClick={() => handlePrintPdf(order.id, 'delivery-protocol')} loading={isPrintingId === order.id} >Protocolo de Entrega</Button>
+              <Menu.Item leftSection={isPrintingId === order.id ? <Loader size={14} /> : <IconPrinter size={14} />} onClick={() => handlePrintPdf(order.id, 'work-order')} disabled={isPrintingId !== null} >Imprimir Ordem de Serviço</Menu.Item>
+              <Menu.Item leftSection={isPrintingId === order.id ? <Loader size={14} /> : <IconFileText size={14} />} onClick={() => handlePrintPdf(order.id, 'delivery-protocol')} disabled={isPrintingId !== null} >Imprimir Protocolo de Entrega</Menu.Item>
               {can('production_orders.delete') && (<><Menu.Divider /><Menu.Item color="red" leftSection={<IconTrash size={14} />} onClick={() => handleDelete(order.id)}>Apagar Ordem de Produção</Menu.Item></>)}
             </Menu.Dropdown>
           </Menu>
