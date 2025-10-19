@@ -7,6 +7,7 @@ use App\Models\ProductionOrder;
 use App\Models\ProductionStatus;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
+use Illuminate\Support\Facades\Log;
 
 class CreateProductionOrder
 {
@@ -18,9 +19,13 @@ class CreateProductionOrder
     public function handle(QuoteApproved $event): void
     {
         $quote = $event->quote;
+        
+        if (ProductionOrder::where('quote_id', $quote->id)->exists()) {
+            return;
+        }
 
         $pendingStatus = ProductionStatus::where('name', 'Pendente')->first();
-
+        
         if (!$pendingStatus) {
             Log::error('Status de produção "Pendente" não encontrado.');
             return;

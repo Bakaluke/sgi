@@ -49,6 +49,7 @@ function QuoteFormPage() {
   const [quote, setQuote] = useState<Quote | null>(null);
   const [initialStatus, setInitialStatus] = useState<string | null>(null);
   const [isSavingHeader, setIsSavingHeader] = useState(false);
+  const [isPrinting, setIsPrinting] = useState(false);
   const [products, setProducts] = useState<Product[]>([]);
   const [selectedProduct, setSelectedProduct] = useState<string | null>(null);
   const [quantity, setQuantity] = useState<number | string>(1);
@@ -303,6 +304,23 @@ function QuoteFormPage() {
     .catch(() => notifications.show({ title: 'Erro!', message: 'Documento inválido ou já cadastrado.', color: 'red' }));
   };
   
+  const handlePrintPdf = () => {
+	if (!quote) return;
+    setIsPrinting(true);
+    api.get(`/quotes/${quote.id}/pdf`, {
+        responseType: 'blob',
+    }).then(response => {
+        const file = new Blob([response.data], { type: 'application/pdf' });
+        const fileURL = URL.createObjectURL(file);
+        window.open(fileURL, '_blank');
+    }).catch(error => {
+        console.error("Erro ao gerar PDF:", error);
+        notifications.show({ title: 'Erro!', message: 'Não foi possível gerar o PDF.', color: 'red' });
+    }).finally(() => {
+        setIsPrinting(false);
+    });
+  };
+  
   const itemRows = quote?.items?.map((item) => (
   <Table.Tr key={item.id}>
     <Table.Td>
@@ -407,7 +425,7 @@ function QuoteFormPage() {
         </Fieldset>
         
         <Group justify="flex-end" mt="md">
-          <Button component="a" href={`${import.meta.env.VITE_API_BASE_URL.replace('/api', '')}/quotes/${quote.id}/pdf`} target="_blank" variant="default" leftSection={<IconPrinter size={16} />}>Imprimir</Button>
+          <Button onClick={handlePrintPdf} loading={isPrinting} variant="default" leftSection={<IconPrinter size={16} />}>Imprimir Orçamento</Button>
           <Button onClick={handleUpdateHeader} loading={isSavingHeader} disabled={isLocked}>Salvar Alterações</Button>
         </Group>
       </Paper>

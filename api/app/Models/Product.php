@@ -53,6 +53,11 @@ class Product extends Model
     {
         return $this->belongsTo(Tenant::class);
     }
+    
+    public function isProduct(): bool
+    {
+        return $this->type === 'produto';
+    }
 
     public function isService(): bool
     {

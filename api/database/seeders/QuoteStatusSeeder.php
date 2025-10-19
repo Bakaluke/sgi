@@ -15,8 +15,8 @@ class QuoteStatusSeeder extends Seeder
 
         $masterTenant = Tenant::where('name', 'Drav Dev')->first();
 
-        QuoteStatus::create(['tenant_id' => $masterTenant->id, 'name' => 'Aberto', 'color' => 'blue']);
-        QuoteStatus::create(['tenant_id' => $masterTenant->id, 'name' => 'Negociação', 'color' => 'orange']);
+        QuoteStatus::create(['tenant_id' => $masterTenant->id, 'name' => 'Aberto', 'color' => 'orange']);
+        QuoteStatus::create(['tenant_id' => $masterTenant->id, 'name' => 'Negociação', 'color' => 'blue']);
         QuoteStatus::create(['tenant_id' => $masterTenant->id, 'name' => 'Aprovado', 'color' => 'green']);
         QuoteStatus::create(['tenant_id' => $masterTenant->id, 'name' => 'Cancelado', 'color' => 'red']);
     }

@@ -7,7 +7,6 @@ use App\Http\Controllers\Controller;
 use App\Models\Customer;
 use App\Models\Quote;
 use App\Models\QuoteStatus;
-use App\Models\Setting;
 use App\Mail\QuoteSent;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -180,20 +179,20 @@ class QuoteController extends Controller
         return response()->noContent();
     }
 
-    public function generatePdf(Quote $quote)
-    {
-        $quote->load(['customer.addresses', 'user', 'items.product', 'status', 'paymentMethod', 'deliveryMethod', 'negotiationSource', 'paymentTerm']);
+    public function generatePdf(Request $request, Quote $quote)
+	{
+		$quote->load(['customer.addresses', 'user', 'items.product', 'status', 'paymentMethod', 'deliveryMethod', 'negotiationSource', 'paymentTerm']);
 
-        $settings = Setting::first();
+		$settings = $request->user()->tenant; 
 
-        $pdf = Pdf::loadView('pdf.quote', [
-            'quote' => $quote,
-            'customer_data' => $quote->customer_data,
-            'settings' => $settings
-        ]);
+		$pdf = Pdf::loadView('pdf.quote', [
+			'quote' => $quote,
+			'customer_data' => $quote->customer_data,
+			'settings' => $settings
+		]);
 
-        return $pdf->stream('orcamento-'.$quote->id.'.pdf');
-    }
+		return $pdf->stream('orcamento-'.$quote->id.'.pdf');
+	}
 
     public function export(Request $request)
     {

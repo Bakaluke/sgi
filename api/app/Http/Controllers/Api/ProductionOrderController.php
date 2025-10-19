@@ -6,7 +6,6 @@ use App\Events\OrderCompleted;
 use App\Http\Controllers\Controller;
 use App\Models\ProductionOrder;
 use App\Models\ProductionStatus;
-use App\Models\Setting;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -102,31 +101,34 @@ class ProductionOrderController extends Controller
         return response()->noContent();
     }
 
-    public function generateWorkOrderPdf(ProductionOrder $productionOrder)
+    public function generateWorkOrderPdf(Request $request, ProductionOrder $productionOrder)
     {
-        $productionOrder->load(['customer', 'user', 'quote.items.product']);
+        $this->authorize('view', $productionOrder);
         
-        $settings = Setting::first();
+        $productionOrder->load(['customer', 'user', 'quote.items.product', 'status']);
         
+        $settings = $request->user()->tenant; 
+
         $pdf = Pdf::loadView('pdf.work_order', [
             'order' => $productionOrder,
-            'settings' => $settings 
+            'settings' => $settings
         ]);
-        
-        return $pdf->stream('ordem-de-servico-'.$productionOrder->id.'.pdf');
+        return $pdf->stream('ordem-servico-'.$productionOrder->id.'.pdf');
     }
 
-    public function generateDeliveryProtocolPdf(ProductionOrder $productionOrder)
+    public function generateDeliveryProtocolPdf(Request $request, ProductionOrder $productionOrder)
     {
-        $productionOrder->load(['customer', 'user', 'quote.items.product']);
-        $settings = Setting::first();
+        $this->authorize('view', $productionOrder);
+
+        $productionOrder->load(['customer', 'user', 'quote.items.product', 'status']);
+        
+        $settings = $request->user()->tenant;
 
         $pdf = Pdf::loadView('pdf.delivery_protocol', [
             'order' => $productionOrder,
-            'settings' => $settings 
+            'settings' => $settings
         ]);
-
-        return $pdf->stream('protocolo-de-entrega-'.$productionOrder->id.'.pdf');
+        return $pdf->stream('protocolo-entrega-'.$productionOrder->id.'.pdf');
     }
 
     public function export(Request $request)

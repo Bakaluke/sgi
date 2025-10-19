@@ -21,6 +21,7 @@ function ProductionPage() {
   const [orderToCancel, setOrderToCancel] = useState<ProductionOrder | null>(null);
   const [cancellationReason, setCancellationReason] = useState('');
   const [isCancelling, setIsCancelling] = useState(false);
+  const [isPrintingId, setIsPrintingId] = useState<number | null>(null);
   
   const fetchOrders = useCallback((page: number, search: string) => {
     api.get('/production-orders', { params: { page, search } })
@@ -119,6 +120,24 @@ function ProductionPage() {
     })
     .finally(() => setIsExporting(false));
   };
+  
+  const handlePrintPdf = (orderId: number, type: 'work-order' | 'delivery-protocol') => {
+	setIsPrintingId(orderId);
+	const url = type === 'work-order'
+		? `/production-orders/${orderId}/work-order-pdf`
+		: `/production-orders/${orderId}/delivery-protocol-pdf`;
+	api.get(url, { responseType: 'blob' })
+	.then(response => {
+		const file = new Blob([response.data], { type: 'application/pdf' });
+		const fileURL = URL.createObjectURL(file);
+		window.open(fileURL, '_blank');
+	})
+	.catch(error => {
+		console.error(`Erro ao gerar PDF (${type}):`, error);
+		notifications.show({ title: 'Erro!', message: 'Não foi possível gerar o PDF.', color: 'red' });
+	})
+	.finally(() => setIsPrintingId(null));
+  };
 
   const rows = orders.map((order) => {
     const isExpanded = expandedOrderIds.includes(order.id);
@@ -147,8 +166,8 @@ function ProductionPage() {
             </Menu.Target>
             <Menu.Dropdown>
               <Menu.Label>Ações do Pedido</Menu.Label>
-              <Menu.Item leftSection={<IconPrinter size={14} />} component="a" href={`${import.meta.env.VITE_API_BASE_URL.replace('/api', '')}/production-orders/${order.id}/work-order`} target="_blank">Ordem de Produção</Menu.Item>
-              <Menu.Item leftSection={<IconFileText size={14} />} component="a" href={`${import.meta.env.VITE_API_BASE_URL.replace('/api', '')}/production-orders/${order.id}/delivery-protocol`} target="_blank">Protocolo de Entrega</Menu.Item>
+              <Button size="xs" variant="default" leftSection={<IconPrinter size={14} />} onClick={() => handlePrintPdf(order.id, 'work-order')} loading={isPrintingId === order.id} >Ordem de Serviço</Button>
+              <Button size="xs" variant="default" leftSection={<IconPrinter size={14} />} onClick={() => handlePrintPdf(order.id, 'delivery-protocol')} loading={isPrintingId === order.id} >Protocolo de Entrega</Button>
               {can('production_orders.delete') && (<><Menu.Divider /><Menu.Item color="red" leftSection={<IconTrash size={14} />} onClick={() => handleDelete(order.id)}>Apagar Ordem de Produção</Menu.Item></>)}
             </Menu.Dropdown>
           </Menu>

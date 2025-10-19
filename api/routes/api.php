@@ -2,7 +2,6 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use App\Models\Setting;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\CustomerController;
@@ -32,15 +31,13 @@ Route::post('/login', [LoginController::class, 'login']);
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user', function (Request $request) {
         $user = $request->user();
-
-        $permissions = $user->roles()->with('permissions')->get()
-        ->pluck('permissions')->flatten()->pluck('name')->unique()->values()->all();
-
+        
+        $permissions = $user->getPermissionsViaRoles()->pluck('name')->unique()->values()->all();
         $user->permissions = $permissions;
         $user->role = $user->getRoleNames()->first();
         unset($user->roles);
 
-        $user->settings = Setting::first();
+        $user->settings = $user->tenant; 
 
         return $user;
     });
@@ -53,6 +50,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::patch('/customers/{customer}/document', [CustomerController::class, 'updateDocument']);
 
     Route::get('/quotes/export', [QuoteController::class, 'export']);
+    Route::get('/quotes/{quote}/pdf', [QuoteController::class, 'generatePdf']);
     Route::apiResource('quotes', QuoteController::class);
     Route::post('quotes/{quote}/items', [QuoteItemController::class, 'store']);
     Route::put('quotes/{quote}/items/{quote_item}', [QuoteItemController::class, 'update']);
@@ -62,9 +60,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('quote-items/{quote_item}/file', [QuoteItemController::class, 'destroyFile']);
 
     Route::get('/production-orders/export', [ProductionOrderController::class, 'export']);
+    Route::get('/production-orders/{orderId}/work-order-pdf', [ProductionOrderController::class, 'generateWorkOrderPdf']);
+    Route::get('/production-orders/{orderId}/delivery-protocol-pdf', [ProductionOrderController::class, 'generateDeliveryProtocolPdf']);
     Route::apiResource('production-orders', ProductionOrderController::class);
-
-    Route::get('/production-orders/{productionOrder}/delivery-protocol-pdf', [ProductionOrderController::class, 'generateDeliveryProtocolPdf']);
 
     Route::get('/dashboard/stats', [DashboardController::class, 'getStats']);
 
