@@ -28,7 +28,7 @@ function App() {
           <Route path="customers" element={<ProtectedRoute requiredPermission="customers.view"><CustomerPage /></ProtectedRoute>} />
           <Route path="quotes" element={<ProtectedRoute requiredPermission="quotes.view"><QuoteListPage /></ProtectedRoute>} />
           <Route path="quotes/:quoteId" element={<ProtectedRoute requiredPermission="quotes.view"><QuoteFormPage /></ProtectedRoute>} />
-          <Route path="production" element={<ProtectedRoute requiredPermission="production_orders.view"><ProductionPage /></ProtectedRoute>} />
+          <Route path="production" element={<ProtectedRoute requiredPermission={['production_orders.view', 'production_orders.view_all']}><ProductionPage /></ProtectedRoute>} />
           <Route path="stock" element={<ProtectedRoute requiredPermission="stock.manage"><StockPage /></ProtectedRoute>} />
           <Route path="profile" element={<ProfilePage />} />
           <Route path="users" element={<ProtectedRoute requiredPermission="users.manage"><UsersPage /></ProtectedRoute>} />

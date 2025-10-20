@@ -63,6 +63,7 @@
                     </tr>
                 </thead>
                 <tbody>
+                    @if($order->quote)
                     @foreach($order->quote->items as $item)
                     <tr>
                         <td>{{ $item->product->name }}<br>{{ $item->notes ?? '' }}</td>
@@ -71,6 +72,7 @@
                         <td class="amount">R$ {{ number_format($item->total_price, 2, ',', '.') }}</td>
                     </tr>
                     @endforeach
+                    @endif
                 </tbody>
             </table>
             <table class="total-section">
@@ -117,6 +119,7 @@
                     </tr>
                 </thead>
                 <tbody>
+                    @if($order->quote)
                     @foreach($order->quote->items as $item)
                     <tr>
                         <td>{{ $item->product->name }}<br>{{ $item->notes ?? '' }}</td>
@@ -125,6 +128,7 @@
                         <td class="amount">R$ {{ number_format($item->total_price, 2, ',', '.') }}</td>
                     </tr>
                     @endforeach
+                    @endif
                 </tbody>
             </table>
             <table class="total-section">

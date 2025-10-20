@@ -133,7 +133,7 @@ export interface PaymentTerm {
 export interface ProtectedRouteProps {
   children: JSX.Element;
   allowedRoles?: string[];
-  requiredPermission?: string;
+  requiredPermission?: string | string[];
 }
 
 export interface StatusInfo {

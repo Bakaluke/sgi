@@ -23,8 +23,16 @@ const ProtectedRoute = ({ children, allowedRoles, requiredPermission }: Protecte
     return <Navigate to="/dashboard" />;
   }
 
-  if (requiredPermission && !can(requiredPermission)) {
-    return <Navigate to="/" replace />;
+  if (requiredPermission) {
+    let hasPermission = false;
+    if (Array.isArray(requiredPermission)) {
+      hasPermission = requiredPermission.some(permission => can(permission));
+    } else {
+      hasPermission = can(requiredPermission);
+    }
+    if (!hasPermission) {
+      return <Navigate to="/" replace />;
+    }
   }
   
   return children;

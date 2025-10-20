@@ -17,10 +17,8 @@ class ProductionOrderPolicy
         if ($user->can('production_orders.view_all')) {
             return true;
         }
-        if ($user->can('production_orders.view')) {
-            return $user->id === $productionOrder->user_id;
-        }
-        return false;
+
+        return $user->can('production_orders.view') && $productionOrder->user_id === $user->id;
     }
 
     public function create(User $user): bool

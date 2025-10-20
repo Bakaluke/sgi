@@ -40,7 +40,7 @@
             </table>
             <hr>
             <h2>Ordem de Produção Nº {{ $order->id }}</h2>
-            <p>Data de Emissão: {{ $order->created_at->format('d/m/Y') }}</p>
+            <p>Data de Emissão: {{ $order->created_at ? $order->created_at->format('d/m/Y') : 'Não definida' }}</p>
         </div>
 
         <div class="quote-info">
@@ -58,29 +58,37 @@
                 </tr>
             </thead>
             <tbody>
-                @foreach($order->quote->items as $item)
-                    <tr style="background-color: #f9f9f9;">
-                        <td><span style="font-weight: bold;">{{ $item->product->name }}</span><br>@if($item->notes){{ $item->notes }}@endif</td>
-                        <td style="text-align: center; font-weight: bold;">{{ $item->quantity }}</td>
-                    </tr>
+                @if($order->quote && $order->quote->items->isNotEmpty())
+                    @foreach($order->quote->items as $item)
+                        <tr style="background-color: #f9f9f9;">
+                            <td><span style="font-weight: bold;">{{ $item->product->name }}</span><br>@if($item->notes){{ $item->notes }}@endif</td>
+                            <td style="text-align: center; font-weight: bold;">{{ $item->quantity }}</td>
+                        </tr>
 
-                    @if($item->notes || $item->file_path)
+                        @if($item->notes || $item->file_path)
+                        <tr>
+                            <td colspan="2" style="padding-left: 20px;">
+                                @if($item->file_path)
+                                    <p class="notes" style="margin: 10px 0 5px 0;"><strong>Desenho:</strong></p>
+                                    <div style="text-align: center;">
+                                        @if(in_array(pathinfo(storage_path('app/public/' . $item->file_path), PATHINFO_EXTENSION), ['jpg', 'jpeg', 'png', 'gif']))
+                                            <img src="{{ public_path('storage/' . $item->file_path) }}" alt="Desenho" class="attachment-image">
+                                        @else
+                                            <span>Arquivo anexado (não é uma imagem)</span>
+                                        @endif
+                                    </div>
+                                @endif
+                            </td>
+                        </tr>
+                        @endif
+                    @endforeach
+                @else
                     <tr>
-                        <td colspan="2" style="padding-left: 20px;">
-                            @if($item->file_path)
-                                <p class="notes" style="margin: 10px 0 5px 0;"><strong>Desenho:</strong></p>
-                                <div style="text-align: center;">
-                                    @if(in_array(pathinfo(storage_path('app/public/' . $item->file_path), PATHINFO_EXTENSION), ['jpg', 'jpeg', 'png', 'gif']))
-                                        <img src="{{ public_path('storage/' . $item->file_path) }}" alt="Desenho" class="attachment-image">
-                                    @else
-                                        <span>Arquivo anexado (não é uma imagem)</span>
-                                    @endif
-                                </div>
-                            @endif
+                        <td colspan="2" style="text-align: center; padding: 20px;">
+                            (Orçamento não encontrado ou sem itens)
                         </td>
                     </tr>
-                    @endif
-                @endforeach
+                @endif
             </tbody>
         </table>
     </div>

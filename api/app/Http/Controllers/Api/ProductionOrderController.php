@@ -4,6 +4,9 @@ namespace App\Http\Controllers\Api;
 
 use App\Events\OrderCompleted;
 use App\Http\Controllers\Controller;
+use App\Models\Quote;
+use App\Models\Customer;
+use App\Models\User;
 use App\Models\ProductionOrder;
 use App\Models\ProductionStatus;
 use Illuminate\Http\Request;
@@ -107,9 +110,15 @@ class ProductionOrderController extends Controller
     {
         $this->authorize('view', $productionOrder);
         
-        $productionOrder->load(['customer', 'user', 'quote.items.product', 'status']);
+        $productionOrder->load([
+            'customer' => fn ($query) => $query->withoutGlobalScopes(),
+            'user' => fn ($query) => $query->withoutGlobalScopes(),
+            'quote' => fn ($query) => $query->withoutGlobalScopes()->with('items.product'),
+            'status'
+        ]);
         
         $settings = $request->user()->tenant; 
+
         $pdf = Pdf::loadView('pdf.work_order', [
             'order' => $productionOrder,
             'settings' => $settings
@@ -121,9 +130,15 @@ class ProductionOrderController extends Controller
     {
         $this->authorize('view', $productionOrder);
 
-        $productionOrder->load(['customer', 'user', 'quote.items.product', 'status']);
+        $productionOrder->load([
+            'customer' => fn ($query) => $query->withoutGlobalScopes(),
+            'user' => fn ($query) => $query->withoutGlobalScopes(),
+            'quote' => fn ($query) => $query->withoutGlobalScopes()->with('items.product'),
+            'status'
+        ]);
         
         $settings = $request->user()->tenant;
+
         $pdf = Pdf::loadView('pdf.delivery_protocol', [
             'order' => $productionOrder,
             'settings' => $settings

@@ -13,8 +13,8 @@ class TenantScope implements Scope
     {
         if (Auth::check()) {
             $user = Auth::user();
-            
-            if (!$user->can('production_orders.view_all') && $user->tenant_id) {
+
+            if ($user->tenant_id && !$user->can('production_orders.view_all')) {
                 $builder->where($model->getTable().'.tenant_id', $user->tenant_id);
             }
         }
