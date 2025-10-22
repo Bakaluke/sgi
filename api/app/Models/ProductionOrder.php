@@ -6,6 +6,7 @@ use App\Models\Scopes\TenantScope;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Facades\Auth;
 
 class ProductionOrder extends Model
 {
@@ -16,6 +17,7 @@ class ProductionOrder extends Model
      */
     protected $fillable = [
         'tenant_id',
+        'internal_id',
         'quote_id',
         'user_id',
         'customer_id',
@@ -28,6 +30,17 @@ class ProductionOrder extends Model
     protected static function booted(): void
     {
         static::addGlobalScope(new TenantScope);
+        
+        static::creating(function (ProductionOrder $order) {
+            if (is_null($order->internal_id)) {
+                $tenantId = $order->tenant_id;
+                
+                if ($tenantId) {
+                    $maxId = ProductionOrder::where('tenant_id', $tenantId)->max('internal_id');
+                    $order->internal_id = ($maxId ?? 0) + 1;
+                }
+            }
+        });
     }
     
     public function tenant(): BelongsTo

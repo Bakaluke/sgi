@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ordem de Produção Nº {{ $order->id }}</title>
+    <title>Ordem de Produção Nº {{ $order->internal_id }}</title>
     <style>
         {!! file_get_contents(public_path('css/work_order.css')) !!}
     </style>    
@@ -15,7 +15,15 @@
                 <tr>
                     <td style="width: 25%; border: none;">
                         @if($settings && $settings->logo_path)
-                            <img src="{{ public_path('storage/' . $settings->logo_path) }}" alt="Logo" style="max-width: 150px; max-height: 70px;">
+                            @php
+                                $logoPath = storage_path('app/public/' . $settings->logo_path);
+                                $logoSrc = '';
+                                if (file_exists($logoPath)) {
+                                    $logoData = base64_encode(file_get_contents($logoPath));
+                                    $logoSrc = 'data:' . mime_content_type($logoPath) . ';base64,' . $logoData;
+                                }
+                            @endphp
+                            <img src="{{ $logoSrc }}" alt="Logo" style="max-width: 150px; max-height: 70px;">
                         @endif
                     </td>
                     <td style="width: 75%; text-align: right; border: none;">
@@ -39,14 +47,14 @@
                 </tr>
             </table>
             <hr>
-            <h2>Ordem de Produção Nº {{ $order->id }}</h2>
+            <h2>Ordem de Produção Nº {{ $order->internal_id }}</h2>
             <p>Data de Emissão: {{ $order->created_at ? $order->created_at->format('d/m/Y') : 'Não definida' }}</p>
         </div>
 
         <div class="quote-info">
             <p><strong>Cliente:</strong> {{ $order->customer->name ?? 'N/A' }}</p>
             <p><strong>Consultor:</strong> {{ $order->user->name ?? 'N/A' }}</p>
-            <p><strong>Observações Gerais:</strong> Orçamento Nº {{ $order->quote_id }}<br>{{ $order->notes }}</p>
+            <p><strong>Observações Gerais:</strong> Orçamento Nº {{ $order->quote->internal_id ?? $order->quote_id }}<br>{{ $order->notes }}</p>
         </div>
 
         <h3 style="margin-top: 30px;">Itens do Pedido:</h3>
@@ -69,12 +77,26 @@
                         <tr>
                             <td colspan="2" style="padding-left: 20px;">
                                 @if($item->file_path)
-                                    <p class="notes" style="margin: 10px 0 5px 0;"><strong>Desenho:</strong></p>
+                                    <p class="notes" style="margin: 10px 0 5px 0;"><strong>Referência:</strong></p>
                                     <div style="text-align: center;">
-                                        @if(in_array(pathinfo(storage_path('app/public/' . $item->file_path), PATHINFO_EXTENSION), ['jpg', 'jpeg', 'png', 'gif']))
-                                            <img src="{{ public_path('storage/' . $item->file_path) }}" alt="Desenho" class="attachment-image">
+                                        @php
+                                            $imagePath = storage_path('app/public/' . $item->file_path);
+                                            $imageSrc = '';
+                                            $isImage = false;
+                                            if (file_exists($imagePath)) {
+                                                $extension = strtolower(pathinfo($imagePath, PATHINFO_EXTENSION));
+                                                if(in_array($extension, ['jpg', 'jpeg', 'png', 'gif'])) {
+                                                    $isImage = true;
+                                                    $imageData = base64_encode(file_get_contents($imagePath));
+                                                    $imageSrc = 'data:' . mime_content_type($imagePath) . ';base64,' . $imageData;
+                                                }
+                                            }
+                                        @endphp
+
+                                        @if($isImage)
+                                            <img src="{{ $imageSrc }}" alt="Referência" class="attachment-image">
                                         @else
-                                            <span>Arquivo anexado (não é uma imagem)</span>
+                                            <span>Arquivo anexado (não é uma imagem ou não foi encontrado)</span>
                                         @endif
                                     </div>
                                 @endif

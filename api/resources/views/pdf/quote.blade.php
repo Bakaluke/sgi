@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Orçamento Nº {{ $quote->id }}</title>
+    <title>Orçamento Nº {{ $quote->internal_id }}</title>
     <style>
         {!! file_get_contents(public_path('css/quote.css')) !!}
     </style>
@@ -39,7 +39,7 @@
                 </tr>
             </table>
             <hr>
-            <h2>Orçamento Nº {{ $quote->id }}</h2>
+            <h2>Orçamento Nº {{ $quote->internal_id }}</h2>
             <p>Data de Emissão: {{ $quote->created_at->format('d/m/Y') }}</p>
         </div>
 

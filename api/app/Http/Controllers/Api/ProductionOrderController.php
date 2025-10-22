@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Events\OrderCompleted;
 use App\Http\Controllers\Controller;
 use App\Models\Quote;
+use App\Models\QuoteItem;
 use App\Models\Customer;
 use App\Models\User;
 use App\Models\ProductionOrder;
@@ -109,38 +110,32 @@ class ProductionOrderController extends Controller
     public function generateWorkOrderPdf(Request $request, ProductionOrder $productionOrder)
     {
         $this->authorize('view', $productionOrder);
+
+        $productionOrder->load(['customer', 'user', 'quote.items.product', 'status']);
         
-        $productionOrder->load([
-            'customer' => fn ($query) => $query->withoutGlobalScopes(),
-            'user' => fn ($query) => $query->withoutGlobalScopes(),
-            'quote' => fn ($query) => $query->withoutGlobalScopes()->with('items.product'),
-            'status'
-        ]);
-        
+        $order = $productionOrder;
+                
         $settings = $request->user()->tenant; 
 
         $pdf = Pdf::loadView('pdf.work_order', [
-            'order' => $productionOrder,
+            'order' => $order,
             'settings' => $settings
         ]);
-        return $pdf->stream('ordem-servico-'.$productionOrder->id.'.pdf');
+        return $pdf->stream('ordem-servico-'.$order->id.'.pdf');
     }
 
     public function generateDeliveryProtocolPdf(Request $request, ProductionOrder $productionOrder)
     {
         $this->authorize('view', $productionOrder);
 
-        $productionOrder->load([
-            'customer' => fn ($query) => $query->withoutGlobalScopes(),
-            'user' => fn ($query) => $query->withoutGlobalScopes(),
-            'quote' => fn ($query) => $query->withoutGlobalScopes()->with('items.product'),
-            'status'
-        ]);
+        $productionOrder->load(['customer', 'user', 'quote.items.product', 'status']);
+
+        $order = $productionOrder;
         
         $settings = $request->user()->tenant;
-
+        
         $pdf = Pdf::loadView('pdf.delivery_protocol', [
-            'order' => $productionOrder,
+            'order' => $order,
             'settings' => $settings
         ]);
         return $pdf->stream('protocolo-entrega-'.$productionOrder->id.'.pdf');

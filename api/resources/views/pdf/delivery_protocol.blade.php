@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Protocolo de Entrega - Pedido Nº {{ $order->id }}</title>
+    <title>Protocolo de Entrega - Pedido Nº {{ $order->internal_id }}</title>
     <style>
         {!! file_get_contents(public_path('css/delivery.css')) !!}
     </style>    
@@ -41,7 +41,7 @@
             <hr>
 
             <h1>Protocolo de Entrega (Via Cliente)</h1>
-            <p><strong>Pedido Nº:</strong> {{ $order->id }} | <strong>Orçamento Nº:</strong> {{ $order->quote_id }} | <strong>Recebido em:</strong> {{ now()->format('d/m/Y') }}</p>
+            <p><strong>Pedido Nº:</strong> {{ $order->internal_id }} | <strong>Orçamento Nº:</strong> {{ $order->quote->internal_id ?? $order->quote_id }} | <strong>Recebido em:</strong> {{ now()->format('d/m/Y') }}</p>
 
             <table class="details-table">
                 <tr>
@@ -97,7 +97,7 @@
 
         <div class="header">
             <h1>Protocolo de Entrega (Via Empresa)</h1>
-            <p><strong>Pedido Nº:</strong> {{ $order->id }} | <strong>Orçamento Nº:</strong> {{ $order->quote_id }} | <strong>Entregue em:</strong> {{ now()->format('d/m/Y') }}</p>
+            <p><strong>Pedido Nº:</strong> {{ $order->internal_id }} | <strong>Orçamento Nº:</strong> {{ $order->quote->internal_id ?? $order->quote_id }} | <strong>Entregue em:</strong> {{ now()->format('d/m/Y') }}</p>
 
             <table class="details-table">
                 <tr>

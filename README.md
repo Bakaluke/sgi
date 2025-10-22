@@ -1,46 +1,62 @@
-# SGI Drav Dev - Sistema de Gestão Integrado (v1.0)
+# SGI Drav Dev - Sistema de Gestão Integrado (v1.5 - SaaS Edition)
 
-Um Sistema de Gestão Integrado (ERP/CRM) moderno, construído do zero com uma stack full-stack, projetado para ser flexível e atender às necessidades de pequenas e médias empresas. Este projeto, desenvolvido como parte do portfólio da **Drav Dev**, demonstra a criação de uma aplicação robusta, segura e com uma experiência de usuário rica.
+Um Sistema de Gestão Integrado (ERP/CRM) **Multi-Tenant (SaaS)** moderno, construído do zero com uma stack full-stack. Este projeto, desenvolvido como parte do portfólio da **Drav Dev**, demonstra a criação de uma plataforma de software robusta, escalável e segura, pronta para atender múltiplas empresas simultaneamente.
 
-O sistema foi modelado para ser altamente customizável, com um foco inicial nas necessidades de uma **gráfica**, lidando com produtos físicos, serviços e um fluxo de produção e financeiro completo.
+O sistema foi arquitetado para que **cada empresa cliente** (cada "tenant") tenha seus próprios dados 100% isolados, com configurações, numeração de documentos e fluxos de trabalho independentes.
 
 ---
 
-## ✨ Funcionalidades Principais (v1.0)
+## ✨ Funcionalidades Principais (v1.5)
 
 O SGI conta com um conjunto completo de módulos integrados para gerenciar as operações de um negócio do início ao fim.
 
-- **🔑 Autenticação & Permissões Dinâmicas:** Sistema de login seguro e um painel de controle onde o administrador pode criar Funções (cargos) e definir permissões granulares para cada ação no sistema.
+### 🏛️ **Arquitetura SaaS Multi-Tenant**
+Esta é a fundação do sistema. O SGI não é um app para uma empresa, é uma plataforma para várias.
 
-- **📊 Dashboard Inteligente:** Painel com KPIs financeiros, gráficos de performance e alertas operacionais (estoque baixo, orçamentos parados). Os dados são filtráveis por período e se adaptam ao perfil do usuário logado.
+- **Isolamento Total de Dados (Tenant-aware):** Cada dado do sistema (`customers`, `products`, `quotes`, `accounts_payables`, `stock_movements`, etc.) é "carimbado" com um `tenant_id`, garantindo que uma empresa nunca possa ver os dados da outra.
+- **Segurança Automática (Global Scopes):** Um "filtro mágico" de segurança é aplicado a 100% das consultas ao banco de dados, garantindo que o usuário logado só veja os dados que pertencem à sua empresa.
+- **Configuração por Empresa:** Cada "tenant" (empresa cliente) gerencia suas próprias configurações:
+    - Dados da Empresa (Logo, CNPJ, Endereço).
+    - Status de Orçamento e Produção.
+    - Métodos de Pagamento e Condições.
+    - Fontes de Negociação e Métodos de Entrega.
+- **Numeração Sequencial por Tenant:** Orçamentos (`quotes`) e Ordens de Produção (`production_orders`) possuem um `internal_id` único *por empresa*. A Teresina Brindes tem o Orçamento Nº 1, e a Padaria do Zé também tem o seu próprio Orçamento Nº 1.
 
-- **📦 Módulo de Produtos & Serviços:** CRUD completo que diferencia **produtos físicos** (com controle de estoque) e **serviços** (sem estoque), com gestão de categorias e imagens.
+### 🔑 **Autenticação & Permissões Dinâmicas**
+- Sistema de login seguro e isolado por tenant (usuários da Empresa A não podem logar na Empresa B).
+- **Sistema de Funções e Permissões** dinâmico (Spatie), permitindo que o `admin` de *cada* tenant crie seus próprios cargos e defina permissões granulares para sua equipe.
 
-- **👥 Módulo de Clientes:** CRUD para Pessoas Físicas e Jurídicas, com busca de dados por CNPJ/CEP e um fluxo de **Cadastro Rápido** no momento da venda.
+### 📊 **Dashboard Inteligente**
+- Painel com KPIs financeiros, gráficos de performance e alertas operacionais (estoque baixo), **100% filtrado pelos dados do tenant logado**.
+- Gráficos de "Resumo de Orçamentos", "Resumo de Pedidos" e "Ranking de Vendedores".
 
-- **📝 Módulo de Orçamentos:**
-  - Fluxo de criação ágil com seções retráteis.
-  - Exigência de CPF/CNPJ apenas no momento da **aprovação**, reduzindo o atrito inicial.
-  - **Personalização por Item:** Adição de observações e upload de arquivos para cada item do orçamento.
-  - Geração de PDFs profissionais e envio por **E-mail** ou **WhatsApp**.
+### 📦 **Módulo de Produtos & Serviços**
+- CRUD completo que diferencia **produtos físicos** (com controle de estoque) e **serviços** (sem estoque), com gestão de categorias e imagens.
 
-- **🏭 Módulo de Produção:** Geração **automática** de Ordens de Produção a partir de orçamentos aprovados, com tela de gerenciamento de status para a equipe de produção.
+### 👥 **Módulo de Clientes**
+- CRUD completo para clientes (Pessoa Física e Jurídica), com busca de CNPJ/CEP e **Cadastro Rápido**.
 
-- **📈 Módulo de Estoque:** Sistema de movimentações para rastreabilidade, com baixa **automática** em vendas e atualização do preço de custo na compra.
+### 📝 **Módulo de Orçamentos**
+- Fluxo de criação ágil com seções retráteis.
+- **CPF Sob Demanda:** Exigência de CPF/CNPJ apenas no momento da **aprovação**, reduzindo o atrito no cadastro.
+- Geração de PDFs profissionais (com o logo e dados do tenant) e envio por **E-mail** ou **WhatsApp**.
+- **Cancelamento Seguro:** Exigência de um motivo de cancelamento para evitar erros de usuário.
 
-- **💰 Módulo Financeiro:**
-  - **Contas a Pagar e a Receber** com CRUD completo.
-  - Geração **automática** de Contas a Receber a partir de pedidos concluídos.
-  - **Gestão de Parcelas:** O sistema lê a "Condição de Pagamento" e cria as parcelas automaticamente.
-  - Lógica para registro de **pagamentos parciais e totais** em parcelas individuais.
-  - **Automação de Status:** Um comando agendado que marca contas como "Vencidas" diariamente.
+### 🏭 **Módulo de Produção**
+- Geração **automática** de Ordens de Produção a partir de orçamentos aprovados.
+- Tela de gerenciamento de produção com **travas de segurança** (pedidos "Concluídos" ou "Cancelados" não podem ser alterados).
 
-- **📈 Módulo de Relatórios Gerenciais:**
-  - Página dedicada com análises de negócio em abas e com filtros de data.
-  - Relatórios de **Resumo de Vendas**, **Vendas por Cliente** e **Fluxo de Caixa (Previsto vs. Realizado)**.
-  - Exportação de todos os relatórios operacionais e gerenciais para **CSV**.
+### 📈 **Módulo de Estoque**
+- Sistema de movimentações para rastreabilidade, com baixa **automática** em vendas e atualização do preço de custo na compra.
 
-- **👤 Módulo de Usuários e ⚙️ Configurações:** Painéis completos para o administrador gerenciar usuários, cargos, permissões e todas as opções customizáveis do sistema.
+### 💰 **Módulo Financeiro**
+- **Contas a Pagar e a Receber** com CRUD completo.
+- Geração **automática** de Contas a Receber a partir de pedidos concluídos.
+- **Gestão de Parcelas:** O sistema lê a "Condição de Pagamento" e cria as parcelas automaticamente.
+- Lógica para registro de pagamentos em parcelas individuais.
+
+### 📈 **Módulo de Relatórios Gerenciais**
+- Relatórios de **Resumo de Vendas**, **Vendas por Cliente** (sumarizado na tela, detalhado na exportação) e **Fluxo de Caixa (Previsto vs. Realizado)**.
 
 ---
 
@@ -80,9 +96,23 @@ O SGI conta com um conjunto completo de módulos integrados para gerenciar as op
 
 ---
 
-## 🔮 Roadmap de Futuras Melhorias
+## 🔮 Roadmap de Futuras Melhorias (Plataforma v2.0)
 
-- **Refinamentos no Financeiro:** Criar mais relatórios gerenciais e explorar a possibilidade de conciliação bancária.
+Com a fundação Multi-Tenant (v1.5) concluída, o roadmap se concentra em escalar o produto:
+
+- **Painel do Super-Admin (O "Painel de Deus"):**
+  - Construção de um painel de controle global (provavelmente com **Laravel Filament**) para a **Drav Dev** gerenciar a plataforma.
+  - CRUD de `Tenants` (ativar/suspender assinaturas de clientes).
+  - CRUD de `Plans` (criar e editar os planos de assinatura).
+
+- **Testes Automatizados (A Rede de Segurança):**
+  - Expandir a cobertura de testes (com Pest) para todos os módulos, garantindo a estabilidade da plataforma para todos os tenants a cada nova atualização.
+
+- **Refinamentos de Fluxo:**
+  - Implementar a funcionalidade de "Reverter Cancelamento" para Admins, com a lógica de estorno de estoque/financeiro.
+
+- **Módulo Fiscal/Financeiro Avançado (v3.0):**
+  - Integração com APIs de terceiros (ex: Asaas, PlugNotas) para emissão de **NFe/NFSe** e geração de **Boletos Registrados**.
 
 ---
 

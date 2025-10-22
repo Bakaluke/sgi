@@ -60,8 +60,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('quote-items/{quote_item}/file', [QuoteItemController::class, 'destroyFile']);
 
     Route::get('/production-orders/export', [ProductionOrderController::class, 'export']);
-    Route::get('/production-orders/{orderId}/work-order-pdf', [ProductionOrderController::class, 'generateWorkOrderPdf']);
-    Route::get('/production-orders/{orderId}/delivery-protocol-pdf', [ProductionOrderController::class, 'generateDeliveryProtocolPdf']);
+    Route::get('/production-orders/{productionOrder}/work-order-pdf', [ProductionOrderController::class, 'generateWorkOrderPdf']);
+    Route::get('/production-orders/{productionOrder}/delivery-protocol-pdf', [ProductionOrderController::class, 'generateDeliveryProtocolPdf']);
     Route::apiResource('production-orders', ProductionOrderController::class);
 
     Route::get('/dashboard/stats', [DashboardController::class, 'getStats']);

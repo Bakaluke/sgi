@@ -77,6 +77,7 @@ export interface Status {
 
 export interface Quote {
   id: number;
+  internal_id: number;
   customer: Customer;
   user: User;
   status_id: number | null;
@@ -177,6 +178,7 @@ export interface Stats {
 
 export interface ProductionOrder {
   id: number;
+  internal_id: number;
   quote_id: number;
   user_id: number;
   customer_id: number;

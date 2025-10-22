@@ -399,7 +399,7 @@ function QuoteFormPage() {
         </form>
       </Modal>
 
-      <Title order={2} mb="lg">Orçamento Nº {quote.id}</Title>
+      <Title order={2} mb="lg">Orçamento Nº {quote.internal_id}</Title>
       
       <Paper withBorder p="md">
         <Fieldset legend="Dados do Cliente">

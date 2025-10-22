@@ -149,8 +149,8 @@ function ProductionPage() {
             <IconChevronDown style={{ transition: 'transform 200ms ease', transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)', }} />
           </ActionIcon>
         </Table.Td>
-        <Table.Td>{order.id}</Table.Td>
-        <Table.Td>{order.quote_id}</Table.Td>
+        <Table.Td>{order.internal_id}</Table.Td>
+        <Table.Td>{order.quote?.internal_id ?? 'N/A'}</Table.Td>
         <Table.Td>{order.customer?.name || 'N/A'}</Table.Td>
         {can('production_orders.view_all') && <Table.Td>{order.user?.name || 'N/A'}</Table.Td>}
         <Table.Td style={{ width: 200 }}>
@@ -219,7 +219,7 @@ function ProductionPage() {
   
   return (
   <Container>
-    <Modal opened={cancelModalOpened} onClose={closeCancelModal} title={`Cancelar Pedido #${orderToCancel?.id}`}>
+    <Modal opened={cancelModalOpened} onClose={closeCancelModal} title={`Cancelar Pedido Nº ${orderToCancel?.internal_id}`}>
       <Textarea label="Motivo do Cancelamento" placeholder="Descreva por que este pedido está sendo cancelado..." required autosize minRows={3} value={cancellationReason} onChange={(event) => setCancellationReason(event.currentTarget.value)} />
       <Group justify="flex-end" mt="lg">
         <Button variant="default" onClick={closeCancelModal}>Voltar</Button>

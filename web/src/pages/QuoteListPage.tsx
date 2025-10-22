@@ -290,7 +290,7 @@ function QuoteListPage() {
               <IconChevronDown style={{ transition: 'transform 200ms ease', transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)', }} />
             </ActionIcon>
           </Table.Td>
-          <Table.Td>{quote.id}</Table.Td>
+          <Table.Td>{quote.internal_id}</Table.Td>
           <Table.Td>{quote.customer.name}</Table.Td>
           {can('quotes.view_all') && <Table.Td>{quote.user.name}</Table.Td>}
           <Table.Td><Badge color={quote.status?.color || 'gray'}>{quote.status?.name || 'N/A'}</Badge></Table.Td>

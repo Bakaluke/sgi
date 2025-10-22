@@ -16,6 +16,7 @@ class Quote extends Model
 
     protected $fillable = [
         'tenant_id',
+        'internal_id',
         'customer_id',
         'user_id',
         'status_id',
@@ -36,6 +37,17 @@ class Quote extends Model
     protected static function booted(): void
     {
         static::addGlobalScope(new TenantScope);
+
+        static::creating(function (Quote $quote) {
+            if (is_null($quote->internal_id)) {
+                $tenantId = $quote->tenant_id ?? Auth::id();
+                
+                if ($tenantId) {
+                    $maxId = Quote::where('tenant_id', $tenantId)->max('internal_id');
+                    $quote->internal_id = ($maxId ?? 0) + 1;
+                }
+            }
+        });
     }
 
     public function tenant(): BelongsTo
