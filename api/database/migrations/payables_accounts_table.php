@@ -11,6 +11,9 @@ return new class extends Migration
         Schema::create('accounts_payables', function (Blueprint $table) {
             $table->id();
             $table->foreignId('tenant_id')->constrained('tenants')->onDelete('cascade');
+            $table->unsignedBigInteger('internal_id')->nullable()->after('tenant_id');
+            $table->index('internal_id');
+            $table->unique(['tenant_id', 'internal_id']);
             $table->string('description');
             $table->string('supplier')->nullable();
             $table->decimal('total_amount', 10, 2);

@@ -136,6 +136,7 @@ function AccountsPayablePage() {
         const statusInfo = getStatusInfo(item.status);
         return (
             <Table.Tr key={item.id}>
+				<Table.Td>{item.internal_id}</Table.Td>
                 <Table.Td>{item.description}</Table.Td>
                 <Table.Td>{item.supplier || 'N/A'}</Table.Td>
                 <Table.Td>{formatCurrency(item.total_amount)}</Table.Td>
@@ -172,7 +173,7 @@ function AccountsPayablePage() {
                 </form>
             </Modal>
 
-            <Modal opened={paymentModalOpened} onClose={closePaymentModal} title={`Registrar Pagamento - #${editingPayable?.id}`}>
+            <Modal opened={paymentModalOpened} onClose={closePaymentModal} title={`Registrar Pagamento - Conta Nº ${editingPayable?.internal_id}`}>
                 <form onSubmit={paymentForm.onSubmit(handlePaymentSubmit)}>
                     <NumberInput label="Valor Pago" required decimalScale={2} fixedDecimalScale thousandSeparator="." decimalSeparator="," prefix="R$ " {...paymentForm.getInputProps('paid_amount')} />
                     <DatePickerInput label="Data do Pagamento" mt="md" required valueFormat="DD/MM/YYYY" {...paymentForm.getInputProps('paid_at')} />
@@ -196,6 +197,7 @@ function AccountsPayablePage() {
             <Table>
                 <Table.Thead>
                     <Table.Tr>
+						<Table.Th w={60}>Nº</Table.Th>
                         <Table.Th>Descrição</Table.Th>
                         <Table.Th>Fornecedor</Table.Th>
                         <Table.Th>Valor Total</Table.Th>
@@ -208,7 +210,7 @@ function AccountsPayablePage() {
                 </Table.Thead>
                 <Table.Tbody>{payables.length > 0 ? rows : 
                     <Table.Tr>
-                        <Table.Td colSpan={7} align="center">Nenhuma conta a pagar encontrada.</Table.Td>
+                        <Table.Td colSpan={8} align="center">Nenhuma conta a pagar encontrada.</Table.Td>
                     </Table.Tr>}
                 </Table.Tbody>
             </Table>

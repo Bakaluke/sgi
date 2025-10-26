@@ -6,6 +6,7 @@ use App\Models\Scopes\TenantScope;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Facades\Auth;
 
 class AccountPayable extends Model
 {
@@ -15,6 +16,7 @@ class AccountPayable extends Model
 
     protected $fillable = [
         'tenant_id',
+        'internal_id',
         'description',
         'supplier',
         'total_amount', 
@@ -32,6 +34,16 @@ class AccountPayable extends Model
     protected static function booted(): void
     {
         static::addGlobalScope(new TenantScope);
+
+        static::creating(function (AccountPayable $account) {
+            if (is_null($account->internal_id)) {
+                $tenantId = $account->tenant_id ?? Auth::user()->tenant_id;                
+                if ($tenantId) {
+                    $maxId = AccountPayable::where('tenant_id', $tenantId)->max('internal_id');
+                    $account->internal_id = ($maxId ?? 0) + 1;
+                }
+            }
+        });
     }
     
     public function tenant(): BelongsTo

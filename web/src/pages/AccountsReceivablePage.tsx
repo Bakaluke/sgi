@@ -100,9 +100,8 @@ function AccountsReceivablePage() {
                             <IconChevronDown style={{ transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)' }} />
                         </ActionIcon>
                     </Table.Td>
-                    <Table.Td>{item.id}</Table.Td>
                     <Table.Td>{item.customer.name}</Table.Td>
-                    <Table.Td>#{item.quote.id}</Table.Td>
+                    <Table.Td>{item.quote?.internal_id ?? 'N/A'}</Table.Td>
                     <Table.Td>{formatCurrency(item.total_amount)}</Table.Td>
                     <Table.Td>{formatCurrency(item.paid_amount)}</Table.Td>
                     <Table.Td>{new Date(item.due_date).toLocaleDateString('pt-BR', { timeZone: 'UTC' })}</Table.Td>
@@ -171,9 +170,8 @@ function AccountsReceivablePage() {
                 <Table.Thead>
                     <Table.Tr>
                         <Table.Th w={20} />
-                        <Table.Th>#</Table.Th>
                         <Table.Th>Cliente</Table.Th>
-                        <Table.Th>Orçamento</Table.Th>
+                        <Table.Th>Orçam. Nº</Table.Th>
                         <Table.Th>Valor Total</Table.Th>
                         <Table.Th>Valor Pago</Table.Th>
                         <Table.Th>Vencimento</Table.Th>

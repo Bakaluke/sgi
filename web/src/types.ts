@@ -328,15 +328,16 @@ export interface AccountReceivable {
   status: string;
   created_at: string;
   customer: { name: string; };
-  quote: { id: number; };
+  quote: Quote;
   installments: ReceivableInstallment[];
 }
 
 export interface AccountPayable {
-  quote: number;
-  tenant_id: number;
-  customer: { name: string; };
   id: number;
+  internal_id: number;
+  tenant_id: number;
+  quote: number;
+  customer: { name: string; };
   description: string;
   supplier: string | null;
   total_amount: number;
