@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Facades\Auth;
 
 class Customer extends Model
 {
@@ -14,6 +15,7 @@ class Customer extends Model
     
     protected $fillable = [
         'tenant_id',
+        'internal_id',
         'type',
         'document',
         'name',
@@ -25,6 +27,16 @@ class Customer extends Model
     protected static function booted(): void
     {
         static::addGlobalScope(new TenantScope);
+
+        static::creating(function (Customer $customer) {
+            if (is_null($customer->internal_id)) {
+                $tenantId = $customer->tenant_id ?? Auth::user()->tenant_id;                
+                if ($tenantId) {
+                    $maxId = Customer::where('tenant_id', $tenantId)->max('internal_id');
+                    $customer->internal_id = ($maxId ?? 0) + 1;
+                }
+            }
+        });
     }
 
     public function addresses(): HasMany

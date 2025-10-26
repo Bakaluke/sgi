@@ -20,7 +20,7 @@ Esta é a fundação do sistema. O SGI não é um app para uma empresa, é uma p
     - Status de Orçamento e Produção.
     - Métodos de Pagamento e Condições.
     - Fontes de Negociação e Métodos de Entrega.
-- **Numeração Sequencial por Tenant:** Orçamentos (`quotes`) e Ordens de Produção (`production_orders`) possuem um `internal_id` único *por empresa*. A Teresina Brindes tem o Orçamento Nº 1, e a Padaria do Zé também tem o seu próprio Orçamento Nº 1.
+- **Numeração Sequencial por Tenant:** Orçamentos (`quotes`) e Ordens de Produção (`production_orders`) possuem um `internal_id` único *por empresa*. A Empresa A tem o Orçamento Nº 1, e a Empresa B também tem o seu próprio Orçamento Nº 1.
 
 ### 🔑 **Autenticação & Permissões Dinâmicas**
 - Sistema de login seguro e isolado por tenant (usuários da Empresa A não podem logar na Empresa B).

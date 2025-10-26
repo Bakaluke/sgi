@@ -146,7 +146,7 @@ function StockPage() {
     .filter(product => product.type === 'produto')
     .map((product) => (
         <Table.Tr key={product.id}>
-            <Table.Td>{product.id}</Table.Td>
+            <Table.Td>{product.internal_id}</Table.Td>
             <Table.Td>{product.name}</Table.Td>
             <Table.Td>{product.sku}</Table.Td><Table.Td><Badge color={product.type === 'servico' ? 'grape' : 'blue'}>{product.type === 'servico' ? 'Serviço' : 'Produto'}</Badge></Table.Td>
             <Table.Td fw={700}>{product.quantity_in_stock}</Table.Td>

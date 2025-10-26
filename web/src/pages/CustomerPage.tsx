@@ -99,7 +99,7 @@ function CustomerPage() {
   
   const rows = customers.map((customer) => (
   <Table.Tr key={customer.id}>
-    <Table.Td>{customer.id}</Table.Td>
+    <Table.Td>{customer.internal_id}</Table.Td>
     <Table.Td>{customer.name}</Table.Td>
     <Table.Td>{customer.document ? formatDocument(customer.document) : 'N/A'}</Table.Td>
     <Table.Td>{customer.email}</Table.Td>

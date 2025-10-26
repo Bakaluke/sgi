@@ -3,6 +3,7 @@ import type { JSX } from "react";
 export interface Address {
   id?: number;
   type?: string;
+  tenant_id: number;
   cep: string;
   street: string;
   number: string;
@@ -14,6 +15,8 @@ export interface Address {
 
 export interface Customer {
   id: number;
+  internal_id: number;
+  tenant_id: number;
   type: 'fisica' | 'juridica';
   document: string;
   name: string;
@@ -37,6 +40,8 @@ export type ProductFormData = Omit<Product, 'id' | 'cost_price' | 'quantity_in_s
 
 export interface Product {
   id: number;
+  internal_id: number;
+  tenant_id: number;
   name: string;
   sku: string;
   type: 'produto' | 'servico';
@@ -51,6 +56,7 @@ export interface Product {
 
 export interface Category {
   id: number;
+  tenant_id: number;
   name: string;
   description: string | null;
   products_count: number;
@@ -58,6 +64,7 @@ export interface Category {
 
 export interface QuoteItem {
   id: number;
+  tenant_id: number;
   product: Product;
   quantity: number;
   unit_cost_price: number;
@@ -71,6 +78,7 @@ export interface QuoteItem {
 
 export interface Status {
   id: number;
+  tenant_id: number;
   name: string;
   color: string;
 }
@@ -78,6 +86,7 @@ export interface Status {
 export interface Quote {
   id: number;
   internal_id: number;
+  tenant_id: number;
   customer: Customer;
   user: User;
   status_id: number | null;
@@ -115,16 +124,19 @@ export interface SelectOption {
 
 export interface PaymentMethod {
   id: number;
+  tenant_id: number;
   name: string;
 }
 
 export interface DeliveryMethod {
   id: number;
+  tenant_id: number;
   name: string;
 }
 
 export interface PaymentTerm {
   id: number;
+  tenant_id: number;
   name: string;
   number_of_installments: number;
   days_for_first_installment: number;
@@ -179,6 +191,7 @@ export interface Stats {
 export interface ProductionOrder {
   id: number;
   internal_id: number;
+  tenant_id: number;
   quote_id: number;
   user_id: number;
   customer_id: number;
@@ -194,6 +207,8 @@ export interface ProductionOrder {
 }
 
 export interface SettingsData {
+  id: number;
+  tenant_id: number;
   legal_name: string;
   company_fantasy_name: string;
   cnpj: string;
@@ -224,23 +239,27 @@ export interface Role {
 
 export interface QuoteStatus {
   id: number;
+  tenant_id: number;
   name: string;
   color: string;
 }
 
 export interface ProductionStatus {
   id: number;
+  tenant_id: number;
   name: string;
   color: string;
 }
 
 export interface NegotiationSource {
   id: number;
+  tenant_id: number;
   name: string;
 }
 
 export interface StockMovement {
   id: number;
+  tenant_id: number;
   created_at: string;
   type: string;
   quantity: number;
@@ -257,6 +276,7 @@ export type StockMovementPayload = {
 
 export interface User {
   id: number;
+  tenant_id: number;
   name: string;
   email: string;
   phone: string | null;
@@ -286,6 +306,7 @@ export interface SettingsContextType {
 
 export interface ReceivableInstallment {
   id: number;
+  tenant_id: number;
   account_receivable_id: number;
   installment_number: number;
   amount: number;
@@ -296,6 +317,7 @@ export interface ReceivableInstallment {
 
 export interface AccountReceivable {
   id: number;
+  tenant_id: number;
   quote_id: number;
   customer_id: number;
   production_order_id: number;
@@ -312,6 +334,7 @@ export interface AccountReceivable {
 
 export interface AccountPayable {
   quote: number;
+  tenant_id: number;
   customer: { name: string; };
   id: number;
   description: string;
