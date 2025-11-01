@@ -13,7 +13,7 @@ class UserPolicy
 
     public function view(User $user, User $model): bool
     {
-        return $user->can('users.manage');
+        return $user->can('users.manage') && $user->tenant_id === $model->tenant_id;
     }
 
     public function create(User $user): bool
@@ -23,11 +23,11 @@ class UserPolicy
     
     public function update(User $user, User $model): bool
     {
-        return $user->can('users.manage') && $user->id !== $model->id;
+        return $user->can('users.manage') && $user->tenant_id === $model->tenant_id;
     }
-    
+
     public function delete(User $user, User $model): bool
     {
-        return $user->can('users.manage') && $user->id !== $model->id;
+        return $user->can('users.manage') && $user->tenant_id === $model->tenant_id;
     }
 }

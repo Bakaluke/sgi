@@ -13,8 +13,10 @@ class UserController extends Controller
     public function index(Request $request)
     {
         $this->authorize('viewAny', User::class);
-
-        return User::where('id', '!=', $request->user()->id)->paginate(15);
+        
+        $user = $request->user();
+        
+        return User::where('tenant_id', $user->tenant_id)->where('id', '!=', $user->id)->paginate(15);
     }
 
     public function store(Request $request)

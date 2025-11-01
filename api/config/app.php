@@ -13,6 +13,8 @@ return [
     'timezone' => 'UTC',
 
     'locale' => 'pt_BR',
+
+    'locale' => env('APP_FAKER_LOCALE', 'pt_BR'),
     
     'faker_locale' => 'pt_BR',
 

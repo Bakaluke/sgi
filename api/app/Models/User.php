@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use App\Models\Scopes\TenantScope;
+// use App\Models\Scopes\TenantScope;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -22,8 +22,7 @@ class User extends Authenticatable implements FilamentUser
 
     /**
      * @var list<string>
-     */
-    
+     */    
     protected $fillable = [
         'tenant_id',
         'name',
@@ -34,8 +33,7 @@ class User extends Authenticatable implements FilamentUser
 
     /**
      * @var list<string>
-     */
-    
+     */    
     protected $hidden = [
         'password',
         'remember_token',
@@ -44,13 +42,11 @@ class User extends Authenticatable implements FilamentUser
     /**
      * @var array
      */
-
     protected $appends = ['role'];
 
     /**
      * @return array<string, string>
      */
-
     protected function casts(): array
     {
         return [
@@ -59,10 +55,10 @@ class User extends Authenticatable implements FilamentUser
         ];
     }
 
-    protected static function booted(): void
-    {
-        static::addGlobalScope(new TenantScope);
-    }
+    // protected static function booted(): void
+    // {
+    //     static::addGlobalScope(new TenantScope);
+    // }
 
     public function tenant(): BelongsTo
     {
