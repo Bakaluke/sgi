@@ -1,12 +1,12 @@
 import { useEffect, useState, useCallback } from 'react';
-import { Table, Title, Container, Button, Modal, TextInput, Textarea, Group, Tooltip, Pagination, Grid, Image, FileInput, Select, ActionIcon, Badge } from '@mantine/core';
+import { Table, Title, Container, Button, Modal, TextInput, Textarea, Group, Tooltip, Pagination, Grid, Image, FileInput, Select, ActionIcon, Badge, Tabs, NumberInput } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
 import { useDisclosure } from '@mantine/hooks';
 import { useForm } from '@mantine/form';
-import { IconPencil, IconTrash, IconPlus, IconSearch, IconUpload, IconCategory, IconCategoryPlus, IconFileExport } from '@tabler/icons-react';
+import { IconPencil, IconTrash, IconPlus, IconSearch, IconUpload, IconCategory, IconCategoryPlus, IconFileExport, IconReceipt } from '@tabler/icons-react';
 import { useAuth } from '../context/AuthContext';
 import api from '../api/axios';
-import type { Product, Category, SelectOption, ProductFormData } from '../types';
+import type { Product, Category, SelectOption, ProductFormData, ProductComponent } from '../types';
 
 const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', {
@@ -14,6 +14,72 @@ const formatCurrency = (value: number) => {
         currency: 'BRL',
     }).format(value);
 };
+
+function ProductCompositionManager({ product }: { product: Product }) {
+    const [components, setComponents] = useState<ProductComponent[]>([]);
+    const [productOptions, setProductOptions] = useState<SelectOption[]>([]);
+    const [selectedComponent, setSelectedComponent] = useState<string | null>(null);
+    const [quantityUsed, setQuantityUsed] = useState<number | string>(1);
+
+    useEffect(() => {
+        api.get(`/products/${product.id}/components`).then(res => setComponents(res.data));
+    }, [product.id]);
+
+    useEffect(() => {
+        api.get('/products', { params: { per_page: 1000, type: 'produto' } }).then(res => {
+            setProductOptions(res.data.data.map((p: Product) => ({
+                value: String(p.id),
+                label: `${p.name} (Cód: ${p.internal_id})`,
+            })));
+        });
+    }, []);
+
+    const handleAddComponent = () => {
+        if (!selectedComponent || !quantityUsed) return;
+        api.post(`/products/${product.id}/components`, {
+            component_id: selectedComponent,
+            quantity_used: quantityUsed,
+        }).then(res => {
+            setComponents(current => [...current, res.data]);
+            setSelectedComponent(null);
+            setQuantityUsed(1);
+        });
+    };
+
+    const handleRemoveComponent = (componentId: number) => {
+        api.delete(`/product-components/${componentId}`).then(() => {
+            setComponents(current => current.filter(c => c.id !== componentId));
+        });
+    };
+
+    return (
+        <>
+            <Table>
+                <Table.Thead>
+                    <Table.Tr>
+                        <Table.Th>Ingrediente (Matéria-Prima)</Table.Th>
+                        <Table.Th>Qtd. Usada</Table.Th>
+                        <Table.Th>Ação</Table.Th>
+                    </Table.Tr>
+                </Table.Thead>
+                <Table.Tbody>
+                    {components.map(comp => (
+                        <Table.Tr key={comp.id}>
+                            <Table.Td>{comp.component.name}</Table.Td>
+                            <Table.Td>{comp.quantity_used}</Table.Td>
+                            <Table.Td><ActionIcon color="red" onClick={() => handleRemoveComponent(comp.id)}><IconTrash size={16} /></ActionIcon></Table.Td>
+                        </Table.Tr>
+                    ))}
+                </Table.Tbody>
+            </Table>
+            <Group mt="xl" grow>
+                <Select data={productOptions} placeholder="Buscar matéria-prima..." value={selectedComponent} onChange={setSelectedComponent} searchable />
+                <NumberInput value={quantityUsed} onChange={setQuantityUsed} min={0.001} decimalScale={4} />
+                <Button onClick={handleAddComponent} leftSection={<IconPlus size={16} />}>Adicionar</Button>
+            </Group>
+        </>
+    );
+}
 
 function ProductPage() {
     const { can } = useAuth();
@@ -213,28 +279,43 @@ function ProductPage() {
 
     return (
         <Container>
-            <Modal opened={productModalOpened} onClose={closeProductModal} title={editingProduct ? `Editar Produto: ${editingProduct.name}` : 'Adicionar Novo Produto'} size="lg">
-                <form onSubmit={handleFormSubmit}>
-                    <Grid>
-                        <Grid.Col span={{ base: 12, md: 7 }}>
-                            <Select label="Tipo de Item" value={formData.type} onChange={(value) => setFormData(p => ({ ...p, type: value as 'produto' | 'servico' }))} data={[ { value: 'produto', label: 'Produto Físico (controla estoque)' }, { value: 'servico', label: 'Serviço (não controla estoque)' }, ]} required />
-                            <TextInput label="Nome do Produto" value={formData.name || ''} onChange={(e) => setFormData(p => ({...p, name: e.target.value}))} required mt="md" />
-                            <TextInput label="Código (SKU)" value={formData.sku || ''} onChange={(e) => setFormData(p => ({...p, sku: e.target.value}))} required mt="md" />
-                            <TextInput label="Preço de Venda" placeholder="R$ 0,00" value={formatCurrency(formData.sale_price || 0)} onChange={(e) => setFormData(p => ({...p, sale_price: Number(e.target.value.replace(/\D/g, '')) / 100}))} mt="md" />
-                            <Select label="Categoria" placeholder="Selecione uma categoria" data={categoryOptions} value={String(formData.category_id || '')} onChange={(value) => setFormData(p => ({ ...p, category_id: value ? Number(value) : null }))} clearable mt="md" />
-                            <Textarea label="Descrição (Opcional)" value={formData.description || ''} onChange={(e) => setFormData(p => ({ ...p, description: e.target.value }))} mt="md" autosize minRows={2} />
-                        </Grid.Col>
-                        <Grid.Col span={{ base: 12, md: 5 }}>
-                            <Title order={5} mb="xs">Imagem do Produto</Title>
-                            {editingProduct?.image_path && !imageFile && ( <Image radius="md" h={150} w="auto" fit="contain" src={`${import.meta.env.VITE_API_BASE_URL.replace('/api', '')}/storage/${editingProduct.image_path}`} /> )}
-                            {imageFile && ( <Image radius="md" h={150} w="auto" fit="contain" src={URL.createObjectURL(imageFile)} /> )}
-                            <FileInput mt="md" label="Escolher nova imagem" placeholder="Selecione um arquivo" leftSection={<IconUpload size={14} />} value={imageFile} onChange={setImageFile} accept="image/png,image/jpeg" clearable />
-                        </Grid.Col>
-                    </Grid>
-                    <Group justify="flex-end" mt="lg">
-                        <Button type="submit">Salvar</Button>
-                    </Group>
-                </form>
+            <Modal opened={productModalOpened} onClose={closeProductModal} title={editingProduct ? `Editar: ${editingProduct.name}` : 'Novo Item'} size="lg">
+                <Tabs defaultValue="details">
+                    <Tabs.List>
+                        <Tabs.Tab value="details">Detalhes do Item</Tabs.Tab>
+                        {editingProduct && formData.type === 'servico' && (
+                            <Tabs.Tab value="composition" leftSection={<IconReceipt size={14} />}>Composição</Tabs.Tab>
+                        )}
+                    </Tabs.List>
+
+                    <Tabs.Panel value="details" pt="xs">
+                        <form onSubmit={handleFormSubmit}>
+                            <Grid>
+                                <Grid.Col span={{ base: 12, md: 7 }}>
+                                    <Select label="Tipo de Item" value={formData.type} onChange={(value) => setFormData(p => ({ ...p, type: value as 'produto' | 'servico' }))} data={[ { value: 'produto', label: 'Produto Físico (controla estoque)' }, { value: 'servico', label: 'Serviço (não controla estoque)' }, ]} required />
+                                    <TextInput label="Nome do Produto" value={formData.name || ''} onChange={(e) => setFormData(p => ({...p, name: e.target.value}))} required mt="md" />
+                                    <TextInput label="Código (SKU)" value={formData.sku || ''} onChange={(e) => setFormData(p => ({...p, sku: e.target.value}))} required mt="md" />
+                                    <TextInput label="Preço de Venda" placeholder="R$ 0,00" value={formatCurrency(formData.sale_price || 0)} onChange={(e) => setFormData(p => ({...p, sale_price: Number(e.target.value.replace(/\D/g, '')) / 100}))} mt="md" />
+                                    <Select label="Categoria" placeholder="Selecione uma categoria" data={categoryOptions} value={String(formData.category_id || '')} onChange={(value) => setFormData(p => ({ ...p, category_id: value ? Number(value) : null }))} clearable mt="md" />
+                                    <Textarea label="Descrição (Opcional)" value={formData.description || ''} onChange={(e) => setFormData(p => ({ ...p, description: e.target.value }))} mt="md" autosize minRows={2} />
+                                </Grid.Col>
+                                <Grid.Col span={{ base: 12, md: 5 }}>
+                                    <Title order={5} mb="xs">Imagem do Produto</Title>
+                                    {editingProduct?.image_path && !imageFile && ( <Image radius="md" h={150} w="auto" fit="contain" src={`${import.meta.env.VITE_API_BASE_URL.replace('/api', '')}/storage/${editingProduct.image_path}`} /> )}
+                                    {imageFile && ( <Image radius="md" h={150} w="auto" fit="contain" src={URL.createObjectURL(imageFile)} /> )}
+                                    <FileInput mt="md" label="Escolher nova imagem" placeholder="Selecione um arquivo" leftSection={<IconUpload size={14} />} value={imageFile} onChange={setImageFile} accept="image/png,image/jpeg" clearable />
+                                </Grid.Col>
+                            </Grid>
+                            <Group justify="flex-end" mt="lg">
+                                <Button type="submit">Salvar</Button>
+                            </Group>
+                        </form>
+                    </Tabs.Panel>
+
+                    <Tabs.Panel value="composition" pt="xs">
+                        {editingProduct && <ProductCompositionManager product={editingProduct} />}
+                    </Tabs.Panel>
+                </Tabs>
             </Modal>
             
             <Modal opened={categoryModalOpened} onClose={closeCategoryModal} title={editingCategory ? 'Editar Categoria' : 'Categorias'}>
@@ -261,7 +342,7 @@ function ProductPage() {
                 <Group>
                     {can('products.view') && (<Button onClick={handleExport} loading={isExporting} color="green" leftSection={<IconFileExport size={16} />}>Exportar</Button>)}
                     {can('categories.manage') && (<Button variant="default" onClick={handleOpenCreateCategoryModal} leftSection={<IconCategory size={16} />}>Gerenciar Categorias</Button>)}
-                    {can('products.create') && (<Button onClick={handleOpenCreateModal} leftSection={<IconPlus size={16} />}>Adicionar Produto</Button>)}
+                    {can('products.create') && (<Button onClick={handleOpenCreateModal} leftSection={<IconPlus size={16} />}>Adicionar Novo Item</Button>)}
                 </Group>
             </Group>
 
@@ -282,7 +363,9 @@ function ProductPage() {
                 </Table.Thead>
                 <Table.Tbody>
                     {rows.length > 0 ? ( rows ) : ( 
-                        <Table.Tr><Table.Td colSpan={8} align="center">Nenhum produto encontrado.</Table.Td></Table.Tr>
+                        <Table.Tr>
+                            <Table.Td colSpan={8} align="center">Nenhum produto encontrado.</Table.Td>
+                        </Table.Tr>
                     )}
                 </Table.Tbody>
             </Table>

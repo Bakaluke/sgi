@@ -38,6 +38,15 @@ export type CustomerFormData = Omit<Customer, 'id' | 'addresses'> & {
 
 export type ProductFormData = Omit<Product, 'id' | 'cost_price' | 'quantity_in_stock' | 'image_path' | 'category'>;
 
+export interface ProductComponent {
+  id: number;
+  tenant_id: number;
+  product_id: number;
+  component_id: number;
+  quantity_used: number;
+  component: Product;
+}
+
 export interface Product {
   id: number;
   internal_id: number;
@@ -52,6 +61,7 @@ export interface Product {
   image_path?: string | null;
   category_id?: number | null;
   category?: Category;
+  components?: ProductComponent[];
 }
 
 export interface Category {

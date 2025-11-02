@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Models\StockMovement;
 use App\Events\OrderCompleted;
 use App\Http\Controllers\Controller;
 use App\Models\Quote;
@@ -12,6 +13,7 @@ use App\Models\ProductionOrder;
 use App\Models\ProductionStatus;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\DB;
 use Barryvdh\DomPDF\Facade\Pdf;
 
 class ProductionOrderController extends Controller

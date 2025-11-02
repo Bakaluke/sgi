@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Listeners\DeductProductionMaterials;
 use App\Models\Scopes\TenantScope;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -25,6 +26,19 @@ class ProductionOrder extends Model
         'completed_at',
         'notes',
         'cancellation_reason',
+        'materials_deducted_at',
+    ];
+
+    protected function casts(): array
+    {
+        return [
+            'completed_at' => 'datetime',
+            'materials_deducted_at' => 'datetime',
+        ];
+    }
+
+    protected $dispatchesEvents = [
+        'updated' => DeductProductionMaterials::class,
     ];
 
     protected static function booted(): void

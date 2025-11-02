@@ -1,5 +1,5 @@
 import { Fragment, useCallback, useEffect, useState } from 'react';
-import { Table, Title, Container, Group, Pagination, TextInput, Select, ActionIcon, Collapse, Paper, Text, Menu, Anchor, Tooltip, ThemeIcon, Button, Modal, Textarea, Loader } from '@mantine/core';
+import { Table, Title, Container, Group, Pagination, TextInput, Select, ActionIcon, Collapse, Paper, Text, Menu, Anchor, Tooltip, ThemeIcon, Button, Modal, Textarea, Loader, List } from '@mantine/core';
 import { IconAlertTriangle, IconChevronDown, IconDotsVertical, IconFile, IconFileExport, IconFileText, IconPrinter, IconSearch, IconTrash } from '@tabler/icons-react';
 import { notifications } from '@mantine/notifications';
 import { useAuth } from '../context/AuthContext';
@@ -183,6 +183,7 @@ function ProductionPage() {
                 <Table.Tr>
                   <Table.Th>Produto</Table.Th>
                   <Table.Th>Qtd.</Table.Th>
+                  <Table.Th>Materiais Necessários (para 1 un.)</Table.Th>
                 </Table.Tr>
               </Table.Thead>
               <Table.Tbody>{order.quote.items.map((item: QuoteItem) => (
@@ -206,6 +207,17 @@ function ProductionPage() {
                     )}
                   </Table.Td>
                   <Table.Td>{item.quantity}</Table.Td>
+                  <Table.Td>
+                    {item.product.type === 'servico' && item.product.components && item.product.components.length > 0 ? (
+                      <List size="xs">
+                        {item.product.components.map(comp => (
+                          <List.Item key={comp.id}>{comp.component.name} (x{comp.quantity_used})</List.Item>
+                        ))}
+                      </List>
+                    ) : (
+                    <Text size="xs" c="dimmed">{item.product.type === 'servico' ? 'Sem composição' : 'Produto Físico (Baixa direta)'}</Text>
+                    )}
+                  </Table.Td>
                 </Table.Tr>))}
               </Table.Tbody>
             </Table>

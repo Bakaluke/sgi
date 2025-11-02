@@ -46,6 +46,11 @@ class Product extends Model
         });
     }
 
+    public function components(): HasMany
+    {
+        return $this->hasMany(ProductComponent::class, 'product_id');
+    }
+
     public function quoteItems(): HasMany
     {
         return $this->hasMany(QuoteItem::class);

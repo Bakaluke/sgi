@@ -25,6 +25,7 @@ use App\Http\Controllers\Api\AccountReceivableController;
 use App\Http\Controllers\Api\AccountPayableController;
 use App\Http\Controllers\Api\ReportController;
 use App\Http\Controllers\Api\ReceivableInstallmentController;
+use App\Http\Controllers\Api\ProductComponentController;
 
 Route::post('/login', [LoginController::class, 'login']);
 
@@ -41,6 +42,10 @@ Route::middleware('auth:sanctum')->group(function () {
 
         return $user;
     });
+
+    Route::get('/products/{product}/components', [ProductComponentController::class, 'index']);
+    Route::post('/products/{product}/components', [ProductComponentController::class, 'store']);
+    Route::delete('/product-components/{component}', [ProductComponentController::class, 'destroy']);
 
     Route::get('/products/export', [ProductController::class, 'export']);
     Route::apiResource('products', ProductController::class);
