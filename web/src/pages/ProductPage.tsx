@@ -66,7 +66,7 @@ function ProductCompositionManager({ product }: { product: Product }) {
                     {components.map(comp => (
                         <Table.Tr key={comp.id}>
                             <Table.Td>{comp.component.name}</Table.Td>
-                            <Table.Td>{comp.quantity_used}</Table.Td>
+                            <Table.Td>{Number(comp.quantity_used)}</Table.Td>
                             <Table.Td><ActionIcon color="red" onClick={() => handleRemoveComponent(comp.id)}><IconTrash size={16} /></ActionIcon></Table.Td>
                         </Table.Tr>
                     ))}

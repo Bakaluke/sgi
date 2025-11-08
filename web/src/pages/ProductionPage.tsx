@@ -211,7 +211,9 @@ function ProductionPage() {
                     {item.product.type === 'servico' && item.product.components && item.product.components.length > 0 ? (
                       <List size="xs">
                         {item.product.components.map(comp => (
-                          <List.Item key={comp.id}>{comp.component.name} (x{comp.quantity_used})</List.Item>
+                          <List.Item key={comp.id}>
+                            {comp.component.name} (x{Number(comp.quantity_used)})
+                          </List.Item>
                         ))}
                       </List>
                     ) : (

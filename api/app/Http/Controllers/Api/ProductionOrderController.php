@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Models\StockMovement;
 use App\Events\OrderCompleted;
+use App\Events\ProductionStarted;
 use App\Http\Controllers\Controller;
 use App\Models\Quote;
 use App\Models\QuoteItem;
@@ -41,7 +42,7 @@ class ProductionOrderController extends Controller
             });
         }
 
-        $query->with(['customer', 'user', 'quote.items.product', 'status']);
+        $query->with(['customer', 'user', 'quote.items.product.components.component', 'status']);
         
         $query->latest();
 
@@ -68,9 +69,8 @@ class ProductionOrderController extends Controller
 
         $oldStatusName = $productionOrder->status?->name;
 
-        $statusValidation = $request->validate([
-            'status_id' => 'required|exists:production_statuses,id',
-        ]);
+        $statusValidation = $request->validate(['status_id' => 'required|exists:production_statuses,id']);
+
         $newStatus = ProductionStatus::find($statusValidation['status_id']);
 
         if ($newStatus && $newStatus->name === 'Cancelado') {
@@ -85,18 +85,22 @@ class ProductionOrderController extends Controller
         }
 
         $productionOrder->update($validated);
-
+        
         $productionOrder->refresh();
-
+        
         $newStatusName = $productionOrder->status?->name;
 
         if ($newStatusName === 'Concluído' && is_null($productionOrder->completed_at)) {
             $productionOrder->completed_at = now();
-            $productionOrder->save();
+            $productionOrder->saveQuietly();
         }
 
         if ($oldStatusName !== 'Concluído' && $newStatusName === 'Concluído') {
             OrderCompleted::dispatch($productionOrder);
+        }
+
+        if ($oldStatusName !== 'Em Produção' && $newStatusName === 'Em Produção') {
+            ProductionStarted::dispatch($productionOrder);
         }
 
         return $productionOrder->load(['customer', 'user', 'quote.items.product', 'status']);

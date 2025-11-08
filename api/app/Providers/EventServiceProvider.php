@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use App\Events\ProductionStarted;
+use App\Listeners\DeductProductionMaterials;
 use App\Events\OrderCompleted;
 use App\Listeners\CreateAccountReceivable;
 use Illuminate\Auth\Events\Registered;
@@ -20,6 +22,9 @@ class EventServiceProvider extends ServiceProvider
         ],
         OrderCompleted::class => [
             CreateAccountReceivable::class,
+        ],
+        ProductionStarted::class => [
+            DeductProductionMaterials::class,
         ],
     ];
 

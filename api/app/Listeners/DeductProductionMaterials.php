@@ -2,7 +2,9 @@
 
 namespace App\Listeners;
 
+use App\Events\ProductionStarted;
 use App\Models\ProductionOrder;
+use App\Models\ProductionStatus;
 use App\Models\StockMovement;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
@@ -11,12 +13,13 @@ use Illuminate\Support\Facades\Log;
 
 class DeductProductionMaterials
 {
-    /**
-     * @param  \App\Models\ProductionOrder
-     */
-    public function handle(ProductionOrder $order): void
+    public function handle(ProductionStarted $event): void
     {
-        $triggerStatus = 'Em Produção'; 
+        $order = $event->order;
+
+        $order->refresh();
+
+        $triggerStatus = 'Em Produção';
 
         if ($order->wasChanged('status_id') && 
             $order->status?->name === $triggerStatus && 
@@ -27,8 +30,8 @@ class DeductProductionMaterials
             try {
                 DB::transaction(function () use ($order) {
                     foreach ($order->quote->items as $item) {
-                        if ($item->product->isService() && $item->product->components->isNotEmpty()) {
-                            foreach ($item->product->components as $component) {                                
+                        if ($item->product->isService() && $item->product->components->isNotEmpty()) {                            
+                            foreach ($item->product->components as $component) {
                                 $totalQuantityToDeduct = $item->quantity * $component->quantity_used;
                                 StockMovement::create([
                                     'tenant_id' => $order->tenant_id,
@@ -38,14 +41,25 @@ class DeductProductionMaterials
                                     'notes' => "Baixa de material p/ O.P. Nº {$order->internal_id} (Item: {$item->product_name})",
                                 ]);
                             }
+                        } 
+                        elseif ($item->product->isProduct()) {
+                            StockMovement::create([
+                                'tenant_id' => $order->tenant_id,
+                                'product_id' => $item->product_id,
+                                'quantity' => -$item->quantity,
+                                'type' => 'Venda (Saída por Produção)',
+                                'notes' => "Baixa de produto p/ O.P. Nº {$order->internal_id} (Item: {$item->product_name})",
+                            ]);
                         }
                     }
+
                     $order->materials_deducted_at = now();
+
                     $order->saveQuietly();
                 });
-
+                Log::info("Baixa de estoque automática CONCLUÍDA para O.P. ID: {$order->id}");
             } catch (\Exception $e) {
-                Log::error("Falha ao dar baixa de material para O.P. ID {$order->id}: " . $e->getMessage());
+                Log::error("ERRO CRÍTICO na baixa de estoque para O.P. ID {$order->id}: " . $e->getMessage());
             }
         }
     }
