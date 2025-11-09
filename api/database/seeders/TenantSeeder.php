@@ -27,7 +27,7 @@ class TenantSeeder extends Seeder
             'cnpj' => '12345678000199',
             'email' => 'contato@dravdev.com.br',
             'phone' => '86999998888',
-            'website' => 'https://dravdev.com.br',
+            'website' => 'dravdev.com.br',
             'cep' => '64000000',
             'street' => 'Rua dos Programadores',
             'number' => '1024',
