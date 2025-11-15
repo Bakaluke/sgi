@@ -13,15 +13,17 @@ class PaymentTermSeeder extends Seeder
     {
         PaymentTerm::query()->delete();
 
-        $masterTenant = Tenant::where('name', 'Drav Dev')->first();
+        $tenants = Tenant::where('name', '!=', 'Drav Dev (Master)')->get();
 
-        PaymentTerm::create(['tenant_id' => $masterTenant->id, 'name' => 'À Vista', 'number_of_installments' => 1, 'days_for_first_installment' => 0]);
-        PaymentTerm::create(['tenant_id' => $masterTenant->id, 'name' => '30 Dias', 'number_of_installments' => 1, 'days_for_first_installment' => 30]);
-        PaymentTerm::create(['tenant_id' => $masterTenant->id, 'name' => '30/60 Dias', 'number_of_installments' => 2, 'days_for_first_installment' => 30]);
-        PaymentTerm::create(['tenant_id' => $masterTenant->id, 'name' => 'Entrada + 1x', 'number_of_installments' => 2, 'days_for_first_installment' => 0]);
-        PaymentTerm::create(['tenant_id' => $masterTenant->id, 'name' => 'Entrada + 2x', 'number_of_installments' => 3, 'days_for_first_installment' => 0]);
-        PaymentTerm::create(['tenant_id' => $masterTenant->id, 'name' => 'Parcelado em 3x', 'number_of_installments' => 3, 'days_for_first_installment' => 30]);
-        PaymentTerm::create(['tenant_id' => $masterTenant->id, 'name' => 'Parcelado em 6x', 'number_of_installments' => 6, 'days_for_first_installment' => 30]);
-        PaymentTerm::create(['tenant_id' => $masterTenant->id, 'name' => 'Parcelado em 10x', 'number_of_installments' => 10, 'days_for_first_installment' => 30]);
+        foreach ($tenants as $tenant) {
+            PaymentTerm::create(['tenant_id' => $tenant->id, 'name' => 'À Vista', 'number_of_installments' => 1, 'days_for_first_installment' => 0]);
+            PaymentTerm::create(['tenant_id' => $tenant->id, 'name' => '30 Dias', 'number_of_installments' => 1, 'days_for_first_installment' => 30]);
+            PaymentTerm::create(['tenant_id' => $tenant->id, 'name' => '30/60 Dias', 'number_of_installments' => 2, 'days_for_first_installment' => 30]);
+            PaymentTerm::create(['tenant_id' => $tenant->id, 'name' => 'Entrada + 1x', 'number_of_installments' => 2, 'days_for_first_installment' => 0]);
+            PaymentTerm::create(['tenant_id' => $tenant->id, 'name' => 'Entrada + 2x', 'number_of_installments' => 3, 'days_for_first_installment' => 0]);
+            PaymentTerm::create(['tenant_id' => $tenant->id, 'name' => 'Parcelado em 3x', 'number_of_installments' => 3, 'days_for_first_installment' => 30]);
+            PaymentTerm::create(['tenant_id' => $tenant->id, 'name' => 'Parcelado em 6x', 'number_of_installments' => 6, 'days_for_first_installment' => 30]);
+            PaymentTerm::create(['tenant_id' => $tenant->id, 'name' => 'Parcelado em 10x', 'number_of_installments' => 10, 'days_for_first_installment' => 30]);
+        }
     }
 }

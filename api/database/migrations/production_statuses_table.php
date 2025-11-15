@@ -11,9 +11,10 @@ return new class extends Migration
         Schema::create('production_statuses', function (Blueprint $table) {
             $table->id();
             $table->foreignId('tenant_id')->constrained('tenants')->onDelete('cascade');
-            $table->string('name')->unique();
+            $table->string('name');
             $table->string('color')->default('gray');
             $table->boolean('is_active')->default(true);
+            $table->unique(['tenant_id', 'name']);
             $table->timestamps();
         });
     }

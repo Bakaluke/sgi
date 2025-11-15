@@ -13,17 +13,19 @@ class NegotiationSourceSeeder extends Seeder
     {
         NegotiationSource::query()->delete();
 
-        $masterTenant = Tenant::where('name', 'Drav Dev')->first();
+        $tenants = Tenant::where('name', '!=', 'Drav Dev (Master)')->get();
 
-        NegotiationSource::create(['tenant_id' => $masterTenant->id, 'name' => 'Indicação']);
-        NegotiationSource::create(['tenant_id' => $masterTenant->id, 'name' => 'Site']);
-        NegotiationSource::create(['tenant_id' => $masterTenant->id, 'name' => 'Anúncio Online']);
-        NegotiationSource::create(['tenant_id' => $masterTenant->id, 'name' => 'Cliente Antigo']);
-        NegotiationSource::create(['tenant_id' => $masterTenant->id, 'name' => 'WhatsApp']);
-        NegotiationSource::create(['tenant_id' => $masterTenant->id, 'name' => 'Instagram']);
-        NegotiationSource::create(['tenant_id' => $masterTenant->id, 'name' => 'Facebook']);
-        NegotiationSource::create(['tenant_id' => $masterTenant->id, 'name' => 'Google']);
-        NegotiationSource::create(['tenant_id' => $masterTenant->id, 'name' => 'Outdoor']);
-        NegotiationSource::create(['tenant_id' => $masterTenant->id, 'name' => 'Feiras e Eventos']);
+        foreach ($tenants as $tenant) {
+            NegotiationSource::create(['tenant_id' => $tenant->id, 'name' => 'Indicação']);
+            NegotiationSource::create(['tenant_id' => $tenant->id, 'name' => 'Site']);
+            NegotiationSource::create(['tenant_id' => $tenant->id, 'name' => 'Anúncio Online']);
+            NegotiationSource::create(['tenant_id' => $tenant->id, 'name' => 'Cliente Antigo']);
+            NegotiationSource::create(['tenant_id' => $tenant->id, 'name' => 'WhatsApp']);
+            NegotiationSource::create(['tenant_id' => $tenant->id, 'name' => 'Instagram']);
+            NegotiationSource::create(['tenant_id' => $tenant->id, 'name' => 'Facebook']);
+            NegotiationSource::create(['tenant_id' => $tenant->id, 'name' => 'Google']);
+            NegotiationSource::create(['tenant_id' => $tenant->id, 'name' => 'Outdoor']);
+            NegotiationSource::create(['tenant_id' => $tenant->id, 'name' => 'Feiras e Eventos']);
+        }
     }
 }

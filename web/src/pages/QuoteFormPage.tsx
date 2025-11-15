@@ -346,7 +346,14 @@ function QuoteFormPage() {
   </Table.Tr>
   ));
 
-  if (!quote) {
+  if (
+    !quote ||
+    !paymentMethods.length ||
+    !paymentTerms.length ||
+    !deliveryMethods.length ||
+    !quoteStatuses.length ||
+    !negotiationSources.length
+  ) {
     return <Container><Title>Carregando Orçamento...</Title></Container>;
   }
 
@@ -415,7 +422,7 @@ function QuoteFormPage() {
           <Grid>
             <Grid.Col span={{ base: 12, md: 4 }}><Select label="Status" value={String(quote.status_id || '')} onChange={handleStatusChange} data={quoteStatuses} disabled={isLocked} required /></Grid.Col>
             <Grid.Col span={{ base: 12, md: 4 }}><Select label="Forma de Pagamento" placeholder="Selecione..." value={String(quote.payment_method_id || '')} onChange={(value) => updateQuoteField('payment_method_id', value ? Number(value) : null)} data={paymentMethods} disabled={isLocked} required /></Grid.Col>
-            <Grid.Col span={{ base: 12, md: 4 }}><Select label="Condição de Pagamento" placeholder="Selecione..." data={paymentTerms} value={String(quote.payment_term_id || '')} onChange={(value) => updateQuoteField('payment_term_id', value ? Number(value) : null)} disabled={isLocked} required /></Grid.Col>
+            <Grid.Col span={{ base: 12, md: 4 }}><Select label="Condição de Pagamento" placeholder="Selecione..." value={String(quote.payment_term_id || '')} onChange={(value) => updateQuoteField('payment_term_id', value ? Number(value) : null)} data={paymentTerms} disabled={isLocked} required /></Grid.Col>
             <Grid.Col span={{ base: 12, md: 6 }}><Select label="Opção de Entrega" placeholder="Selecione..." value={String(quote.delivery_method_id || '')} onChange={(value) => updateQuoteField('delivery_method_id', value ? Number(value) : null)} data={deliveryMethods} disabled={isLocked} required /></Grid.Col>
             <Grid.Col span={{ base: 12, md: 6 }}><DateTimePicker label="Data/Hora da Entrega" placeholder="Selecione data e hora" value={quote.delivery_datetime ? new Date(quote.delivery_datetime) : null} onChange={(date) => updateQuoteField('delivery_datetime', date?.toString() || null)} disabled={isLocked} required minDate={new Date()} /></Grid.Col>
             <Grid.Col span={{ base: 12, md: 6 }}><Select label="Origem da Negociação" placeholder="Selecione..." value={String(quote.negotiation_source_id || '')} onChange={(value) => updateQuoteField('negotiation_source_id', value ? Number(value) : null)} data={negotiationSources} disabled={isLocked} required clearable /></Grid.Col>

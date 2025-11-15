@@ -12,14 +12,11 @@ class CustomerFactory extends Factory
 
     public function definition(): array
     {
-        $tenant = Tenant::first();
-
         $type = $this->faker->randomElement(['fisica', 'juridica']);
         
         $isFisica = $type === 'fisica';
 
         return [
-            'tenant_id' => $tenant->id,
             'type' => $type,
             'document' => $isFisica ? $this->faker->unique()->cpf(false) : $this->faker->unique()->cnpj(false),
             'name' => $isFisica ? $this->faker->name() : $this->faker->company(),

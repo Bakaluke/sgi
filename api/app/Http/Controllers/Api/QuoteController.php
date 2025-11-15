@@ -19,30 +19,29 @@ class QuoteController extends Controller
 {
     public function index(Request $request)
     {
+        $this->authorize('viewAny', Quote::class); 
+        
         $user = $request->user();
         
-        if ($user->role === 'admin') {
-            $query = Quote::query();
-        } elseif ($user->role === 'vendedor') {
-            $query = Quote::where('user_id', $user->id);
-        } else {
-            return response()->json(['data' => []]);
-        }
+        $query = Quote::query();
 
+        if (!$user->can('quotes.view_all')) { 
+            $query->where('user_id', $user->id);
+        }
+        
         $query->with(['customer', 'user', 'items.product', 'status', 'paymentMethod', 'deliveryMethod', 'negotiationSource', 'paymentTerm']);
 
         if ($request->has('search') && $request->input('search') != '') {
             $searchTerm = $request->input('search');
             $query->where(function ($q) use ($searchTerm) {
-                $q->where('id', 'like', "%{$searchTerm}%")
-                ->orWhere('status', 'like', "%{$searchTerm}%")
+                $q->where('internal_id', 'like', "%{$searchTerm}%") 
                 ->orWhereHas('customer', function ($subQ) use ($searchTerm) {
                     $subQ->where('name', 'like', "%{$searchTerm}%");
                 });
             });
         }
         
-        $query->orderBy('id', 'desc');
+        $query->orderBy('internal_id', 'desc');
         
         return $query->paginate(30);
     }
@@ -73,10 +72,12 @@ class QuoteController extends Controller
 
         $primaryAddress = $customer->addresses->first();
         $addressString = $primaryAddress ? implode(', ', array_filter([
-            $primaryAddress->street, 'nº ' . $primaryAddress->number, $primaryAddress->neighborhood,
-            $primaryAddress->city . ' - ' . $primaryAddress->state,
+            $primaryAddress->street,
+            $primaryAddress->number ? 'nº ' . $primaryAddress->number : null,
+            $primaryAddress->neighborhood,
+            $primaryAddress->city ? $primaryAddress->city . ' - ' . $primaryAddress->state : null,
             $primaryAddress->cep
-        ])) : null;
+        ])) : 'Endereço não informado';
 
         $customerSnapshot = [
             'name' => $customer->name,

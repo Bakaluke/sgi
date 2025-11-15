@@ -234,7 +234,7 @@ function QuoteListPage() {
 
   const handleOpenEmailModal = (quote: Quote) => {
     setQuoteToSend(quote);
-    const defaultMessage = `Olá, ${quote.customer.name}!\n\nConforme conversamos, segue em anexo o seu orçamento.\n\nQualquer dúvida, estamos à disposição.\n\nAtenciosamente,\n${settings?.company_fantasy_name || 'Nossa Empresa'}.`;
+    const defaultMessage = `Olá, ${quote.customer?.name ?? 'Cliente'}!\n\nConforme conversamos, segue em anexo o seu orçamento.\n\nQualquer dúvida, estamos à disposição.\n\nAtenciosamente,\n${settings?.company_fantasy_name || 'Nossa Empresa'}.`;
     setEmailBody(defaultMessage);
     openEmailModal();
   };
@@ -252,13 +252,13 @@ function QuoteListPage() {
   };
 
   const handleSendWhatsApp = (quote: Quote) => {
-    const phone = quote.customer.phone;
+    const phone = quote.customer?.phone;
     if (!phone) {
       notifications.show({ title: 'Atenção', message: 'Este cliente não possui um número de telefone cadastrado.', color: 'yellow' });
       return;
     }
     const cleanedPhone = `55${phone.replace(/\D/g, '')}`;
-    const message = `Olá, ${quote.customer.name}! Segue o seu orçamento da ${settings?.company_fantasy_name || ''}. Por favor, abra o PDF em anexo.`;
+    const message = `Olá, ${quote.customer?.name ?? 'Cliente'}! Segue o seu orçamento da ${settings?.company_fantasy_name || ''}. Por favor, abra o PDF em anexo.`;
     const encodedMessage = encodeURIComponent(message);
     const whatsappUrl = `https://wa.me/${cleanedPhone}?text=${encodedMessage}`;
     window.open(whatsappUrl, '_blank');
@@ -291,10 +291,10 @@ function QuoteListPage() {
             </ActionIcon>
           </Table.Td>
           <Table.Td>{quote.internal_id}</Table.Td>
-          <Table.Td>{quote.customer.name}</Table.Td>
-          {can('quotes.view_all') && <Table.Td>{quote.user.name}</Table.Td>}
+          <Table.Td>{quote.customer?.name ?? 'Cliente não encontrado'}</Table.Td>
+          {can('quotes.view_all') && (<Table.Td>{quote.user?.name ?? 'Usuário não encontrado'}</Table.Td>)}
           <Table.Td><Badge color={quote.status?.color || 'gray'}>{quote.status?.name || 'N/A'}</Badge></Table.Td>
-          <Table.Td>{new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(quote.total_amount)}</Table.Td>
+          <Table.Td>{new Date(quote.created_at).toLocaleDateString('pt-BR')}</Table.Td>
           <Table.Td>{quote.created_at ? new Date(quote.created_at).toLocaleDateString('pt-BR') : ''}</Table.Td>
           <Table.Td onClick={(e) => e.stopPropagation()}>
             <Menu shadow="md" width={220}>
@@ -329,7 +329,7 @@ function QuoteListPage() {
                     </Table.Thead>
                     <Table.Tbody>{quote.items.map(item => (
                       <Table.Tr key={item.id}>
-                        <Table.Td>{item.product.name}</Table.Td>
+                        <Table.Td>{item.product?.name ?? 'Produto não encontrado'}</Table.Td>
                         <Table.Td>{item.quantity}</Table.Td>
                         <Table.Td>{new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(item.unit_sale_price)}</Table.Td>
                         <Table.Td>{new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(item.total_price)}</Table.Td>
@@ -394,7 +394,7 @@ function QuoteListPage() {
       </Modal>
 
       <Modal opened={emailModalOpened} onClose={closeEmailModal} title={`Enviar Orçamento #${quoteToSend?.id} por E-mail`}>
-        <Text size="sm">Para: <strong>{quoteToSend?.customer.email}</strong></Text>
+        <Text size="sm">Para: <strong>{quoteToSend?.customer?.email ?? 'Email não encontrado'}</strong></Text>
         <Textarea label="Corpo do E-mail" mt="md" autosize minRows={5} value={emailBody} onChange={(event) => setEmailBody(event.currentTarget.value)} />
         <Group justify="flex-end" mt="lg">
           <Button variant="default" onClick={closeEmailModal}>Cancelar</Button>

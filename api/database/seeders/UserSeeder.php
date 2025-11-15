@@ -12,34 +12,36 @@ class UserSeeder extends Seeder
     {
         User::query()->delete();
 
-        $masterTenant = Tenant::where('name', 'Drav Dev')->first();
+        $masterTenant = Tenant::where('name', 'Drav Dev (Master)')->first();
+        $teresinaTenant = Tenant::where('name', 'Teresina Brindes')->first();
+        $padariaTenant = Tenant::where('name', 'Padaria Pão Quente')->first();
 
         User::factory()->create([
             'tenant_id' => $masterTenant->id,
-            'name' => 'Administrador',
-            'email' => 'admin@sgi.test',
+            'name' => 'Admin Drav Dev',
+            'email' => 'admin@dravdev.com',
             'password' => 'password',
         ])->assignRole('admin');
 
         User::factory()->create([
-            'tenant_id' => $masterTenant->id,
-            'name' => 'Vendedor Alpha',
-            'email' => 'vendedor_alpha@sgi.test',
+            'tenant_id' => $teresinaTenant->id,
+            'name' => 'Gerente Teresina',
+            'email' => 'admin@teresina.com',
+            'password' => 'password',
+        ])->assignRole('admin');
+        
+        User::factory()->create([
+            'tenant_id' => $teresinaTenant->id,
+            'name' => 'Vendedor Teresina',
+            'email' => 'vendedor@teresina.com',
             'password' => 'password',
         ])->assignRole('vendedor');
 
         User::factory()->create([
-            'tenant_id' => $masterTenant->id,
-            'name' => 'Vendedor Beta',
-            'email' => 'vendedor_beta@sgi.test',
+            'tenant_id' => $padariaTenant->id,
+            'name' => 'Seu Zé (Dono)',
+            'email' => 'admin@padaria.com',
             'password' => 'password',
-        ])->assignRole('vendedor');
-
-        User::factory()->create([
-            'tenant_id' => $masterTenant->id,
-            'name' => 'Produção Teste',
-            'email' => 'producao@sgi.test',
-            'password' => 'password',
-        ])->assignRole('producao');
+        ])->assignRole('admin');
     }
 }

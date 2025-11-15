@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Scope;
 use Illuminate\Support\Facades\Auth;
+use App\Models\Tenant;
 
 class TenantScope implements Scope
 {
@@ -14,7 +15,9 @@ class TenantScope implements Scope
         if (Auth::check()) {
             $user = Auth::user();
 
-            if ($user->tenant_id && !$user->can('production_orders.view_all')) {
+            $masterTenantId = Tenant::where('name', 'Drav Dev (Master)')->value('id');
+
+            if ($user->tenant_id && $user->tenant_id != $masterTenantId) {
                 $builder->where($model->getTable().'.tenant_id', $user->tenant_id);
             }
         }

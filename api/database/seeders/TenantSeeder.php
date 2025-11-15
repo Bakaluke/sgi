@@ -11,6 +11,7 @@ class TenantSeeder extends Seeder
 {
     public function run(): void
     {
+        Tenant::query()->delete();
         $proPlan = Plan::first();
 
         if (!$proPlan) {
@@ -20,20 +21,50 @@ class TenantSeeder extends Seeder
 
         Tenant::create([
             'plan_id' => $proPlan->id,
-            'name' => 'Drav Dev',
+            'name' => 'Drav Dev (Master)',
             'status' => 'active',
-            'legal_name' => 'Drav Desenvolvimento de Sistemas Ltda',
-            'company_fantasy_name' => 'Drav Dev',
-            'cnpj' => '12345678000199',
-            'email' => 'contato@dravdev.com.br',
-            'phone' => '86999998888',
-            'website' => 'dravdev.com.br',
-            'cep' => '64000000',
+            'company_fantasy_name' => 'SGI Drav Dev',
+            'cnpj' => '00.000.000/0001-00',
+            'email' => 'contato@dravdev.com',
+            'phone' => '86999999999',
             'street' => 'Rua dos Programadores',
             'number' => '1024',
             'neighborhood' => 'Centro',
             'city' => 'Teresina',
             'state' => 'PI',
+            'cep' => '64000-000',
+        ]);
+
+        Tenant::create([
+            'plan_id' => $proPlan->id,
+            'name' => 'Teresina Brindes',
+            'status' => 'active',
+            'company_fantasy_name' => 'Teresina Brindes Personalizados',
+            'cnpj' => '11.111.111/0001-11',
+            'email' => 'contato@teresinabrindes.com',
+            'phone' => '86988888888',
+            'street' => 'Av. Frei Serafim',
+            'number' => '2000',
+            'neighborhood' => 'Centro',
+            'city' => 'Teresina',
+            'state' => 'PI',
+            'cep' => '64001-000',
+        ]);
+
+        Tenant::create([
+            'plan_id' => $proPlan->id,
+            'name' => 'Padaria Pão Quente',
+            'status' => 'trial',
+            'company_fantasy_name' => 'Padaria Pão Quente do Zé',
+            'cnpj' => '22.222.222/0001-22',
+            'email' => 'contato@padariadoze.com',
+            'phone' => '86977777777',
+            'street' => 'Rua das Flores',
+            'number' => '500',
+            'neighborhood' => 'Primavera',
+            'city' => 'Teresina',
+            'state' => 'PI',
+            'cep' => '64002-000',
         ]);
     }
 }

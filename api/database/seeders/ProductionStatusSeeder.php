@@ -13,11 +13,13 @@ class ProductionStatusSeeder extends Seeder
     {
         ProductionStatus::query()->delete();
 
-        $masterTenant = Tenant::where('name', 'Drav Dev')->first();
+        $tenants = Tenant::where('name', '!=', 'Drav Dev (Master)')->get();
 
-        ProductionStatus::create(['tenant_id' => $masterTenant->id, 'name' => 'Pendente', 'color' => 'blue']);
-        ProductionStatus::create(['tenant_id' => $masterTenant->id, 'name' => 'Em Produção', 'color' => 'yellow']);
-        ProductionStatus::create(['tenant_id' => $masterTenant->id, 'name' => 'Concluído', 'color' => 'green']);
-        ProductionStatus::create(['tenant_id' => $masterTenant->id, 'name' => 'Cancelado', 'color' => 'red']);
+        foreach ($tenants as $tenant) {
+            ProductionStatus::create(['tenant_id' => $tenant->id, 'name' => 'Pendente', 'color' => 'blue']);
+            ProductionStatus::create(['tenant_id' => $tenant->id, 'name' => 'Em Produção', 'color' => 'yellow']);
+            ProductionStatus::create(['tenant_id' => $tenant->id, 'name' => 'Concluído', 'color' => 'green']);
+            ProductionStatus::create(['tenant_id' => $tenant->id, 'name' => 'Cancelado', 'color' => 'red']);
+        }
     }
 }

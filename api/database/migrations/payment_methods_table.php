@@ -11,8 +11,9 @@ return new class extends Migration
         Schema::create('payment_methods', function (Blueprint $table) {
             $table->id();
             $table->foreignId('tenant_id')->constrained('tenants')->onDelete('cascade');
-            $table->string('name')->unique();
+            $table->string('name');
             $table->boolean('is_active')->default(true);
+            $table->unique(['tenant_id', 'name']);
             $table->timestamps();
         });
     }

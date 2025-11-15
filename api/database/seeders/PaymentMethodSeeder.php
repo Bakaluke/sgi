@@ -13,11 +13,13 @@ class PaymentMethodSeeder extends Seeder
     {
         PaymentMethod::query()->delete();
 
-        $masterTenant = Tenant::where('name', 'Drav Dev')->first();
+        $tenants = Tenant::where('name', '!=', 'Drav Dev (Master)')->get();
 
-        PaymentMethod::create(['tenant_id' => $masterTenant->id, 'name' => 'PIX']);
-        PaymentMethod::create(['tenant_id' => $masterTenant->id, 'name' => 'Cartão de Crédito']);
-        PaymentMethod::create(['tenant_id' => $masterTenant->id, 'name' => 'Boleto Bancário']);
-        PaymentMethod::create(['tenant_id' => $masterTenant->id, 'name' => 'Dinheiro']);
+        foreach ($tenants as $tenant) {
+            PaymentMethod::create(['tenant_id' => $tenant->id, 'name' => 'PIX']);
+            PaymentMethod::create(['tenant_id' => $tenant->id, 'name' => 'Cartão de Crédito']);
+            PaymentMethod::create(['tenant_id' => $tenant->id, 'name' => 'Boleto Bancário']);
+            PaymentMethod::create(['tenant_id' => $tenant->id, 'name' => 'Dinheiro']);
+        }
     }
 }

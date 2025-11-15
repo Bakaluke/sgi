@@ -13,11 +13,13 @@ class DeliveryMethodSeeder extends Seeder
     {
         DeliveryMethod::query()->delete();
 
-        $masterTenant = Tenant::where('name', 'Drav Dev')->first();
+        $tenants = Tenant::where('name', '!=', 'Drav Dev (Master)')->get();
 
-        DeliveryMethod::create(['tenant_id' => $masterTenant->id, 'name' => 'Retirada na Loja']);
-        DeliveryMethod::create(['tenant_id' => $masterTenant->id, 'name' => 'Correios']);
-        DeliveryMethod::create(['tenant_id' => $masterTenant->id, 'name' => 'Transportadora']);
-        DeliveryMethod::create(['tenant_id' => $masterTenant->id, 'name' => 'Entregador']);
+        foreach ($tenants as $tenant) {
+            DeliveryMethod::create(['tenant_id' => $tenant->id, 'name' => 'Retirada na Loja']);
+            DeliveryMethod::create(['tenant_id' => $tenant->id, 'name' => 'Correios']);
+            DeliveryMethod::create(['tenant_id' => $tenant->id, 'name' => 'Transportadora']);
+            DeliveryMethod::create(['tenant_id' => $tenant->id, 'name' => 'Entregador']);
+        }
     }
 }

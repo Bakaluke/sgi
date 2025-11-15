@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use App\Models\Category;
 use App\Models\Tenant;
 use Illuminate\Database\Seeder;
+use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 
 class CategorySeeder extends Seeder
 {
@@ -12,26 +13,12 @@ class CategorySeeder extends Seeder
     {
         Category::query()->delete();
         
-        $masterTenant = Tenant::where('name', 'Drav Dev')->first();
+        $tenants = Tenant::where('name', '!=', 'Drav Dev (Master)')->get();
 
-        if (!$masterTenant) {
-            $this.command->error('Tenant Master "Drav Dev" não encontrado. Rode o TenantSeeder primeiro.');
-            return;
+        foreach ($tenants as $tenant) {
+            Category::create(['tenant_id' => $tenant->id,'name' => 'Impressão Digital',]);
+            Category::create(['tenant_id' => $tenant->id,'name' => 'Brindes Corporativos',]);
+            Category::create(['tenant_id' => $tenant->id,'name' => 'Serviços de Design',]);
         }
-
-        Category::factory()->create([
-            'tenant_id' => $masterTenant->id,
-            'name' => 'Impressão Digital',
-        ]);
-        
-        Category::factory()->create([
-            'tenant_id' => $masterTenant->id,
-            'name' => 'Brindes Corporativos',
-        ]);
-
-        Category::factory()->create([
-            'tenant_id' => $masterTenant->id,
-            'name' => 'Serviços de Design',
-        ]);
     }
 }
