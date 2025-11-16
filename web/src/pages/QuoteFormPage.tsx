@@ -47,6 +47,7 @@ const formatDocument = (doc: string = '', type: 'fisica' | 'juridica' = 'fisica'
 function QuoteFormPage() {
   const { quoteId } = useParams();
   const [quote, setQuote] = useState<Quote | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [initialStatus, setInitialStatus] = useState<string | null>(null);
   const [isSavingHeader, setIsSavingHeader] = useState(false);
   const [isPrinting, setIsPrinting] = useState(false);
