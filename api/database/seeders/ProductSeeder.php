@@ -18,7 +18,9 @@ class ProductSeeder extends Seeder
         $tenants = Tenant::where('name', '!=', 'Drav Dev (Master)')->get();
 
         foreach ($tenants as $tenant) {
-            $products = Product::factory()->count(20)->create([
+            $count = rand(10, 50);
+            
+            $products = Product::factory()->count($count)->create([
                 'tenant_id' => $tenant->id,
             ]);
             

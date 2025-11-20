@@ -15,7 +15,8 @@ class CustomerSeeder extends Seeder
         $tenants = Tenant::where('name', '!=', 'Drav Dev (Master)')->get();
 
         foreach ($tenants as $tenant) {
-            Customer::factory()->count(10)->create(['tenant_id' => $tenant->id,]);
+            $count = rand(5, 30);
+            Customer::factory()->count($count)->create(['tenant_id' => $tenant->id,]);
         }
     }
 }

@@ -1,4 +1,5 @@
 <?php
+
 namespace Database\Seeders;
 
 use App\Models\User;
@@ -13,35 +14,39 @@ class UserSeeder extends Seeder
         User::query()->delete();
 
         $masterTenant = Tenant::where('name', 'Drav Dev (Master)')->first();
-        $teresinaTenant = Tenant::where('name', 'Teresina Brindes')->first();
-        $padariaTenant = Tenant::where('name', 'Padaria Pão Quente')->first();
-
+        
         User::factory()->create([
             'tenant_id' => $masterTenant->id,
-            'name' => 'Admin Drav Dev',
+            'name' => 'Super Admin Drav',
             'email' => 'admin@dravdev.com',
             'password' => 'password',
         ])->assignRole('admin');
 
-        User::factory()->create([
-            'tenant_id' => $teresinaTenant->id,
-            'name' => 'Gerente Teresina',
-            'email' => 'admin@teresina.com',
-            'password' => 'password',
-        ])->assignRole('admin');
-        
-        User::factory()->create([
-            'tenant_id' => $teresinaTenant->id,
-            'name' => 'Vendedor Teresina',
-            'email' => 'vendedor@teresina.com',
-            'password' => 'password',
-        ])->assignRole('vendedor');
+        $clientTenants = Tenant::where('name', '!=', 'Drav Dev (Master)')->get();
 
-        User::factory()->create([
-            'tenant_id' => $padariaTenant->id,
-            'name' => 'Seu Zé (Dono)',
-            'email' => 'admin@padaria.com',
-            'password' => 'password',
-        ])->assignRole('admin');
+        foreach ($clientTenants as $index => $tenant) {
+            $i = $index + 1;
+            
+            User::factory()->create([
+                'tenant_id' => $tenant->id,
+                'name' => "Dono da Empresa $i",
+                'email' => "admin@empresa$i.com",
+                'password' => 'password',
+            ])->assignRole('admin');
+
+            User::factory()->create([
+                'tenant_id' => $tenant->id,
+                'name' => "Vendedor da Empresa $i",
+                'email' => "vendedor@empresa$i.com",
+                'password' => 'password',
+            ])->assignRole('vendedor');
+
+            User::factory()->create([
+                'tenant_id' => $tenant->id,
+                'name' => "Operador da Empresa $i",
+                'email' => "producao@empresa$i.com",
+                'password' => 'password',
+            ])->assignRole('producao');
+        }
     }
 }

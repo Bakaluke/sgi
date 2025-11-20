@@ -20,11 +20,11 @@ class QuoteSeeder extends Seeder
             $customers = Customer::where('tenant_id', $tenant->id)->get();
             $users = User::where('tenant_id', $tenant->id)->get();
 
-            if ($customers->isEmpty() || $users->isEmpty()) {
-                continue; 
-            }
+            if ($customers->isEmpty() || $users->isEmpty()) continue;
 
-            for ($i = 0; $i < 15; $i++) {
+            $count = rand(5, 20);
+
+            for ($i = 0; $i < $count; $i++) {
                 Quote::factory()->create([
                     'tenant_id' => $tenant->id,
                     'customer_id' => $customers->random()->id,

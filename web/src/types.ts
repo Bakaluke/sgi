@@ -314,6 +314,7 @@ export interface AuthContextType {
 
 export interface Settings {
   company_fantasy_name: string | null;
+  logo_path: string | null;
 }
 
 export interface SettingsContextType {
