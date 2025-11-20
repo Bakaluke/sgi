@@ -142,7 +142,7 @@ export function CustomerForm({ customer, onSuccess, onCancel }: CustomerFormProp
                     <TextInput label="Número" value={formData.address.number} onChange={(e) => setFormData(p => ({...p, address: {...p.address, number: e.target.value}}))} required />
                 </Grid.Col>
                 <Grid.Col span={{ base: 12, md: 8 }}>
-                    <TextInput label="Complemento" value={formData.address.complement || ''} onChange={(e) => setFormData(p => ({...p, address: {...p.address, complement: e.target.value}}))} />
+                    <TextInput label="Complemento/Referência" value={formData.address.complement || ''} onChange={(e) => setFormData(p => ({...p, address: {...p.address, complement: e.target.value}}))} />
                 </Grid.Col>
                 <Grid.Col span={{ base: 12, md: 5 }}>
                     <TextInput label="Bairro" value={formData.address.neighborhood} onChange={(e) => setFormData(p => ({...p, address: {...p.address, neighborhood: e.target.value}}))} required />

@@ -9,22 +9,31 @@ class QuoteItemFactory extends Factory
 {
     public function definition(): array
     {
-        $product = Product::inRandomOrder()->first() ?? Product::factory()->create();
-        
-        $quantity = $this->faker->numberBetween(1, 5);
-
-        $salePrice = $product->sale_price;
-
-        $costPrice = $product->isService() ? 0 : $product->cost_price;
-
         return [
-            'product_id' => $product->id,
-            'product_name' => $product->name,
-            'quantity' => $quantity,
-            'unit_cost_price' => $costPrice,
-            'unit_sale_price' => $salePrice,
-            'total_price' => $quantity * $salePrice,
-            'profit_margin' => $salePrice > 0 ? (($salePrice - $costPrice) / $salePrice) * 100 : 0,
+            'product_id' => function (array $attributes) {
+                $tenantId = $attributes['tenant_id'] ?? 1;
+                return Product::withoutGlobalScopes()
+                    ->where('tenant_id', $tenantId)
+                    ->inRandomOrder()
+                    ->first()
+                    ->id ?? Product::factory()->create(['tenant_id' => $tenantId])->id;
+            },
+            'product_name' => function (array $attributes) {
+                return Product::withoutGlobalScopes()->find($attributes['product_id'])->name;
+            },
+            'quantity' => $this->faker->numberBetween(1, 5),
+            'unit_cost_price' => function (array $attributes) {
+                return Product::withoutGlobalScopes()->find($attributes['product_id'])->cost_price;
+            },
+            'unit_sale_price' => function (array $attributes) {
+                return Product::withoutGlobalScopes()->find($attributes['product_id'])->sale_price;
+            },
+            'total_price' => function (array $attributes) {
+                return $attributes['quantity'] * $attributes['unit_sale_price'];
+            },
+            'profit_margin' => 30,
+            'discount_percentage' => 0,
+            'notes' => $this->faker->optional()->sentence,
         ];
     }
 }

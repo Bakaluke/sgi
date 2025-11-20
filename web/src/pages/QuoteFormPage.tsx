@@ -47,7 +47,6 @@ const formatDocument = (doc: string = '', type: 'fisica' | 'juridica' = 'fisica'
 function QuoteFormPage() {
   const { quoteId } = useParams();
   const [quote, setQuote] = useState<Quote | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
   const [initialStatus, setInitialStatus] = useState<string | null>(null);
   const [isSavingHeader, setIsSavingHeader] = useState(false);
   const [isPrinting, setIsPrinting] = useState(false);
@@ -325,7 +324,7 @@ function QuoteFormPage() {
   const itemRows = quote?.items?.map((item) => (
   <Table.Tr key={item.id}>
     <Table.Td>
-      {item.product.name}
+      {item.product?.name ?? 'Produto Indisponível'}
       {item.notes && <Text size="xs" c="dimmed">Obs: {item.notes}</Text>}
       {item.file_path && (
         <Anchor href={`${import.meta.env.VITE_API_BASE_URL.replace('/api', '')}/storage/${item.file_path}`} target="_blank" size="xs">

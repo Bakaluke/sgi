@@ -32,9 +32,15 @@ export interface CustomerFormProps {
   onCancel: () => void;
 }
 
-export type CustomerFormData = Omit<Customer, 'id' | 'addresses'> & {
-  address: Omit<Address, 'id' | 'type' | 'customer_id'>;
-};
+export interface CustomerFormData {
+    type: 'fisica' | 'juridica';
+    document: string;
+    name: string;
+    legal_name: string | null;
+    email: string;
+    phone: string;
+    address: Omit<Address, 'id' | 'customer_id' | 'tenant_id' | 'created_at' | 'updated_at'>;
+}
 
 export type ProductFormData = Omit<Product, 'id' | 'cost_price' | 'quantity_in_stock' | 'image_path' | 'category'>;
 

@@ -18,23 +18,36 @@ class QuoteFactory extends Factory
 {
     public function definition(): array
     {
-        $status = QuoteStatus::withoutGlobalScopes()->whereIn('id', [1, 2])->inRandomOrder()->first();
-        $paymentMethod = PaymentMethod::withoutGlobalScopes()->inRandomOrder()->first();
-        $paymentTerm = PaymentTerm::withoutGlobalScopes()->inRandomOrder()->first();
-        $deliveryMethod = DeliveryMethod::withoutGlobalScopes()->inRandomOrder()->first();
-        $negotiationSource = NegotiationSource::withoutGlobalScopes()->inRandomOrder()->first();
-        
-        $customer = Customer::factory();
-        $user = User::factory();
-        
         return [
-            'customer_id' => $customer,
-            'user_id' => $user,
-            'status_id' => $status->id,
-            'payment_method_id' => $paymentMethod->id,
-            'payment_term_id' => $paymentTerm->id,
-            'delivery_method_id' => $deliveryMethod->id,
-            'negotiation_source_id' => $negotiationSource->id,
+            'customer_id' => Customer::factory(),
+            'user_id' => User::factory(),
+            'tenant_id' => Tenant::first()?->id ?? 1,
+            'status_id' => function (array $attributes) {
+                return QuoteStatus::withoutGlobalScopes()
+                ->where('tenant_id', $attributes['tenant_id'] ?? Tenant::first()->id)
+                ->whereIn('name', ['Aberto', 'Negociação'])
+                ->inRandomOrder()->first()->id;
+            },
+            'payment_method_id' => function (array $attributes) {
+                return PaymentMethod::withoutGlobalScopes()
+                ->where('tenant_id', $attributes['tenant_id'] ?? Tenant::first()->id)
+                ->inRandomOrder()->first()->id;
+            },
+            'payment_term_id' => function (array $attributes) {
+                return PaymentTerm::withoutGlobalScopes()
+                ->where('tenant_id', $attributes['tenant_id'] ?? Tenant::first()->id)
+                ->inRandomOrder()->first()->id;
+            },
+            'delivery_method_id' => function (array $attributes) {
+                return DeliveryMethod::withoutGlobalScopes()
+                ->where('tenant_id', $attributes['tenant_id'] ?? Tenant::first()->id)
+                ->inRandomOrder()->first()->id;
+            },
+            'negotiation_source_id' => function (array $attributes) {
+                return NegotiationSource::withoutGlobalScopes()
+                ->where('tenant_id', $attributes['tenant_id'] ?? Tenant::first()->id)
+                ->inRandomOrder()->first()->id;
+            },
             'total_amount' => $this->faker->randomFloat(2, 100, 5000),
             'notes' => $this->faker->sentence,
             'customer_data' => [], 
