@@ -137,7 +137,7 @@ O projeto utiliza uma stack moderna e robusta, focada em performance e manutenib
 ## 🚀 Como Rodar o Projeto Localmente
 
 ### Pré-requisitos
-- PHP 8.2+
+- PHP 8.3+
 - Composer
 - Node.js & NPM
 - MySQL
@@ -156,8 +156,8 @@ O projeto utiliza uma stack moderna e robusta, focada em performance e manutenib
     php artisan key:generate
 
     # Configure seu banco de dados no .env e então:
-    php artisan migrate:fresh --seed  # O "Big Bang": Cria tabelas e popula com dados de teste Multi-Tenant
-    php artisan storage:link          # Link para imagens e logos
+    php artisan migrate:fresh --seed
+    php artisan storage:link
     php artisan serve
     ```
 
@@ -170,7 +170,7 @@ O projeto utiliza uma stack moderna e robusta, focada em performance e manutenib
     ```
 
 4.  **Acessar e Testar:**
-    * Painel Super Admin: `http://localhost:8000/admin` (Login: admin@dravdev.com)
+    * Painel Super Admin: `http://localhost:8000/admin` (Login: `admin@dravdev.com`)
     * O frontend estará disponível em `http://localhost:5173` (ou outra porta).
     * Use os usuários de teste (ex: `admin@empresa1.com`, `admin@empresa2.com`) com a senha `password`.
 
