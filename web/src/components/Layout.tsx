@@ -78,7 +78,7 @@ export function Layout() {
   };
 
   return (
-    <AppShell header={{ height: 60 }} navbar={{ width: desktopCollapsed ? NAVBAR_WIDTH_COLLAPSED : NAVBAR_WIDTH_OPEN, breakpoint: 'sm', collapsed: { mobile: !mobileOpened }, }} padding="md" styles={{ navbar: { transition: 'width 0.3s ease' }, main: { transition: 'padding-left 0.3s ease', background: '#f8f9fa' } }} >
+    <AppShell header={{ height: 60 }} navbar={{ width: desktopCollapsed ? NAVBAR_WIDTH_COLLAPSED : NAVBAR_WIDTH_OPEN, breakpoint: 'sm', collapsed: { mobile: !mobileOpened }, }} padding="md" styles={{ navbar: { transition: 'width 0.3s ease' }, main: { transition: 'padding-left 0.3s ease' } }} >
       <AppShell.Header>
         <Group h="100%" px="md" justify="space-between">
           <Group>
@@ -134,7 +134,7 @@ export function Layout() {
         </AppShell.Section>
       </AppShell.Navbar>
 
-      <AppShell.Main>
+      <AppShell.Main bg={isDark ? 'dark.8' : 'gray.0'}>
         <Outlet />
       </AppShell.Main>
     </AppShell>

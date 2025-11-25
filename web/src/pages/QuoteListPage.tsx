@@ -315,10 +315,10 @@ function QuoteListPage() {
           </Table.Tr>
           
           <Table.Tr>
-            <Table.Td colSpan={8} style={{ padding: '0.05rem 0.10rem', border: 0 }}>
+            <Table.Td colSpan={8} style={{ padding: '0.05rem 0.05rem', border: 0 }}>
               <Collapse in={isExpanded}>
-                <Paper p="md" withBorder bg="gray.0" radius={0}>
-                  <Table verticalSpacing="xs" mt="xs">
+                <Paper p="md" withBorder bg="var(--mantine-color-body)" radius={0}>
+                  <Table verticalSpacing="xs" mt="xs" bg="var(--mantine-color-body)">
                     <Table.Thead>
                       <Table.Tr>
                         <Table.Th>Produto</Table.Th>

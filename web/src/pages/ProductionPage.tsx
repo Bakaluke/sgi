@@ -176,9 +176,9 @@ function ProductionPage() {
       <Table.Tr>
         <Table.Td colSpan={8} style={{ padding: '0.05rem 0.10rem', border: 0 }}>
           <Collapse in={isExpanded}>
-          <Paper p="md" withBorder bg="gray.0" radius={0}>
+          <Paper p="md" withBorder bg="var(--mantine-color-body)" radius={0}>
             <Title order={6}>Itens do Pedido</Title>
-            <Table verticalSpacing="xs" mt="xs">
+            <Table verticalSpacing="xs" mt="xs" bg="var(--mantine-color-body)">
               <Table.Thead>
                 <Table.Tr>
                   <Table.Th>Produto</Table.Th>

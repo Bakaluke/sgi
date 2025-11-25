@@ -110,9 +110,9 @@ function AccountsReceivablePage() {
                 <Table.Tr>
                     <Table.Td colSpan={9} style={{ padding: 0, border: 0 }}>
                         <Collapse in={isExpanded}>
-                            <Paper p="md" bg="gray.0">
+                            <Paper p="md" bg="var(--mantine-color-body)">
                                 <Text fw={700} mb="xs">Parcelas</Text>
-                                <Table>
+                                <Table verticalSpacing="xs" mt="xs" bg="var(--mantine-color-body)">
                                     <Table.Thead>
                                         <Table.Tr>
                                             <Table.Th>Nº</Table.Th>

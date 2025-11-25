@@ -1,109 +1,102 @@
-# SGI Drav Dev - Sistema de Gestão Integrado (v1.5 - SaaS Edition)
+# SGI Drav Dev - Plataforma SaaS Multi-Tenant (v1.5)
 
-Um Sistema de Gestão Integrado (ERP/CRM) **Multi-Tenant (SaaS)** moderno, construído do zero com uma stack full-stack. Este projeto, desenvolvido como parte do portfólio da **Drav Dev**, demonstra a criação de uma plataforma de software robusta, escalável e segura, pronta para atender múltiplas empresas simultaneamente.
+**Um ERP/CRM de Manufatura e Serviços projetado para escalar.**
 
-O sistema foi arquitetado para que **cada empresa cliente** (cada "tenant") tenha seus próprios dados 100% isolados, com configurações, numeração de documentos e fluxos de trabalho independentes.
-
----
-
-## ✨ Funcionalidades Principais (v1.5)
-
-O SGI conta com um conjunto completo de módulos integrados para gerenciar as operações de um negócio do início ao fim.
-
-### 🏛️ **Arquitetura SaaS Multi-Tenant**
-Esta é a fundação do sistema. O SGI não é um app para uma empresa, é uma plataforma para várias.
-
-- **Isolamento Total de Dados (Tenant-aware):** Cada dado do sistema (`customers`, `products`, `quotes`, `accounts_payables`, `stock_movements`, etc.) é "carimbado" com um `tenant_id`, garantindo que uma empresa nunca possa ver os dados da outra.
-- **Segurança Automática (Global Scopes):** Um "filtro mágico" de segurança é aplicado a 100% das consultas ao banco de dados, garantindo que o usuário logado só veja os dados que pertencem à sua empresa.
-- **Configuração por Empresa:** Cada "tenant" (empresa cliente) gerencia suas próprias configurações:
-    - Dados da Empresa (Logo, CNPJ, Endereço).
-    - Status de Orçamento e Produção.
-    - Métodos de Pagamento e Condições.
-    - Fontes de Negociação e Métodos de Entrega.
-- **Numeração Sequencial por Tenant:** Orçamentos (`quotes`) e Ordens de Produção (`production_orders`) possuem um `internal_id` único *por empresa*. A Empresa A tem o Orçamento Nº 1, e a Empresa B também tem o seu próprio Orçamento Nº 1.
-
-### 🔑 **Autenticação & Permissões Dinâmicas**
-- Sistema de login seguro e isolado por tenant (usuários da Empresa A não podem logar na Empresa B).
-- **Sistema de Funções e Permissões** dinâmico (Spatie), permitindo que o `admin` de *cada* tenant crie seus próprios cargos e defina permissões granulares para sua equipe.
-
-### 📊 **Dashboard Inteligente**
-- Painel com KPIs financeiros, gráficos de performance e alertas operacionais (estoque baixo), **100% filtrado pelos dados do tenant logado**.
-- Gráficos de "Resumo de Orçamentos", "Resumo de Pedidos" e "Ranking de Vendedores".
-
-### 📦 **Módulo de Produtos & Serviços**
-- CRUD completo que diferencia **produtos físicos** (com controle de estoque) e **serviços** (sem estoque), com gestão de categorias e imagens.
-
-### 👥 **Módulo de Clientes**
-- CRUD completo para clientes (Pessoa Física e Jurídica), com busca de CNPJ/CEP e **Cadastro Rápido**.
-
-### 📝 **Módulo de Orçamentos**
-- Fluxo de criação ágil com seções retráteis.
-- **CPF Sob Demanda:** Exigência de CPF/CNPJ apenas no momento da **aprovação**, reduzindo o atrito no cadastro.
-- Geração de PDFs profissionais (com o logo e dados do tenant) e envio por **E-mail** ou **WhatsApp**.
-- **Cancelamento Seguro:** Exigência de um motivo de cancelamento para evitar erros de usuário.
-
-### 🏭 **Módulo de Produção**
-- Geração **automática** de Ordens de Produção a partir de orçamentos aprovados.
-- Tela de gerenciamento de produção com **travas de segurança** (pedidos "Concluídos" ou "Cancelados" não podem ser alterados).
-
-### 📈 **Módulo de Estoque**
-- Sistema de movimentações para rastreabilidade, com baixa **automática** em vendas e atualização do preço de custo na compra.
-
-### 💰 **Módulo Financeiro**
-- **Contas a Pagar e a Receber** com CRUD completo.
-- Geração **automática** de Contas a Receber a partir de pedidos concluídos.
-- **Gestão de Parcelas:** O sistema lê a "Condição de Pagamento" e cria as parcelas automaticamente.
-- Lógica para registro de pagamentos em parcelas individuais.
-
-### 📈 **Módulo de Relatórios Gerenciais**
-- Relatórios de **Resumo de Vendas**, **Vendas por Cliente** (sumarizado na tela, detalhado na exportação) e **Fluxo de Caixa (Previsto vs. Realizado)**.
+Desenvolvido pela **Drav Dev**, este sistema não é apenas um gerenciador de empresas; é uma plataforma **SaaS (Software as a Service) Multi-Tenant** completa. Ele permite que múltiplas empresas (tenants) operem dentro da mesma infraestrutura com isolamento total de dados, segurança robusta e fluxos de trabalho personalizados para o setor gráfico e de manufatura sob encomenda.
 
 ---
 
-## 📸 Telas do Sistema
+## 🚀 Destaques da Arquitetura (O "Motor" do SaaS)
+
+O diferencial deste projeto reside nas soluções de arquitetura de software implementadas para garantir escalabilidade e isolamento:
+
+### 1. 🏛️ Arquitetura Multi-Tenant "Shared Database"
+- **Isolamento Lógico (The Wall):** Implementação de `Global Scopes` automáticos em todos os Models. O sistema aplica filtros de segurança (`WHERE tenant_id = X`) em 100% das consultas, garantindo que os dados de uma empresa sejam invisíveis para outras.
+- **Segurança de Fábrica:** Policies e Gates garantem que usuários só acessem recursos do seu próprio tenant.
+
+### 2. 🔢 IDs Sequenciais por Tenant
+- Diferente de sistemas tradicionais que expõem IDs globais do banco de dados (ex: Orçamento #4592), o SGI implementa uma lógica de **numeração sequencial isolada**.
+- A Empresa A tem o **"Orçamento Nº 1"**. A Empresa B também tem o seu **"Orçamento Nº 1"**.
+- Aplicado em: Clientes, Produtos, Orçamentos, Ordens de Produção e Contas a Pagar.
+
+### 3. 🧪 Engenharia de Produto (Bill of Materials)
+- Suporte para produtos do tipo **"Serviço"** com **Composição (Receita)**.
+- O sistema permite definir que 1 unidade do serviço "Impressão A3" consome X unidades da matéria-prima "Papel A3" e Y unidades de "Tinta".
+
+### 4. 🤖 Automação de Estoque Inteligente
+- Baixa de estoque automatizada baseada em eventos (`ProductionStarted`).
+- Quando a Produção altera o status de um pedido para **"Em Produção"**, o sistema calcula a receita e deduz automaticamente as matérias-primas do estoque.
+
+### 5. 👁️ O "Painel de Deus" (Super Admin)
+- Painel administrativo exclusivo (construído com **Laravel Filament**) para a Drav Dev.
+- Gerenciamento centralizado de **Empresas (Tenants)**, **Planos de Assinatura** e **Usuários Globais**.
+- Dashboard com KPIs de saúde da plataforma (Total de Clientes, MRR, etc.).
+
+---
+
+## ✨ Funcionalidades do SGI (O Produto)
+
+### 📊 Dashboard & Analytics
+- Interface moderna com **Modo Escuro (Dark Mode)** automático.
+- Gráficos de funil de vendas, status de produção e faturamento.
+- Alertas inteligentes de **Estoque Baixo** e **Orçamentos Parados**.
+
+### 📝 Orçamentos (CRM)
+- Criação rápida com cálculo automático de lucro e descontos.
+- Geração de **PDFs Profissionais** instantâneos com a marca da empresa cliente.
+- Envio direto para WhatsApp e E-mail.
+
+### 🏭 Produção & Chão de Fábrica
+- Transformação automática de Orçamentos aprovados em **Ordens de Produção**.
+- Controle de status (Pendente -> Em Produção -> Concluído).
+- Geração de **Ordem de Serviço** (interna) e **Protocolo de Entrega** (cliente) em PDF.
+- Visualização clara da "Receita" (materiais necessários) para cada item.
+
+### 💰 Financeiro
+- **Contas a Receber:** Geração automática baseada nas condições de pagamento do orçamento.
+- **Contas a Pagar:** Controle de despesas operacionais.
+- Relatórios de Fluxo de Caixa (Previsto vs. Realizado).
+
+---
+
+## 📸 Galeria do Sistema
 
 *Uma visão geral da interface limpa e funcional do SGI.*
 
-**Dashboard Principal**
-![Dashboard](docs/images/1.png)
+### O "Painel de Deus" (Filament Super Admin)
+*Gerenciamento global da plataforma pela Drav Dev.*
+![Painel Admin](docs/images/0.png)
+![Gerenciamento de Planos](docs/images/0b.png)
 
-**Página de Orçamentos**
-![Orçamentos](docs/images/2.png)
+### Dashboard Operacional (Modo Escuro)
+*Visão geral para o cliente final.*
+![Dashboard Dark](docs/images/1.png)
 
-**Página de Produção**
-![Produção](docs/images/3.png)
+### Módulo de Orçamentos
+*Criação e edição com IDs sequenciais.*
+![Lista de Orçamentos](docs/images/2.png)
+![Edição de Orçamento](docs/images/3.png)
 
-**Página de Produtos**
-![Produtos](docs/images/4.png)
+### Engenharia de Produto
+*Definição da composição (receita) de um serviço.*
+![Criação de Produtos](docs/images/4.png)
+![Composição de Produto](docs/images/5.png)
+![Movimentação de Estoque](docs/images/6.png)
 
-**Página de Estoque**
-![Estoque](docs/images/5.png)
+### Produção e PDFs
+*Controle de produção e documentos gerados.*
+![Lista de Produção](docs/images/7.png)
+![PDF Ordem de Serviço](docs/images/8.png)
 
-**Página de Clientes**
-![Clientes](docs/images/6.png)
-
-**Módulo Financeiro (Contas a Receber com Parcelas)**
-![Financeiro](docs/images/7.png)
-
-**Página de Configurações**
-![Configurações](docs/images/8.png)
-
-**Página de Funções**
-![Funções](docs/images/9.png)
-
-**Página de Gestão de Usuários**
-![Usuários](docs/images/10.png)
+### Relatórios Financeiros
+![Fluxo de Caixa](docs/images/9.png)
+![Controle de Pagamentos](docs/images/10.png)
 
 ---
 
 ## 🔮 Roadmap de Futuras Melhorias (Plataforma v2.0)
 
 Com a fundação Multi-Tenant (v1.5) concluída, o roadmap se concentra em escalar o produto:
-
-- **Painel do Super-Admin (O "Painel de Deus"):**
-  - Construção de um painel de controle global (provavelmente com **Laravel Filament**) para a **Drav Dev** gerenciar a plataforma.
-  - CRUD de `Tenants` (ativar/suspender assinaturas de clientes).
-  - CRUD de `Plans` (criar e editar os planos de assinatura).
 
 - **Testes Automatizados (A Rede de Segurança):**
   - Expandir a cobertura de testes (com Pest) para todos os módulos, garantindo a estabilidade da plataforma para todos os tenants a cada nova atualização.
@@ -118,23 +111,22 @@ Com a fundação Multi-Tenant (v1.5) concluída, o roadmap se concentra em escal
 
 ## 💻 Stack Tecnológica
 
-- **Backend (API):**
-  - Laravel 11
-  - PHP 8.2+
-  - Laravel Sanctum (Autenticação)
-  - Spatie Laravel Permission (Papéis e Permissões)
-  - `barryvdh/laravel-dompdf` (Geração de PDFs)
-  - MySQL
+O projeto utiliza uma stack moderna e robusta, focada em performance e manutenibilidade.
 
-- **Frontend (Web):**
-  - React 18+
-  - Vite
-  - TypeScript
-  - Mantine UI (Biblioteca de Componentes)
-  - Mantine Charts & Dates
-  - Mantine Form
-  - React Router
-  - Axios
+**Backend (API RESTful)**
+- **Framework:** Laravel 11 (PHP 8.3)
+- **Admin Panel:** Filament 3 (para o Super Admin)
+- **Auth:** Laravel Sanctum (Tokens seguros)
+- **PDFs:** `barryvdh/laravel-dompdf`
+- **Banco de Dados:** MySQL 8
+
+**Frontend (SPA)**
+- **Framework:** React 18 (Vite)
+- **Linguagem:** TypeScript
+- **UI Kit:** Mantine UI v7 (Componentes, Hooks, Notifications)
+- **Charts:** Recharts / Mantine Charts
+- **State Management:** React Context API + Hooks Customizados
+- **HTTP Client:** Axios
 
 - **Ambiente:**
   - Laragon (para Windows)
@@ -144,7 +136,11 @@ Com a fundação Multi-Tenant (v1.5) concluída, o roadmap se concentra em escal
 
 ## 🚀 Como Rodar o Projeto Localmente
 
-**Pré-requisitos:** [Laragon](https://laragon.org/download/) (ou outro ambiente com PHP 8.2+, Composer e Node.js) e Git.
+### Pré-requisitos
+- PHP 8.2+
+- Composer
+- Node.js & NPM
+- MySQL
 
 1.  **Clonar o Repositório:**
     ```bash
@@ -154,50 +150,34 @@ Com a fundação Multi-Tenant (v1.5) concluída, o roadmap se concentra em escal
 
 2.  **Configurar o Backend (API):**
     ```bash
-    # Navegar para a pasta da API
     cd api
-
-    # Instalar dependências
     composer install
-
-    # Criar o arquivo de ambiente e gerar a chave
-    copy .env.example .env
+    cp .env.example .env
     php artisan key:generate
 
-    # No arquivo .env, configure sua conexão com o banco de dados (MySQL)
-
-    # Criar as tabelas e popular com dados de teste
-    php artisan migrate:fresh --seed
-
-    # Criar o link simbólico para os arquivos públicos
-    php artisan storage:link
-    
-    # Iniciar o servidor da API
+    # Configure seu banco de dados no .env e então:
+    php artisan migrate:fresh --seed  # O "Big Bang": Cria tabelas e popula com dados de teste Multi-Tenant
+    php artisan storage:link          # Link para imagens e logos
     php artisan serve
     ```
 
 3.  **Configurar o Frontend (Web):**
     ```bash
-    # Abrir um NOVO terminal e navegar para a pasta web
     cd web
-
-    # Instalar dependências
     npm install
-
-    # Criar o arquivo de ambiente
-    # (Se não existir, crie um .env a partir do .env.example se houver, ou crie um .env novo)
-    # Adicione a linha: VITE_API_BASE_URL=[http://127.0.0.1:8000/api](http://127.0.0.1:8000/api)
-    
-    # Iniciar o servidor de desenvolvimento
+    # Crie o arquivo .env com: VITE_API_BASE_URL=[http://127.0.0.1:8000/api](http://127.0.0.1:8000/api)
     npm run dev
     ```
 
 4.  **Acessar e Testar:**
+    * Painel Super Admin: `http://localhost:8000/admin` (Login: admin@dravdev.com)
     * O frontend estará disponível em `http://localhost:5173` (ou outra porta).
-    * Use os usuários de teste (ex: `admin@sgi.test`) com a senha `password`.
+    * Use os usuários de teste (ex: `admin@empresa1.com`, `admin@empresa2.com`) com a senha `password`.
 
 ---
 
 ## 🍰 Sobre a Drav Dev
 
 Este projeto foi desenvolvido com dedicação pela **Drav Dev** como parte do nosso portfólio de soluções de software customizadas. Ele demonstra nossa capacidade de construir aplicações full-stack complexas, seguras e com foco na experiência do usuário.
+
+v1.5 - Release "Multi-Tenant & Automation"
