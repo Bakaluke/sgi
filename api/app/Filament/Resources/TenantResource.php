@@ -12,6 +12,9 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Models\Plan;
+use Illuminate\Support\Facades\Http;
+use Filament\Forms\Get;
+use Filament\Forms\Set;
 
 class TenantResource extends Resource
 {
@@ -53,16 +56,37 @@ class TenantResource extends Resource
                 Forms\Components\Section::make('Dados Fiscais e Contato')
                     ->columns(2)
                     ->schema([
-                        Forms\Components\TextInput::make('company_fantasy_name')
-                            ->label('Nome Fantasia')
-                            ->maxLength(255),
+                        Forms\Components\TextInput::make('cnpj')
+                            ->label('CNPJ')
+                            ->mask('99.999.999/9999-99')
+                            ->maxLength(18)
+                            ->unique(ignoreRecord: true)
+                            ->live(onBlur: true)
+                            ->afterStateUpdated(function (Get $get, Set $set, ?string $state) {
+                                if (!$state) return;
+                                $cnpj = preg_replace('/[^0-9]/', '', $state);
+                                if (strlen($cnpj) !== 14) return;
+                                $response = Http::withoutVerifying()->get("https://brasilapi.com.br/api/cnpj/v1/{$cnpj}");
+                                if ($response->successful()) {
+                                    $data = $response->json();
+                                    $set('company_fantasy_name', $data['nome_fantasia'] ?? $data['razao_social']);
+                                    $set('legal_name', $data['razao_social']);
+                                    $set('phone', $data['ddd_telefone_1'] ?? null);
+                                    $set('cep', $data['cep']);
+                                    $set('street', $data['logradouro']);
+                                    $set('number', $data['numero']);
+                                    $set('complement', $data['complemento']);
+                                    $set('neighborhood', $data['bairro']);
+                                    $set('city', $data['municipio']);
+                                    $set('state', $data['uf']);
+                                }
+                            }),
                         Forms\Components\TextInput::make('legal_name')
                             ->label('Razão Social')
                             ->maxLength(255),
-                        Forms\Components\TextInput::make('cnpj')
-                            ->label('CNPJ')
-                            ->maxLength(18)
-                            ->unique(ignoreRecord: true),
+                        Forms\Components\TextInput::make('company_fantasy_name')
+                            ->label('Nome Fantasia')
+                            ->maxLength(255),
                         Forms\Components\TextInput::make('email')
                             ->label('E-mail Principal')
                             ->email()
