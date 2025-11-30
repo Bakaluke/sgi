@@ -27,8 +27,13 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 COPY . .
 
-RUN composer install --no-interaction --optimize-autoloader --no-dev
+RUN mkdir -p /var/www/html/storage/framework/views \
+    && mkdir -p /var/www/html/storage/framework/cache \
+    && mkdir -p /var/www/html/storage/framework/sessions \
+    && mkdir -p /var/www/html/bootstrap/cache
 
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
+
+RUN composer install --no-interaction --optimize-autoloader --no-dev --ignore-platform-reqs
 
 EXPOSE 80
