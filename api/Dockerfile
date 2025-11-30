@@ -36,8 +36,4 @@ RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cac
 
 RUN composer install --no-interaction --optimize-autoloader --no-dev --ignore-platform-reqs
 
-COPY docker-run.sh /usr/local/bin/docker-run.sh
-
-RUN chmod +x /usr/local/bin/docker-run.sh
-
 EXPOSE 80
