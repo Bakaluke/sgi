@@ -35,8 +35,7 @@ function StockPage() {
     const notesRef = useRef<HTMLTextAreaElement>(null);
     const [historyModalOpened, { open: openHistoryModal, close: closeHistoryModal }] = useDisclosure(false);
     const [historyData, setHistoryData] = useState<StockMovement[]>([]);
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const [isLoadingHistory, setIsLoadingHistory] = useState(false);
+    const [,setIsLoadingHistory] = useState(false);
     const [productForHistory, setProductForHistory] = useState<Product | null>(null);
     const [isExporting, setIsExporting] = useState(false);
     
