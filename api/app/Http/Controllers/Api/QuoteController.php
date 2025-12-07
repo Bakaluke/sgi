@@ -130,11 +130,31 @@ class QuoteController extends Controller
                 'notes' => 'nullable|string',
             ],
             'Aprovado' => [
-                'payment_method_id' => 'required|exists:payment_methods,id',
-                'payment_term_id' => 'required|exists:payment_terms,id',
-                'delivery_method_id' => 'required|exists:delivery_methods,id',
+                'payment_method_id' => [
+                    'required',
+                    Rule::exists('payment_methods', 'id')->where(function ($query) use ($request) {
+                        return $query->where('tenant_id', $request->user()->tenant_id);
+                    }),
+                ],
+                'payment_term_id' => [
+                    'required',
+                    Rule::exists('payment_terms', 'id')->where(function ($query) use ($request) {
+                        return $query->where('tenant_id', $request->user()->tenant_id);
+                    }),
+                ],
+                'delivery_method_id' => [
+                    'required',
+                    Rule::exists('delivery_methods', 'id')->where(function ($query) use ($request) {
+                        return $query->where('tenant_id', $request->user()->tenant_id);
+                    }),
+                ],
+                'negotiation_source_id' => [
+                    'required',
+                    Rule::exists('negotiation_sources', 'id')->where(function ($query) use ($request) {
+                        return $query->where('tenant_id', $request->user()->tenant_id);
+                    }),
+                ],
                 'status_id' => 'required|exists:quote_statuses,id',
-                'negotiation_source_id' => 'required|exists:negotiation_sources,id',
                 'delivery_datetime' => 'required|date',
                 'discount_percentage' => 'nullable|numeric|min:0|max:100',
                 'notes' => 'nullable|string',
