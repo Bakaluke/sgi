@@ -30,7 +30,7 @@ O diferencial deste projeto reside nas soluções de arquitetura de software imp
 ### 5. 👁️ O "Painel de Deus" (Super Admin)
 - Painel administrativo exclusivo (construído com **Laravel Filament**) para a Drav Dev.
 - Gerenciamento centralizado de **Empresas (Tenants)**, **Planos de Assinatura** e **Usuários Globais**.
-- Dashboard com KPIs de saúde da plataforma (Total de Clientes, MRR, etc.).
+- Dashboard com KPIs de saúde da plataforma (Total de Clientes, MRR, etc.) e preenchimento automático de dados via CNPJ.
 
 ---
 
@@ -41,7 +41,8 @@ O diferencial deste projeto reside nas soluções de arquitetura de software imp
 - Gráficos de funil de vendas, status de produção e faturamento.
 - Alertas inteligentes de **Estoque Baixo** e **Orçamentos Parados**.
 
-### 📝 Orçamentos (CRM)
+### 📝 Orçamentos (CRM) & Kanban
+- **Gestão Visual (Kanban):** Quadro interativo com *Drag & Drop* para mover orçamentos entre status (Aberto -> Negociação -> Aprovado) com validação automática de regras de negócio.
 - Criação rápida com cálculo automático de lucro e descontos.
 - Geração de **PDFs Profissionais** instantâneos com a marca da empresa cliente.
 - Envio direto para WhatsApp e E-mail.
@@ -77,20 +78,27 @@ O diferencial deste projeto reside nas soluções de arquitetura de software imp
 ![Lista de Orçamentos](docs/images/2.png)
 ![Edição de Orçamento](docs/images/3.png)
 
+### Kanban de Orçamentos
+*Visualização dos orçamentos usando a metodologia japonesa.*
+![Visualização em Kanban](docs/images/4.png)
+
 ### Engenharia de Produto
 *Definição da composição (receita) de um serviço.*
-![Criação de Produtos](docs/images/4.png)
-![Composição de Produto](docs/images/5.png)
-![Movimentação de Estoque](docs/images/6.png)
+![Criação de Produtos](docs/images/5.png)
+![Composição de Produto](docs/images/6.png)
+
+### Gerenciamento de Estoque
+*Controle de entrada e saída de produtos do estoque.*
+![Movimentação de Estoque](docs/images/7.png)
 
 ### Produção e PDFs
 *Controle de produção e documentos gerados.*
-![Lista de Produção](docs/images/7.png)
-![PDF Ordem de Serviço](docs/images/8.png)
+![Lista de Produção](docs/images/8.png)
+![PDF Ordem de Serviço](docs/images/9.png)
 
 ### Relatórios Financeiros
-![Fluxo de Caixa](docs/images/9.png)
-![Controle de Pagamentos](docs/images/10.png)
+![Fluxo de Caixa](docs/images/10.png)
+![Controle de Pagamentos](docs/images/11.png)
 
 ---
 
@@ -165,7 +173,7 @@ O projeto utiliza uma stack moderna e robusta, focada em performance e manutenib
     ```bash
     cd web
     npm install
-    # Crie o arquivo .env com: VITE_API_BASE_URL=[http://127.0.0.1:8000/api](http://127.0.0.1:8000/api)
+    # Crie o arquivo .env com: VITE_API_BASE_URL=http://localhost:8000/api
     npm run dev
     ```
 
@@ -180,4 +188,4 @@ O projeto utiliza uma stack moderna e robusta, focada em performance e manutenib
 
 Este projeto foi desenvolvido com dedicação pela **Drav Dev** como parte do nosso portfólio de soluções de software customizadas. Ele demonstra nossa capacidade de construir aplicações full-stack complexas, seguras e com foco na experiência do usuário.
 
-v1.5 - Release "Multi-Tenant & Automation"
+*v1.5 - Release "Multi-Tenant & Automation"*

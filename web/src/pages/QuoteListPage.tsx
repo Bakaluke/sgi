@@ -1,13 +1,14 @@
 import { Fragment, useCallback, useEffect, useState } from 'react';
-import { Table, Title, Container, Button, Group, Badge, Modal, Select, Grid, TextInput, Textarea, ActionIcon, Fieldset, Menu, Collapse, Paper, Pagination, Loader, Tooltip, Accordion, Text } from '@mantine/core';
+import { Table, Title, Container, Button, Group, Badge, Modal, Select, Grid, TextInput, Textarea, ActionIcon, Fieldset, Menu, Collapse, Paper, Pagination, Loader, Tooltip, Accordion, Text, SegmentedControl, Center } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
-import { IconPlus, IconEye, IconPrinter, IconTrash, IconDotsVertical, IconMail, IconBrandWhatsapp, IconChevronDown, IconSearch, IconFileExport } from '@tabler/icons-react';
+import { IconPlus, IconEye, IconPrinter, IconTrash, IconDotsVertical, IconMail, IconBrandWhatsapp, IconChevronDown, IconSearch, IconFileExport, IconLayoutKanban, IconList } from '@tabler/icons-react';
 import { useDisclosure } from '@mantine/hooks';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../api/axios';
 import type { Customer, Quote, SelectOption, PaymentMethod, PaymentTerm, DeliveryMethod, NegotiationSource } from '../types';
 import { CustomerForm } from '../components/CustomerForm';
+import { QuoteKanban } from '../components/QuoteKanban';
 
 const initialFormData = {
   customer_id: '',
@@ -58,6 +59,8 @@ function QuoteListPage() {
   const [emailBody, setEmailBody] = useState('');
   const [isSendingEmail, setIsSendingEmail] = useState(false);
   const [isPrintingId, setIsPrintingId] = useState<number | null>(null);
+  const [viewMode, setViewMode] = useState<'list' | 'kanban'>('list');
+  const [statuses, setStatuses] = useState<SelectOption[]>([]);
   
   const fetchQuotes = useCallback((page: number, search: string) => {
     api.get('/quotes', {
@@ -74,6 +77,13 @@ function QuoteListPage() {
   
   useEffect(() => {
     fetchQuotes(activePage, searchQuery);
+    api.get('/quote-statuses').then(res => {
+      setStatuses(res.data.map((s: any) => ({
+        value: String(s.id),
+        label: s.name,
+        color: s.color
+      })));
+    });
   }, [activePage, searchQuery, fetchQuotes]);
 
   useEffect(() => {
@@ -279,6 +289,36 @@ function QuoteListPage() {
       setIsPrintingId(null);
     });
   };
+
+  const handleKanbanStatusChange = (quoteId: number, newStatusId: number) => {
+    const previousQuotes = [...quotes];
+    const targetStatus = statuses.find(s => s.value === String(newStatusId));
+    setQuotes(current => current.map(q => {
+      if (q.id === quoteId) {
+        return { 
+          ...q, 
+          status_id: newStatusId,
+          status: targetStatus ? {
+            id: newStatusId,
+            name: targetStatus.label,
+            color: (targetStatus as any).color,
+            is_active: true,
+            tenant_id: q.tenant_id
+          } : q.status
+        };
+      }
+      return q;
+    }));
+    api.patch(`/quotes/${quoteId}/status`, { status_id: newStatusId })
+    .then(() => {
+      notifications.show({ title: 'Sucesso', message: 'Status atualizado!', color: 'green' });
+    })
+    .catch((error) => {
+      setQuotes(previousQuotes);
+      const msg = error.response?.data?.message || 'Falha ao mover orçamento.';
+      notifications.show({ title: 'Atenção', message: msg, color: 'red', autoClose: 5000 });
+    });
+  };
   
   const rows = quotes.map((quote) => {
     const isExpanded = expandedQuoteIds.includes(quote.id);
@@ -405,6 +445,7 @@ function QuoteListPage() {
       <Group justify="space-between" my="lg">
         <Title order={1}>Orçamentos</Title>
         <Group>
+          <SegmentedControl value={viewMode} onChange={(value) => setViewMode(value as 'list' | 'kanban')} data={[ { value: 'list', label: <Center><IconList size={16} />&nbsp;Lista</Center> }, { value: 'kanban', label: <Center><IconLayoutKanban size={16} />&nbsp;Kanban</Center> }, ]} />
           {can('quotes.view') && (<Button onClick={handleExport} loading={isExporting} color="green" leftSection={<IconFileExport size={16} />}>Exportar</Button>)}
           {can('quotes.create') && (<Button onClick={open} leftSection={<IconPlus size={16} />}>Novo Orçamento</Button>)}
         </Group>
@@ -412,29 +453,35 @@ function QuoteListPage() {
 
       <TextInput label="Buscar Orçamento" placeholder="Digite o Nº, nome do cliente ou status..." value={searchTerm} onChange={(event) => setSearchTerm(event.currentTarget.value)} leftSection={<IconSearch size={16} />} mb="md" />
       
-      <Table>
-        <Table.Thead>
-          <Table.Tr>
-            <Table.Th w={40} />
-            <Table.Th>Nº</Table.Th>
-            <Table.Th>Cliente</Table.Th>
-            {can('quotes.view_all') && <Table.Th>Vendedor</Table.Th>}
-            <Table.Th>Status</Table.Th>
-            <Table.Th>Valor Total</Table.Th>
-            <Table.Th>Data</Table.Th>
-            <Table.Th>Ações</Table.Th>
-          </Table.Tr>
-        </Table.Thead>
-        <Table.Tbody>{rows.length > 0 ? ( rows ) : ( 
-          <Table.Tr>
-            <Table.Td colSpan={8} align="center">Nenhum orçamento encontrado.</Table.Td>
-          </Table.Tr>
-        )}</Table.Tbody>
-      </Table>
-
-      <Group justify="center" mt="xl">
-        <Pagination total={totalPages} value={activePage} onChange={setActivePage} />
-      </Group>
+      {viewMode === 'list' ? (
+        <>
+        <Table>
+          <Table.Thead>
+            <Table.Tr>
+              <Table.Th w={40} />
+              <Table.Th>Nº</Table.Th>
+              <Table.Th>Cliente</Table.Th>
+              {can('quotes.view_all') && <Table.Th>Vendedor</Table.Th>}
+              <Table.Th>Status</Table.Th>
+              <Table.Th>Valor Total</Table.Th>
+              <Table.Th>Data</Table.Th>
+              <Table.Th>Ações</Table.Th>
+            </Table.Tr>
+          </Table.Thead>
+          <Table.Tbody>{rows.length > 0 ? ( rows ) : ( 
+            <Table.Tr>
+              <Table.Td colSpan={8} align="center">Nenhum orçamento encontrado.</Table.Td>
+            </Table.Tr>
+          )}</Table.Tbody>
+        </Table>
+        <Group justify="center" mt="xl">
+          <Pagination total={totalPages} value={activePage} onChange={setActivePage} />
+        </Group>
+        </>
+        ) : (
+        <QuoteKanban quotes={quotes} statuses={statuses} onStatusChange={handleKanbanStatusChange} />
+      )}
+      
     </Container>
   );
 }

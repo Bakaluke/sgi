@@ -61,8 +61,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('quotes/{quote}/items/{quote_item}', [QuoteItemController::class, 'update']);
     Route::delete('quotes/{quote}/items/{quote_item}', [QuoteItemController::class, 'destroy']);
     Route::post('/quotes/{quote}/send-email', [QuoteController::class, 'sendEmail']);
-
     Route::delete('quote-items/{quote_item}/file', [QuoteItemController::class, 'destroyFile']);
+    Route::patch('/quotes/{quote}/status', [QuoteController::class, 'updateStatus']);
 
     Route::get('/production-orders/export', [ProductionOrderController::class, 'export']);
     Route::get('/production-orders/{productionOrder}/work-order-pdf', [ProductionOrderController::class, 'generateWorkOrderPdf']);

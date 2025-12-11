@@ -128,6 +128,12 @@ class QuoteController extends Controller
             'Aberto', 'Negociação' => [
                 'status_id' => 'required|exists:quote_statuses,id',
                 'notes' => 'nullable|string',
+                'delivery_datetime' => 'nullable|date',
+                'payment_method_id' => 'nullable|exists:payment_methods,id',
+                'payment_term_id' => 'nullable|exists:payment_terms,id',
+                'delivery_method_id' => 'nullable|exists:delivery_methods,id',
+                'negotiation_source_id' => 'nullable|exists:negotiation_sources,id',
+                'discount_percentage' => 'nullable|numeric|min:0|max:100',
             ],
             'Aprovado' => [
                 'payment_method_id' => [
@@ -201,19 +207,19 @@ class QuoteController extends Controller
     }
 
     public function generatePdf(Request $request, Quote $quote)
-	{
-		$quote->load(['customer.addresses', 'user', 'items.product', 'status', 'paymentMethod', 'deliveryMethod', 'negotiationSource', 'paymentTerm']);
+    {
+        $quote->load(['customer.addresses', 'user', 'items.product', 'status', 'paymentMethod', 'deliveryMethod', 'negotiationSource', 'paymentTerm']);
 
-		$settings = $request->user()->tenant; 
+        $settings = $request->user()->tenant; 
 
-		$pdf = Pdf::loadView('pdf.quote', [
-			'quote' => $quote,
-			'customer_data' => $quote->customer_data,
-			'settings' => $settings
-		]);
+        $pdf = Pdf::loadView('pdf.quote', [
+            'quote' => $quote,
+            'customer_data' => $quote->customer_data,
+            'settings' => $settings
+        ]);
 
-		return $pdf->stream('orcamento-'.$quote->id.'.pdf');
-	}
+        return $pdf->stream('orcamento-'.$quote->id.'.pdf');
+    }
 
     public function export(Request $request)
     {
@@ -273,5 +279,47 @@ class QuoteController extends Controller
         Mail::to($quote->customer->email)->send(new QuoteSent($quote, $validated['email_body']));
 
         return response()->json(['message' => 'E-mail enviado com sucesso!']);
+    }
+
+    public function updateStatus(Request $request, Quote $quote)
+    {
+        $validated = $request->validate([
+            'status_id' => 'required|exists:quote_statuses,id',
+        ]);
+
+        $newStatusId = $validated['status_id'];
+        
+        $oldStatusId = $quote->status_id;
+
+        $approvedStatus = QuoteStatus::where('name', 'Aprovado')
+            ->where('tenant_id', $quote->tenant_id)
+            ->first();
+
+        if ($approvedStatus && $newStatusId == $approvedStatus->id) {
+            
+            if (
+                !$quote->payment_method_id || !$quote->payment_term_id || !$quote->delivery_method_id || !$quote->delivery_datetime || !$quote->negotiation_source_id
+            ) {
+                return response()->json([
+                    'message' => 'Não é possível aprovar pelo Kanban. Faltam dados obrigatórios: Pagamento, Entrega, Data ou Origem. Abra o orçamento para editar.'
+                ], 422);
+            }
+            
+            $customer = $quote->customer;
+            if ($customer->type === 'fisica' && empty($customer->document)) {
+                 return response()->json([
+                    'message' => 'CPF do cliente é obrigatório para aprovar o orçamento.',
+                    'action_required' => 'COLLECT_DOCUMENT',
+                ], 422);
+            }
+        }
+
+        $quote->update(['status_id' => $newStatusId]);
+
+        if ($approvedStatus && $oldStatusId != $approvedStatus->id && $newStatusId == $approvedStatus->id) {
+            QuoteApproved::dispatch($quote);
+        }
+
+        return response()->json(['message' => 'Status atualizado!', 'quote' => $quote]);
     }
 }
