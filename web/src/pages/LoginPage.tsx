@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import api from '../api/axios';
-import { Container, Title, TextInput, Button, Paper, PasswordInput, Alert } from '@mantine/core';
+import { Container, Title, TextInput, Button, Paper, PasswordInput, Alert, Stack, Text } from '@mantine/core';
 import { IconAlertCircle } from '@tabler/icons-react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
@@ -38,12 +38,20 @@ function LoginPage() {
       <Title ta="center">Bem-vindo!</Title>
       <Title ta="center" order={4}>Faça seu acesso para continuar</Title>
       <Paper withBorder shadow="md" p={30} mt={30} radius="md">
-        <form onSubmit={handleSubmit}>
-          {error && (<Alert withCloseButton onClose={() => setError('')} title="Erro de Autenticação" color="red" icon={<IconAlertCircle />}>{error}</Alert>)}
-          <TextInput label="E-mail" placeholder="seu@email.com" value={email} onChange={(event) => setEmail(event.currentTarget.value)} required mt="md" />
-          <PasswordInput label="Senha" placeholder="Sua senha" value={password} onChange={(event) => setPassword(event.currentTarget.value)} required mt="md" />
-          <Button type="submit" fullWidth mt="xl">Entrar</Button>
-        </form>
+        <Stack>
+          <form onSubmit={handleSubmit}>
+            {error && (<Alert withCloseButton onClose={() => setError('')} title="Erro de Autenticação" color="red" icon={<IconAlertCircle />}>{error}</Alert>)}
+            <TextInput label="E-mail" placeholder="seu@email.com" value={email} onChange={(event) => setEmail(event.currentTarget.value)} required mt="md" />
+            <PasswordInput label="Senha" placeholder="Sua senha" value={password} onChange={(event) => setPassword(event.currentTarget.value)} required mt="md" />
+            <Button type="submit" fullWidth mt="xl">Entrar</Button>
+          </form>
+          <Stack gap={4} align="center">
+            <Text size="sm" c="dimmed">Ainda não conhece o SGI?</Text>
+            <Button component="a" href="/apresentacao" variant="light" color="blue" fullWidth>
+              Ver apresentação do sistema
+            </Button>
+          </Stack>
+        </Stack>
       </Paper>
     </Container>
   );
