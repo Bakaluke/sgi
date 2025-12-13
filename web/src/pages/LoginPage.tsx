@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import api from '../api/axios';
-import { Container, Title, TextInput, Button, Paper, PasswordInput, Alert, Stack, Text } from '@mantine/core';
+import { Container, Title, TextInput, Button, Paper, PasswordInput, Alert, Stack, Text, Group } from '@mantine/core';
 import { IconAlertCircle } from '@tabler/icons-react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
@@ -47,9 +47,14 @@ function LoginPage() {
           </form>
           <Stack gap={4} align="center">
             <Text size="sm" c="dimmed">Ainda não conhece o SGI?</Text>
+            <Group>
             <Button component="a" href="/apresentacao" variant="light" color="blue" fullWidth>
               Ver apresentação do sistema
             </Button>
+            <Button component="a" href="/inicio" variant="light" color="blue" fullWidth>
+              Ver apresentação do sistema
+            </Button>
+            </Group>
           </Stack>
         </Stack>
       </Paper>

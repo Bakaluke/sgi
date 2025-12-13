@@ -16,12 +16,14 @@ import AccountsReceivablePage from './pages/AccountsReceivablePage';
 import AccountsPayablePage from './pages/AccountsPayablePage';
 import ReportsPage from './pages/ReportsPage';
 import MarketingPage from './pages/MarketingPage';
+import { LandingPage } from './pages/LandingPage';
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
         <Route path="/apresentacao" element={<MarketingPage />} />
+        <Route path="/inicio" element={<LandingPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/" element={<ProtectedRoute requiredPermission=""><Layout /></ProtectedRoute>}>
           <Route index element={<DashboardPage />} />
