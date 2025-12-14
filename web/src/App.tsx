@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import ProtectedRoute from './components/ProtectedRoute';
 import { Layout } from './components/Layout';
+import { LandingPage } from './pages/LandingPage';
 import LoginPage from './pages/LoginPage';
 import DashboardPage from './pages/DashboardPage';
 import ProductPage from './pages/ProductPage';
@@ -15,18 +16,14 @@ import ProfilePage from './pages/ProfilePage';
 import AccountsReceivablePage from './pages/AccountsReceivablePage';
 import AccountsPayablePage from './pages/AccountsPayablePage';
 import ReportsPage from './pages/ReportsPage';
-import MarketingPage from './pages/MarketingPage';
-import { LandingPage } from './pages/LandingPage';
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/apresentacao" element={<MarketingPage />} />
-        <Route path="/inicio" element={<LandingPage />} />
+        <Route path="/" element={<LandingPage />} />
         <Route path="/login" element={<LoginPage />} />
-        <Route path="/" element={<ProtectedRoute requiredPermission=""><Layout /></ProtectedRoute>}>
-          <Route index element={<DashboardPage />} />
+        <Route element={<ProtectedRoute requiredPermission=""><Layout /></ProtectedRoute>}>
           <Route path="dashboard" element={<DashboardPage />} />
           <Route path="products" element={<ProductPage />} />
           <Route path="customers" element={<ProtectedRoute requiredPermission="customers.view"><CustomerPage /></ProtectedRoute>} />
@@ -41,7 +38,7 @@ function App() {
           <Route path="accounts-payable" element={<ProtectedRoute requiredPermission="finance.view_payables"><AccountsPayablePage /></ProtectedRoute>} />
           <Route path="reports" element={<ProtectedRoute requiredPermission="reports.view"><ReportsPage /></ProtectedRoute>} />
         </Route>
-        <Route path="*" element={<Navigate to="/login" />} />
+        <Route path="*" element={<Navigate to="/" />} />
       </Routes>
     </BrowserRouter>
   );

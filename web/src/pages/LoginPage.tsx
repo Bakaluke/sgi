@@ -48,12 +48,7 @@ function LoginPage() {
           <Stack gap={4} align="center">
             <Text size="sm" c="dimmed">Ainda não conhece o SGI?</Text>
             <Group>
-            <Button component="a" href="/apresentacao" variant="light" color="blue" fullWidth>
-              Ver apresentação do sistema
-            </Button>
-            <Button component="a" href="/inicio" variant="light" color="blue" fullWidth>
-              Ver apresentação do sistema
-            </Button>
+              <Button component="a" href="/" variant="light" color="blue" fullWidth>Ver apresentação do sistema</Button>
             </Group>
           </Stack>
         </Stack>
