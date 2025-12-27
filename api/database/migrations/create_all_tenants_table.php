@@ -12,6 +12,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('plan_id')->nullable()->constrained('plans');
             $table->string('name')->unique();
+            $table->boolean('is_active')->default(true);
             $table->string('legal_name')->nullable();
             $table->string('company_fantasy_name')->nullable();
             $table->string('cnpj')->nullable()->unique();

@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import ProtectedRoute from './components/ProtectedRoute';
 import { Layout } from './components/Layout';
 import { LandingPage } from './pages/LandingPage';
+import { LoginViaTokenPage } from './pages/LoginViaTokenPage';
 import LoginPage from './pages/LoginPage';
 import DashboardPage from './pages/DashboardPage';
 import ProductPage from './pages/ProductPage';
@@ -23,13 +24,14 @@ function App() {
       <Routes>
         <Route path="/" element={<LandingPage />} />
         <Route path="/login" element={<LoginPage />} />
+        <Route path="/login-via-token" element={<LoginViaTokenPage />} />
         <Route element={<ProtectedRoute requiredPermission=""><Layout /></ProtectedRoute>}>
           <Route path="dashboard" element={<DashboardPage />} />
           <Route path="products" element={<ProductPage />} />
           <Route path="customers" element={<ProtectedRoute requiredPermission="customers.view"><CustomerPage /></ProtectedRoute>} />
           <Route path="quotes" element={<ProtectedRoute requiredPermission="quotes.view"><QuoteListPage /></ProtectedRoute>} />
           <Route path="quotes/:quoteId" element={<ProtectedRoute requiredPermission="quotes.view"><QuoteFormPage /></ProtectedRoute>} />
-          <Route path="production" element={<ProtectedRoute requiredPermission={['production_orders.view', 'production_orders.view_all']}><ProductionPage /></ProtectedRoute>} />          
+          <Route path="production" element={<ProtectedRoute requiredPermission="production_orders.view"><ProductionPage /></ProtectedRoute>} />
           <Route path="stock" element={<ProtectedRoute requiredPermission="stock.manage"><StockPage /></ProtectedRoute>} />
           <Route path="profile" element={<ProfilePage />} />
           <Route path="users" element={<ProtectedRoute requiredPermission="users.manage"><UsersPage /></ProtectedRoute>} />

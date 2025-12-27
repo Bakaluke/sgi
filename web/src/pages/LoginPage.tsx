@@ -29,7 +29,17 @@ function LoginPage() {
     })
     .catch(err => {
       console.error('Erro no acesso:', err);
-      setError('E-mail ou senha inválidos. Por favor, tente novamente.');
+      const backendMessage = err.response?.data?.message;
+      if (backendMessage) {
+        setError(backendMessage);
+        notifications.show({
+          title: 'Acesso Negado',
+          message: backendMessage,
+          color: 'red',
+        });
+      } else {
+        setError('E-mail ou senha inválidos. Por favor, tente novamente.');
+      }
     });
   };
 

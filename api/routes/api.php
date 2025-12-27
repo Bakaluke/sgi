@@ -2,7 +2,7 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\CustomerController;
 use App\Http\Controllers\Api\QuoteController;
@@ -27,19 +27,18 @@ use App\Http\Controllers\Api\ReportController;
 use App\Http\Controllers\Api\ReceivableInstallmentController;
 use App\Http\Controllers\Api\ProductComponentController;
 
-Route::post('/login', [LoginController::class, 'login']);
+Route::post('/login', [AuthController::class, 'login']);
 
 Route::middleware('auth:sanctum')->group(function () {
+    Route::post('/logout', [AuthController::class, 'logout']);
+
     Route::get('/user', function (Request $request) {
         $user = $request->user();
-        
         $permissions = $user->getPermissionsViaRoles()->pluck('name')->unique()->values()->all();
         $user->permissions = $permissions;
         $user->role = $user->getRoleNames()->first();
         unset($user->roles);
-
-        $user->settings = $user->tenant; 
-
+        $user->settings = $user->tenant;
         return $user;
     });
 
@@ -115,4 +114,5 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/reports/realized-cash-flow', [ReportController::class, 'realizedCashFlow']);
 
     Route::post('/receivable-installments/{installment}/register-payment', [ReceivableInstallmentController::class, 'registerPayment']);
+
 });

@@ -42,7 +42,7 @@ class RolesAndPermissionsSeeder extends Seeder
         $producaoPermissions = [
             'products.view', 'products.create', 'products.edit',
             'customers.view', 'customers.create', 'customers.edit',
-            'production_orders.view_all', 'production_orders.update_status',
+            'production_orders.view', 'production_orders.view_all', 'production_orders.update_status',
             'stock.manage', 'categories.manage',
         ];
         $producaoRole->givePermissionTo($producaoPermissions);

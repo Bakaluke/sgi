@@ -9,6 +9,8 @@ use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Filament\Tables\Columns;
+use Filament\Tables\Columns\ToggleColumn;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Models\Plan;
@@ -162,6 +164,11 @@ class TenantResource extends Resource
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Cliente Desde')
                     ->dateTime('d/m/Y')
+                    ->sortable(),
+                Tables\Columns\ToggleColumn::make('is_active')
+                    ->label('Acesso Ativo')
+                    ->onColor('success')
+                    ->offColor('danger')
                     ->sortable(),
             ])
             ->filters([

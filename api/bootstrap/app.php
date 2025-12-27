@@ -20,6 +20,9 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->appendToGroup('api', [
             \App\Http\Middleware\ForceLocale::class,
         ]);
+        $middleware->api(append: [
+            \App\Http\Middleware\CheckTenantActive::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

@@ -21,7 +21,7 @@ export function Layout() {
   const location = useLocation();
 
   const navItems = [
-    { label: 'Dashboard', icon: IconHome, path: '/' },
+    { label: 'Dashboard', icon: IconHome, path: '/dashboard' },
     { label: 'Orçamentos', icon: IconFileDescription, path: '/quotes', permission: 'quotes.view' },
     { label: 'Produção', icon: IconBuildingFactory, path: '/production', permission: 'production_orders.view' },
     { label: 'Produtos', icon: IconBox, path: '/products', permission: 'products.view' },

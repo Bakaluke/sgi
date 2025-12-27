@@ -17,6 +17,7 @@ class Tenant extends Model
     protected $fillable = [
         'plan_id',
         'name',
+        'is_active' => 'boolean',
         'status',
         'legal_name',
         'company_fantasy_name',
